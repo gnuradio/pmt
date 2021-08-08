@@ -1,3 +1,10 @@
+/*-*-c++-*-*/
+/*
+ * Copyright 2021 John Sallay
+ *
+ * SPDX-License-Identifier: LGPL-3.0
+ *
+ */
 #pragma once
 
 #include <pmt/pmt_generated.h>
