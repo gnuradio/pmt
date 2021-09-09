@@ -16,10 +16,11 @@ bool run_test(const int times, const std::vector<int32_t>& data)
     for (int i=0; i< times; i++)
     {
         sb.str(""); // reset channel to empty
-        auto p1 = pmt_vector<int32_t>::make(data);
-        p1->serialize(sb);
+        // auto p1 = pmt_vector<int32_t>(data);
+        pmt_wrap p1 = data;
+        p1.ptr()->serialize(sb);
         auto p2 = pmt_base::deserialize(sb);
-        if (!(*p1 == *p2))
+        if (!(*(p1.ptr()) == *p2))
             valid = false;
     }
 

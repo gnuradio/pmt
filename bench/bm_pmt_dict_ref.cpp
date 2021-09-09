@@ -24,8 +24,8 @@ bool run_test(const int times, pmt_map<std::string>& d, int32_t index)
 
         // if (ref == nullptr)
         //    valid = false;
-
-        if (ref != index)
+        auto s = get_pmt_scalar<int32_t>(ref);
+        if (s.value() != index)
         {
             valid = false;
         }
@@ -66,10 +66,10 @@ int main(int argc, char* argv[])
         std::map<std::string,pmt_wrap> starting_map;
         for (uint32_t k = 0; k < items; k++)
         {
-            auto key = std::string("key" + std::to_string(k));
-            auto value = pmt_scalar(k);
+            // auto key = std::string("key" + std::to_string(k));
+            // auto value = pmt_scalar(k);
 
-            starting_map[key] = value;
+            starting_map["key" + std::to_string(k)] = pmt_scalar<int32_t>(k);
         }
 
         auto d = pmt_map(starting_map);
