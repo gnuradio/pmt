@@ -42,8 +42,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       name: Checkout Project
-    - name: build_flatc
-      run: git clone https://github.com/google/flatbuffers.git && cd flatbuffers && git checkout aafc5dc9500f01c64     && mkdir build && cd build && cmake ../ && sudo make install -j
     - name: Meson Setup
       run: 'cd ${GITHUB_WORKSPACE} && meson setup build --buildtype=debugoptimized -Denable_testing=true' 
     - name: Make
