@@ -1,8 +1,8 @@
 #pragma once
 
-#include <pmt/pmt_generated.h>
-#include <pmt/pmtf.hpp>
-#include <pmt/pmtf_wrap.hpp>
+#include <pmtf/pmtf_generated.h>
+#include <pmtf/pmtf.hpp>
+#include <pmtf/pmtf_wrap.hpp>
 #include <complex>
 #include <ostream>
 #include <map>

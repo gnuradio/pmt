@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include <pmt/pmtf.hpp>
-#include <pmt/pmtf_map.hpp>
-#include <pmt/pmtf_scalar.hpp>
-#include <pmt/pmtf_string.hpp>
-#include <pmt/pmtf_vector.hpp>
-#include <pmt/pmtf_wrap.hpp>
+#include <pmtf/pmtf.hpp>
+#include <pmtf/pmtf_map.hpp>
+#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/pmtf_string.hpp>
+#include <pmtf/pmtf_vector.hpp>
+#include <pmtf/pmtf_wrap.hpp>
 
 using namespace pmtf;
 

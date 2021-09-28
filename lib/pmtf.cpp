@@ -1,7 +1,7 @@
-#include <pmt/pmtf.hpp>
-#include <pmt/pmtf_scalar.hpp>
-#include <pmt/pmtf_string.hpp>
-#include <pmt/pmtf_vector.hpp>
+#include <pmtf/pmtf.hpp>
+#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/pmtf_string.hpp>
+#include <pmtf/pmtf_vector.hpp>
 #include <map>
 
 namespace flatbuffers {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <pmt/pmt_generated.h>
-#include <pmt/pmtf.hpp>
+#include <pmtf/pmtf_generated.h>
+#include <pmtf/pmtf.hpp>
 #include <complex>
 #include <iostream>
 #include <map>
