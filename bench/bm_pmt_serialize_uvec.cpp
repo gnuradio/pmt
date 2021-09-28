@@ -4,7 +4,7 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-#include <pmt/pmtf_vector.hpp>
+#include <pmtf/pmtf_vector.hpp>
 
 using namespace pmtf;
 

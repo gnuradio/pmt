@@ -1,4 +1,4 @@
-#include <pmt/pmtf_scalar.hpp>
+#include <pmtf/pmtf_scalar.hpp>
 
 namespace pmtf {
 

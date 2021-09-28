@@ -3,9 +3,9 @@
 #include <thread>
 #include <vector>
 
-#include <pmt/pmtf.hpp>
-#include <pmt/pmtf_scalar.hpp>
-#include <pmt/pmtf_vector.hpp>
+#include <pmtf/pmtf.hpp>
+#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/pmtf_vector.hpp>
 
 using namespace pmtf;
 using namespace std;

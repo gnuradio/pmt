@@ -16,7 +16,7 @@ gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_
 # Boost is only used for program_options: FIXME - use something else
 boost_dep = dependency('boost', modules : ['program_options'], version : '>=1.65')
 
-subdir('include/pmt')
+subdir('include/pmtf')
 subdir('lib')
 subdir('test')
 subdir('bench')
