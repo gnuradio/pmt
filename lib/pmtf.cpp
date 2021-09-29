@@ -27,7 +27,7 @@ pmt_base::sptr pmt_base::from_pmt(const pmtf::Pmt* fb_pmt)
 {
     switch (fb_pmt->data_type()) {
     case Data::PmtString:
-        return std::static_pointer_cast<pmt_base>(pmt_string::from_pmt(fb_pmt));
+        return std::static_pointer_cast<pmt_base>(pmt_string_value::from_pmt(fb_pmt));
     case Data::ScalarComplex64:
         return std::static_pointer_cast<pmt_base>(
             pmt_scalar_value<std::complex<float>>::from_pmt(fb_pmt));

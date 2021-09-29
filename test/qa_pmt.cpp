@@ -91,9 +91,10 @@ TEST(Pmt, PmtVectorTests) {
 
 TEST(Pmt, PmtStringTests)
 {
-    auto str_pmt = pmt_string::make("hello");
+    auto str_pmt = pmt_string("hello");
+    std::cout << str_pmt << std::endl;
 
-    EXPECT_EQ(str_pmt->value(), "hello");
+    EXPECT_EQ(str_pmt, "hello");
 }
 
 
