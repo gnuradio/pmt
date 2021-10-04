@@ -30,11 +30,7 @@ bool run_test(const int times, const std::vector<int32_t>& data)
 int main(int argc, char* argv[])
 {
     uint64_t samples;
-    int nblocks;
-    int nthreads;
     size_t veclen;
-    int buffer_type;
-    bool rt_prio = false;
 
     po::options_description desc("Basic Test Flow Graph");
     desc.add_options()("help,h", "display help")(
@@ -55,7 +51,7 @@ int main(int argc, char* argv[])
     {
 
         std::vector<int32_t> data(veclen);
-        for (int i=0; i<veclen; i++)
+        for (size_t i=0; i<veclen; i++)
         {
             data[i] = i;
         }
