@@ -10,6 +10,12 @@ flatbuffers::Offset<void> pmt_string_value::rebuild_data(flatbuffers::FlatBuffer
 }
 
 
+void pmt_string_value::set_value(const char* val)
+{
+    _data = CreatePmtStringDirect(_fbb, val).Union();
+    build();
+}
+
 void pmt_string_value::set_value(const std::string& val)
 {
     _data = CreatePmtStringDirect(_fbb, val.c_str()).Union();
@@ -33,7 +39,7 @@ pmt_string_value::pmt_string_value(const pmtf::Pmt* fb_pmt)
     : pmt_base(Data::PmtString)
 {
     auto data = fb_pmt->data_as_PmtString()->value();
-    set_value(*((const std::string*)data));
+    set_value(data->c_str());
 }
 
 std::string pmt_string_value::value() const
@@ -57,5 +63,17 @@ const char* pmt_string_value::elements() const
     auto pmt = GetSizePrefixedPmt(_buf);                                          
     auto fb_vec = pmt->data_as_PmtString()->value();                         
     return (const char*)(fb_vec->Data());                                           
-}                                                                                 
+}         
+
+pmt_string get_pmt_string(const pmt_wrap& x) {
+    // Make sure that this is the right type.
+    switch(x.ptr()->data_type()) {
+        case Data::PmtString:
+             return pmt_string(std::dynamic_pointer_cast<pmt_string_value>(x.ptr()));
+        default:
+            throw std::runtime_error("Cannot convert non string pmt.");
+    }
+}
+
+
 } // namespace pmtf

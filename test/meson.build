@@ -29,4 +29,13 @@ if get_option('enable_testing')
         install : true)
     test('PMT Vector Tests', e)
 
+    srcs = ['qa_pmt_string.cpp']
+    e = executable('qa_pmt_string', 
+        srcs, 
+        include_directories : incdir, 
+        dependencies: [pmtf_dep,
+                    gtest_dep], 
+        install : true)
+    test('PMT String Tests', e)
+
 endif
