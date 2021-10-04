@@ -2,13 +2,13 @@
 
 #include <pmtf/pmtf_generated.h>
 #include <pmtf/pmtf.hpp>
+#include <pmtf/pmtf_wrap.hpp>
 #include <complex>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <typeindex>
 #include <typeinfo>
-
 
 namespace pmtf {
 
@@ -29,7 +29,7 @@ public:
         return std::make_shared<pmt_string_value>(fb_pmt);
     }
 
-
+    void set_value(const char* val);
     void set_value(const std::string& val);
     std::string value() const;
     char* writable_elements();
@@ -122,5 +122,8 @@ inline std::ostream& operator<<(std::ostream& os, const pmt_string& value) {
         os << v;
     return os;
 }
+
+pmt_string get_pmt_string(const pmt_wrap& x);
+
 
 } // namespace pmtf

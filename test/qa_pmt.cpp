@@ -89,13 +89,13 @@ TEST(Pmt, PmtVectorTests) {
     std::cout << x << std::endl;
 }
 
-TEST(Pmt, PmtStringTests)
-{
-    auto str_pmt = pmt_string("hello");
-    std::cout << str_pmt << std::endl;
+// TEST(Pmt, PmtStringTests)
+// {
+//     auto str_pmt = pmt_string("hello");
+//     std::cout << str_pmt << std::endl;
 
-    EXPECT_EQ(str_pmt, "hello");
-}
+//     EXPECT_EQ(str_pmt, "hello");
+// }
 
 
 /*TEST(Pmt, PmtMapTests)
