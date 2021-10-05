@@ -1,3 +1,10 @@
+/*-*-c++-*-*/
+/*
+ * Copyright 2021 John Sallay
+ *
+ * SPDX-License-Identifier: LGPL-3.0
+ *
+ */
 #include <chrono>
 #include <iostream>
 #include <thread>
