@@ -17,7 +17,7 @@ PMTlib uses meson and ninja to manage the build process, which can be installed 
 
 ```bash
 pip install meson
-cd newsched
+cd pmt
 meson setup build --buildtype=debugoptimized --prefix=[PREFIX] --libdir=lib
 cd build
 ninja

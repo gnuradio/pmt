@@ -82,5 +82,8 @@ pmt_string get_pmt_string(const pmt_wrap& x) {
     }
 }
 
+template <> pmt_wrap::pmt_wrap<std::string>(const std::string& x) { d_ptr = pmt_string(x).ptr(); }
+template <> pmt_wrap::pmt_wrap<pmt_string>(const pmt_string& x) { d_ptr = x.ptr(); }
+// template <> pmt_wrap::pmt_wrap<char *>(const char *x) { d_ptr = pmt_string(x).ptr(); }
 
 } // namespace pmtf

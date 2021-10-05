@@ -94,9 +94,10 @@ class pmt_string {
         return x;
     }
     
-    sptr ptr() { return d_ptr; }
+    sptr ptr() const { return d_ptr; }
     size_type size() const { return d_ptr->size(); }
     auto data_type() { return d_ptr->data_type(); }
+    std::string value() const { return d_ptr->value(); }
     
   private:
     sptr d_ptr;

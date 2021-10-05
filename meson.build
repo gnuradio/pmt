@@ -20,3 +20,28 @@ subdir('include/pmtf')
 subdir('lib')
 subdir('test')
 subdir('bench')
+
+# cmake = import('cmake')
+
+# conf = configuration_data()
+# # conf.set_quoted('VAR', 'variable value')
+
+# cmake.configure_package_config_file(
+#     name: 'pmtf',
+#     input: 'cmake/Modules/pmtf.cmake.in',
+#     configuration: conf,
+#     install_dir : 'lib/cmake/pmtf'
+# )
+
+# cmake.write_basic_package_version_file(name: 'pmtf', version: meson.project_version())
+
+pkg = import('pkgconfig')
+libs = [pmtf_lib]     # the library/libraries users need to link against
+h = ['.'] # subdirectories of ${prefix}/${includedir} to add to header path
+pkg.generate(libraries : libs,
+             subdirs : h,
+             version : meson.project_version(),
+             name : 'libpmtf',
+             filebase : 'pmtf',
+             install_dir : 'lib/pkgconfig',
+             description : 'PMTF - Polymorphic Types with Flatbuffers')
