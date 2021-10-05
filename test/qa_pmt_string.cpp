@@ -7,7 +7,7 @@
 
 using namespace pmtf;
 
-TEST(Pmt, PmtStringTests)
+TEST(PmtString, Basic)
 {
     {
     auto str_pmt = pmt_string("hello");
@@ -20,7 +20,7 @@ TEST(Pmt, PmtStringTests)
 }
 
 
-TEST(Pmt, PmtStringAssignment)
+TEST(PmtString, Assignment)
 {
     auto str_pmt = pmt_string("hello");
     
@@ -30,7 +30,7 @@ TEST(Pmt, PmtStringAssignment)
 }
 
 
-TEST(Pmt, PmtStringSerdes)
+TEST(PmtString, Serdes)
 {
     auto str_pmt = pmt_string("hello");
     
@@ -42,4 +42,12 @@ TEST(Pmt, PmtStringSerdes)
 
     
     EXPECT_EQ(get_pmt_string(base_ptr), "hello");
+}
+
+TEST(Pmt, PmtWrap)
+{
+    pmt_wrap x;
+    x = std::string("hello");
+    
+    EXPECT_EQ(get_pmt_string(x), "hello");
 }

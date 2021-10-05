@@ -15,4 +15,6 @@ std::ostream& operator<<(std::ostream& os, const pmt_wrap& x) {
     return os;
 }
 
+template <> pmt_wrap::pmt_wrap<decltype(nullptr)>(const decltype(nullptr)& x) { d_ptr = nullptr; }
+
 }

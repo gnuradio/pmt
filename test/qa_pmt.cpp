@@ -232,8 +232,11 @@ TEST(Pmt, MapWrapper) {
         std::cout << key << std::endl;
     }
 }
+*/
 
-TEST(Pmt, PmtWrap) {
-    pmt_wrap x(4);
-    pmt_wrap y(std::vector({1,2,3,4}));
-}*/
+TEST(Pmt, PmtWrap2) {
+    pmt_wrap x;
+    pmt_wrap y;
+
+    x = 3;
+}
