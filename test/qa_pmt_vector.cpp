@@ -78,6 +78,14 @@ std::complex<double> PmtVectorFixture<std::complex<double>>::nonzero_value()
 
 TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 
+TYPED_TEST(PmtVectorFixture, PmtVectorNull)
+{
+    auto pmtv = pmt_vector<TypeParam>({});
+
+    // The following line fails inside of flatbuffers
+    // auto pmtw = pmt_wrap(pmt_vector<TypeParam>({}));
+}
+
 TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
 {
 
