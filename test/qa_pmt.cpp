@@ -17,24 +17,24 @@
 
 using namespace pmtf;
 
-TEST(Pmt, BasicPmtTests)
-{
-    std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);
-    auto x = pmt_scalar(cplx_val);
+// TEST(Pmt, BasicPmtTests)
+// {
+//     std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);
+//     auto x = pmt_scalar(cplx_val);
 
-    EXPECT_EQ(x, cplx_val);
-    EXPECT_EQ(x.data_type(), Data::ScalarComplex64);
+//     EXPECT_EQ(x, cplx_val);
+//     EXPECT_EQ(x.data_type(), Data::ScalarComplex64);
 
-    std::vector<int32_t> int_vec_val{ 5, 9, 23445, 63, -25 };
-    auto int_pmt_vec = pmt_vector<int32_t>(int_vec_val);
-    EXPECT_EQ(int_pmt_vec, int_vec_val);
-    EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorInt32);
+//     std::vector<int32_t> int_vec_val{ 5, 9, 23445, 63, -25 };
+//     auto int_pmt_vec = pmt_vector<int32_t>(int_vec_val);
+//     EXPECT_EQ(int_pmt_vec, int_vec_val);
+//     EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorInt32);
 
-    std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
-    auto cf_pmt_vec = pmt_vector<std::complex<float>>(cf_vec_val);
-    EXPECT_EQ(cf_pmt_vec, cf_vec_val);
-    EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
-}
+//     std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
+//     auto cf_pmt_vec = pmt_vector<std::complex<float>>(cf_vec_val);
+//     EXPECT_EQ(cf_pmt_vec, cf_vec_val);
+//     EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
+// }
 
 TEST(Pmt, PmtScalarValueTests)
 {
