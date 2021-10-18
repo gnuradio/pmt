@@ -143,6 +143,7 @@ public:
     value_type* end() const { return d_ptr->writable_elements() + size(); }
     const value_type* cbegin() { return d_ptr->writable_elements(); }
     const value_type* cend() { return d_ptr->writable_elements() + size(); }
+    std::vector<T> value() const { return d_ptr->value(); }
 
     reference operator[] (size_type n) {
         // operator[] doesn't do bounds checking, use at for that
