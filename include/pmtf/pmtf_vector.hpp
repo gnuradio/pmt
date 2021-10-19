@@ -1,6 +1,7 @@
 /*-*-c++-*-*/
 /*
  * Copyright 2021 John Sallay
+ * Copyright 2021 Josh Morman
  *
  * SPDX-License-Identifier: LGPL-3.0
  *
@@ -542,14 +543,13 @@ Apply(VectorEqualsPmt)
         fb_vec->Mutate(k, (fbtype*)&val); /* hacky cast */                              \
     }                                                                                   \
     template <>                                                                         \
-    datatype* pmt_vector_value<datatype>::writable_elements()                                 \
-    {                                                                                   \
-        auto pmt =                                                                      \
-            GetMutablePmt(buffer_pointer() + 4); /* assuming size prefix is 32 bit */   \
-        auto mutable_obj = ((pmtf::Vector##fbtype*)pmt->mutable_data())                 \
-                               ->mutable_value()                                        \
-                               ->GetMutableObject(0);                                   \
-        return (datatype*)(mutable_obj); /* hacky cast */                               \
+    datatype* pmt_vector_value<datatype>::writable_elements()                               \
+    {                                                                                 \
+        auto pmt =                                                                    \
+            GetMutablePmt(buffer_pointer() + 4); /* assuming size prefix is 32 bit */ \
+        return (datatype*)(((pmtf::Vector##fbtype*)pmt->mutable_data())               \
+                               ->mutable_value()                                      \
+                               ->Data());                                             \
     }                                                                                   \
     template class pmt_vector_value<datatype>;
 
