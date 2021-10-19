@@ -83,7 +83,7 @@ TYPED_TEST(PmtVectorFixture, PmtVectorNull)
     auto pmtv = pmt_vector<TypeParam>({});
 
     // The following line fails inside of flatbuffers
-    // auto pmtw = pmt_wrap(pmt_vector<TypeParam>({}));
+    auto pmtw = pmt_wrap(pmt_vector<TypeParam>({}));
 }
 
 TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
