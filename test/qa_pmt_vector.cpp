@@ -8,7 +8,7 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/pmtf_vector.hpp>
 #include <pmtf/pmtf_scalar.hpp>
 

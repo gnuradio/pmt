@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/pmtf_scalar.hpp>
 #include <pmtf/pmtf_vector.hpp>
 
@@ -34,7 +34,7 @@ int main(int argc, char* argv[])
     sb.str("");        // reset channel to empty
     bool ret = int_vec_pmt2.ptr()->serialize(sb);
     std::cout << ret << std::endl;
-    auto base_ptr = pmt_base::deserialize(sb);
+    auto base_ptr = base::deserialize(sb);
 
     // std::cout << "isequal: " << (*int_vec_pmt2 == *base_ptr) << std::endl;
 

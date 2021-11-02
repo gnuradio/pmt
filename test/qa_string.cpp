@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/string.hpp>
 
 #include <iostream>
@@ -38,7 +38,7 @@ TEST(PmtString, Serdes)
     sb.str("");        // reset channel to empty
     bool ret = str_pmt.ptr()->serialize(sb);
     std::cout << ret << std::endl;
-    auto base_ptr = pmt_base::deserialize(sb);
+    auto base_ptr = base::deserialize(sb);
 
     
     EXPECT_EQ(get_string(base_ptr), "hello");

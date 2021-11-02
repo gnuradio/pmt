@@ -30,20 +30,20 @@ void string_value::set_value(const std::string& val)
 }
 
 string_value::string_value(const std::string& val)
-    : pmt_base(Data::PmtString)
+    : base(Data::PmtString)
 {
     set_value(val);
 }
 
 string_value::string_value(const uint8_t *buf)
-    : pmt_base(Data::PmtString)
+    : base(Data::PmtString)
 {
     auto data = GetPmt(buf)->data_as_PmtString()->value();
     set_value(*((const std::string*)data));
 }
 
 string_value::string_value(const pmtf::Pmt* fb_pmt)
-    : pmt_base(Data::PmtString)
+    : base(Data::PmtString)
 {
     auto data = fb_pmt->data_as_PmtString()->value();
     set_value(data->c_str());
