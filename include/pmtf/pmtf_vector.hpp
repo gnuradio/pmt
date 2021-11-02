@@ -18,7 +18,7 @@
 #include <vector>
 
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_wrap.hpp>
+#include <pmtf/wrap.hpp>
 
 namespace pmtf {
 
@@ -217,7 +217,7 @@ template <> inline Data pmt_vector_type<std::complex<float>>() { return Data::Ve
 template <> inline Data pmt_vector_type<std::complex<double>>() { return Data::VectorComplex128; }
 
 template <class T, Data dt>
-pmt_vector<T> _get_pmt_vector(const pmt_wrap& x) {
+pmt_vector<T> _get_pmt_vector(const wrap& x) {
     if constexpr(std::is_same_v<typename cpp_type<dt>::type, T>)
         return pmt_vector<T>(std::dynamic_pointer_cast<pmt_vector_value<T>>(x.ptr()));
     else
@@ -225,7 +225,7 @@ pmt_vector<T> _get_pmt_vector(const pmt_wrap& x) {
 }
 
 template <class T>
-pmt_vector<T> get_pmt_vector(const pmt_wrap& x) {
+pmt_vector<T> get_pmt_vector(const wrap& x) {
     // TODO: I can flip this around and make functions to convert T to a dt at compile time.
     //   Then just check if vector_data_type<T> == x.ptr()->data_type()
     // Make sure that this is the right type.
@@ -249,7 +249,7 @@ pmt_vector<T> get_pmt_vector(const pmt_wrap& x) {
 }
 
 template <class T>
-bool is_pmt_vector(const pmt_wrap& x) {
+bool is_pmt_vector(const wrap& x) {
     return x.ptr()->data_type() == pmt_vector_type<T>();
 }
 
@@ -267,12 +267,12 @@ func(float) \
 func(double) \
 func(std::complex<float>)
 
-#define VectorWrap(T) template <> pmt_wrap::pmt_wrap<std::vector<T>>(const std::vector<T>& x);
-#define VectorWrapPmt(T) template <> pmt_wrap::pmt_wrap<pmt_vector<T>>(const pmt_vector<T>& x);
+#define VectorWrap(T) template <> wrap::wrap<std::vector<T>>(const std::vector<T>& x);
+#define VectorWrapPmt(T) template <> wrap::wrap<pmt_vector<T>>(const pmt_vector<T>& x);
 #define VectorEquals(T) \
-    template <> bool operator==<std::vector<T>>(const pmt_wrap& x, const std::vector<T>& other);
+    template <> bool operator==<std::vector<T>>(const wrap& x, const std::vector<T>& other);
 #define VectorEqualsPmt(T) \
-    template <> bool operator==<pmt_vector<T>>(const pmt_wrap& x, const pmt_vector<T>& other);
+    template <> bool operator==<pmt_vector<T>>(const wrap& x, const pmt_vector<T>& other);
 Apply(VectorWrap)
 Apply(VectorWrapPmt)
 Apply(VectorEquals)

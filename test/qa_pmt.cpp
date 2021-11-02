@@ -9,11 +9,11 @@
 #include <complex>
 
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_map.hpp>
+#include <pmtf/map.hpp>
 #include <pmtf/pmtf_scalar.hpp>
-#include <pmtf/pmtf_string.hpp>
+#include <pmtf/string.hpp>
 #include <pmtf/pmtf_vector.hpp>
-#include <pmtf/pmtf_wrap.hpp>
+#include <pmtf/wrap.hpp>
 
 using namespace pmtf;
 
@@ -98,7 +98,7 @@ TEST(Pmt, PmtVectorTests) {
 
 // TEST(Pmt, PmtStringTests)
 // {
-//     auto str_pmt = pmt_string("hello");
+//     auto str_pmt = string("hello");
 //     std::cout << str_pmt << std::endl;
 
 //     EXPECT_EQ(str_pmt, "hello");
@@ -111,11 +111,11 @@ TEST(Pmt, PmtVectorTests) {
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
-    std::map<std::string, pmt_wrap> input_map({
+    std::map<std::string, wrap> input_map({
         { "key1", val1 },
         { "key2", val2 },
     });
-    auto map_pmt = pmt_map<std::string>(input_map);
+    auto map_pmt = map<std::string>(input_map);
 
     // Lookup values in the PMT map and compare with what was put in there
     auto vv1 = map_pmt["key1"];
@@ -128,13 +128,13 @@ TEST(Pmt, PmtVectorTests) {
 
 TEST(Pmt, PmtWrap)
 {
-    pmt_wrap x = int8_t(4);
+    wrap x = int8_t(4);
     get_pmt_scalar<int8_t>(x);
     get_scalar<int8_t>(x);
 }
 TEST(pmt, CanBe)
 {
-    pmt_wrap x = int32_t(257);
+    wrap x = int32_t(257);
     assert(can_be<int8_t>(x) == true);
     assert(can_be<uint64_t>(x) == true);
     assert(can_be<float>(x) == true);
@@ -225,7 +225,7 @@ TEST(Pmt, VectorWrapper) {
 }
 
 TEST(Pmt, MapWrapper) {
-    pmt_map<std::string> x;
+    map<std::string> x;
     x["abc"] = 4;
     x["qwer"] = std::vector<int>{1,2,4};
     for (auto& [key, value]: x) {
@@ -235,8 +235,8 @@ TEST(Pmt, MapWrapper) {
 */
 
 TEST(Pmt, PmtWrap2) {
-    pmt_wrap x;
-    pmt_wrap y;
+    wrap x;
+    wrap y;
 
     x = 3;
 }

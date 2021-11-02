@@ -83,7 +83,7 @@ TYPED_TEST(PmtVectorFixture, PmtVectorNull)
     auto pmtv = pmt_vector<TypeParam>({});
 
     // The following line fails inside of flatbuffers
-    auto pmtw = pmt_wrap(pmt_vector<TypeParam>({}));
+    auto pmtw = wrap(pmt_vector<TypeParam>({}));
 }
 
 TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
@@ -148,7 +148,7 @@ TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
         vec[i] = this->get_value(i);
     }
 
-    pmt_wrap generic_pmt_obj = std::vector<TypeParam>(vec);
+    wrap generic_pmt_obj = std::vector<TypeParam>(vec);
     auto y = get_pmt_vector<TypeParam>(generic_pmt_obj); 
     EXPECT_EQ(y == vec, true);
 

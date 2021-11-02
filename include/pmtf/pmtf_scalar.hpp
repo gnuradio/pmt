@@ -9,7 +9,7 @@
 
 #include <pmtf/pmtf_generated.h>
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_wrap.hpp>
+#include <pmtf/wrap.hpp>
 #include <complex>
 #include <ostream>
 #include <map>
@@ -172,7 +172,7 @@ std::ostream& operator<<(std::ostream& os, const pmt_scalar<T>& value) {
 }
 
 template <class T, Data dt>
-pmt_scalar<T> _get_pmt_scalar(const pmt_wrap& x) {
+pmt_scalar<T> _get_pmt_scalar(const wrap& x) {
     if constexpr(std::is_same_v<typename cpp_type<dt>::type, T>)
         return pmt_scalar<T>(std::dynamic_pointer_cast<pmt_scalar_value<T>>(x.ptr()));
     else
@@ -180,7 +180,7 @@ pmt_scalar<T> _get_pmt_scalar(const pmt_wrap& x) {
 }
 
 template <class T>
-pmt_scalar<T> get_pmt_scalar(const pmt_wrap& x) {
+pmt_scalar<T> get_pmt_scalar(const wrap& x) {
     // Make sure that this is the right type.
     switch(auto dt = x.ptr()->data_type()) {
         case Data::ScalarFloat32: return _get_pmt_scalar<T, Data::ScalarFloat32>(x);
@@ -202,18 +202,18 @@ pmt_scalar<T> get_pmt_scalar(const pmt_wrap& x) {
 }
 
 template <class T>
-T get_scalar(const pmt_wrap& x) {
+T get_scalar(const wrap& x) {
     return get_pmt_scalar<T>(x).ptr()->value();
 }
 // Fix this later with SFINAE
 template <class T, Data dt>
-bool _can_be(const pmt_wrap& x) {
+bool _can_be(const wrap& x) {
     auto value = get_pmt_scalar<typename cpp_type<dt>::type>(x);
     return std::is_convertible_v<typename cpp_type<dt>::type, T>;
 }
 
 template <class T>
-bool can_be(const pmt_wrap& x) {
+bool can_be(const wrap& x) {
     switch(auto dt = x.ptr()->data_type()) {
         case Data::ScalarFloat32: return _can_be<T, Data::ScalarFloat32>(x);
         case Data::ScalarFloat64: return _can_be<T, Data::ScalarFloat64>(x);
@@ -235,7 +235,7 @@ bool can_be(const pmt_wrap& x) {
 }
 
 template <class T, Data dt>
-T _get_as(const pmt_wrap& x) {
+T _get_as(const wrap& x) {
     auto value = get_scalar<typename cpp_type<dt>::type>(x);
     if constexpr(std::is_convertible_v<typename cpp_type<dt>::type, T>)
         return T(value.ptr()->value());
@@ -244,7 +244,7 @@ T _get_as(const pmt_wrap& x) {
 }
 
 template <class T>
-T get_as(const pmt_wrap& x) {
+T get_as(const wrap& x) {
     switch(auto dt = x.ptr()->data_type()) {
         case Data::ScalarFloat32: return _get_as<T, Data::ScalarFloat32>(x);
         case Data::ScalarFloat64: return _get_as<T, Data::ScalarFloat64>(x);
@@ -262,21 +262,21 @@ T get_as(const pmt_wrap& x) {
     }
 }
 
-// Define constructors for pmt_wrap for the scalar types
+// Define constructors for wrap for the scalar types
 // In c++20, I think we could do this with a concept.
 // I'm struggling to get SFINAE working.  I'm not sure if it is possible here, so I'm using macros.  Sorry.
-// Construct a pmt_wrap from a scalar type
+// Construct a wrap from a scalar type
 #define WrapConstruct(type) \
-    template <> pmt_wrap::pmt_wrap<type>(const type& x);
-// Construct a pmt_wrap from a pmt_scalar
+    template <> wrap::wrap<type>(const type& x);
+// Construct a wrap from a pmt_scalar
 #define WrapConstructPmt(type) \
-    template <> pmt_wrap::pmt_wrap<pmt_scalar<type>>(const pmt_scalar<type>& x);
+    template <> wrap::wrap<pmt_scalar<type>>(const pmt_scalar<type>& x);
 
 #define Equals(type) \
-    template <> bool operator==<type>(const pmt_wrap& x, const type& other);
+    template <> bool operator==<type>(const wrap& x, const type& other);
 
 #define EqualsPmt(type) \
-    template <> bool operator==<pmt_scalar<type>>(const pmt_wrap& x, const pmt_scalar<type>& other);
+    template <> bool operator==<pmt_scalar<type>>(const wrap& x, const pmt_scalar<type>& other);
 
 #define Apply(func) \
 func(uint8_t) \

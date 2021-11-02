@@ -6,7 +6,7 @@
 namespace po = boost::program_options;
 
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_map.hpp>
+#include <pmtf/map.hpp>
 #include <pmtf/pmtf_scalar.hpp>
 
 using namespace pmtf;
@@ -17,7 +17,7 @@ bool run_test(const int times, uint64_t nitems)
     bool valid = true;
     for (int i = 0; i < times; i++) {
         // Create the dictionary
-        std::map<std::string, pmt_wrap> starting_map;
+        std::map<std::string, wrap> starting_map;
 
         #if 1
         for (uint64_t k = 0; k < nitems; k++) {
@@ -26,9 +26,9 @@ bool run_test(const int times, uint64_t nitems)
 
             starting_map[key] = value;
         }
-        auto d_in = pmt_map(starting_map);
+        auto d_in = map(starting_map);
         #else
-        auto d_in = pmt_map<std::string>::make(starting_map);
+        auto d_in = map<std::string>::make(starting_map);
         for (int k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = pmt_scalar<int32_t>::make(k);
