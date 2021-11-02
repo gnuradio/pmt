@@ -106,10 +106,10 @@ public:
 };
 
 
-// If we like this idea, I would rename this to pmt_vector and rename pmt_vector to
+// If we like this idea, I would rename this to vector and rename vector to
 // something like _pmt_vector.
 template <class T>
-class pmt_vector {
+class vector {
 public:
     using sptr = typename pmt_vector_value<T>::sptr;
     using value_type = T;
@@ -119,24 +119,24 @@ public:
     // Constructors.  Try to match std vector constructors.
     // Right now I'm not allowing for a custom allocator, because I would believe 
     // that we would say that flatbuffer is our allocator.
-    pmt_vector(size_type n): 
+    vector(size_type n): 
         d_ptr(pmt_vector_value<T>::make(std::vector<T>(n))) {}
-    pmt_vector(size_type n, const value_type& val):
+    vector(size_type n, const value_type& val):
         d_ptr(pmt_vector_value<T>::make(std::vector<T>(n, val))) {}
     template <class InputIterator>
-    pmt_vector(InputIterator first, InputIterator last):
+    vector(InputIterator first, InputIterator last):
         d_ptr(pmt_vector_value<T>::make(std::vector<T>(first, last))) {}
-    pmt_vector(const pmt_vector& x):
+    vector(const vector& x):
         d_ptr(x.d_ptr) {}
-    pmt_vector(std::initializer_list<value_type> il):
+    vector(std::initializer_list<value_type> il):
         d_ptr(pmt_vector_value<T>::make(std::vector<T>(il))) {}
     
     // Add in a few more constructors because we are wrapping a vector.
-    pmt_vector(sptr p):
+    vector(sptr p):
         d_ptr(p) {}
     // Allow for custom allocators (such as volk) in the constructor
     template <class alloc>
-    pmt_vector(const std::vector<T, alloc>& x):
+    vector(const std::vector<T, alloc>& x):
         d_ptr(pmt_vector_value<T>::make(x)) {}
 
     // TODO: Think about real iterators instead of pointers.
@@ -167,7 +167,7 @@ private:
 
 // When we switch to c++20, make this a concept.
 template <class T, class U>
-bool operator==(const pmt_vector<T>& x, const U& other) {
+bool operator==(const vector<T>& x, const U& other) {
     if (other.size() != x.size()) return false;
     auto my_val = x.begin();
     for (auto&& val : other) {
@@ -178,7 +178,7 @@ bool operator==(const pmt_vector<T>& x, const U& other) {
 }
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const pmt_vector<T>& value) {
+std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     os << "[ ";
     for (auto& v: value)
         os << v << " ";
@@ -217,15 +217,15 @@ template <> inline Data pmt_vector_type<std::complex<float>>() { return Data::Ve
 template <> inline Data pmt_vector_type<std::complex<double>>() { return Data::VectorComplex128; }
 
 template <class T, Data dt>
-pmt_vector<T> _get_pmt_vector(const wrap& x) {
+vector<T> _get_pmt_vector(const wrap& x) {
     if constexpr(std::is_same_v<typename cpp_type<dt>::type, T>)
-        return pmt_vector<T>(std::dynamic_pointer_cast<pmt_vector_value<T>>(x.ptr()));
+        return vector<T>(std::dynamic_pointer_cast<pmt_vector_value<T>>(x.ptr()));
     else
         throw std::runtime_error("Cannot convert vector types");
 }
 
 template <class T>
-pmt_vector<T> get_pmt_vector(const wrap& x) {
+vector<T> get_pmt_vector(const wrap& x) {
     // TODO: I can flip this around and make functions to convert T to a dt at compile time.
     //   Then just check if vector_data_type<T> == x.ptr()->data_type()
     // Make sure that this is the right type.
@@ -268,11 +268,11 @@ func(double) \
 func(std::complex<float>)
 
 #define VectorWrap(T) template <> wrap::wrap<std::vector<T>>(const std::vector<T>& x);
-#define VectorWrapPmt(T) template <> wrap::wrap<pmt_vector<T>>(const pmt_vector<T>& x);
+#define VectorWrapPmt(T) template <> wrap::wrap<vector<T>>(const vector<T>& x);
 #define VectorEquals(T) \
     template <> bool operator==<std::vector<T>>(const wrap& x, const std::vector<T>& other);
 #define VectorEqualsPmt(T) \
-    template <> bool operator==<pmt_vector<T>>(const wrap& x, const pmt_vector<T>& other);
+    template <> bool operator==<vector<T>>(const wrap& x, const vector<T>& other);
 Apply(VectorWrap)
 Apply(VectorWrapPmt)
 Apply(VectorEquals)

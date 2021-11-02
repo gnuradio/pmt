@@ -6,9 +6,9 @@
  *
  */
 #include <pmtf/base.hpp>
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
-#include <pmtf/pmtf_vector.hpp>
+#include <pmtf/vector.hpp>
 #include <map>
 
 namespace flatbuffers {
@@ -37,26 +37,26 @@ base::sptr base::from_pmt(const pmtf::Pmt* fb_pmt)
         return std::static_pointer_cast<base>(string_value::from_pmt(fb_pmt));
     case Data::ScalarComplex64:
         return std::static_pointer_cast<base>(
-            pmt_scalar_value<std::complex<float>>::from_pmt(fb_pmt));
+            scalar_value<std::complex<float>>::from_pmt(fb_pmt));
     case Data::ScalarComplex128:
         return std::static_pointer_cast<base>(
-            pmt_scalar_value<std::complex<double>>::from_pmt(fb_pmt));
+            scalar_value<std::complex<double>>::from_pmt(fb_pmt));
     case Data::ScalarInt8:
-        return std::static_pointer_cast<base>(pmt_scalar_value<int8_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<int8_t>::from_pmt(fb_pmt));
     case Data::ScalarUInt8:
-        return std::static_pointer_cast<base>(pmt_scalar_value<uint8_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<uint8_t>::from_pmt(fb_pmt));
     case Data::ScalarInt16:
-        return std::static_pointer_cast<base>(pmt_scalar_value<int16_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<int16_t>::from_pmt(fb_pmt));
     case Data::ScalarUInt16:
-        return std::static_pointer_cast<base>(pmt_scalar_value<uint16_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<uint16_t>::from_pmt(fb_pmt));
     case Data::ScalarInt32:
-        return std::static_pointer_cast<base>(pmt_scalar_value<int32_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<int32_t>::from_pmt(fb_pmt));
     case Data::ScalarUInt32:
-        return std::static_pointer_cast<base>(pmt_scalar_value<uint32_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<uint32_t>::from_pmt(fb_pmt));
     case Data::ScalarInt64:
-        return std::static_pointer_cast<base>(pmt_scalar_value<int64_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<int64_t>::from_pmt(fb_pmt));
     case Data::ScalarUInt64:
-        return std::static_pointer_cast<base>(pmt_scalar_value<uint64_t>::from_pmt(fb_pmt));
+        return std::static_pointer_cast<base>(scalar_value<uint64_t>::from_pmt(fb_pmt));
     case Data::VectorInt8:
         return std::static_pointer_cast<base>(pmt_vector_value<int8_t>::from_pmt(fb_pmt));
     case Data::VectorUInt8:
@@ -93,7 +93,7 @@ base::sptr base::from_buffer(const uint8_t* buf, size_t size)
     return from_pmt(PMT);
 }
 
-template class pmt_scalar_value<std::complex<float>>;
+template class scalar_value<std::complex<float>>;
 template class pmt_vector_value<std::int32_t>;
 // template class pmt_vector_value<std::complex<float>>;
 

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: LGPL-3.0
  *
  */
-#include <pmtf/pmtf_vector.hpp>
+#include <pmtf/vector.hpp>
 #include <algorithm>
 
 namespace pmtf {
@@ -41,10 +41,10 @@ func(double) \
 func(std::complex<float>)
 
 #define VectorWrapImpl(T) template <> wrap::wrap<std::vector<T>>(const std::vector<T>& x) \
-    { d_ptr = pmt_vector(x).ptr(); }
-#define VectorWrapPmtImpl(T) template <> wrap::wrap<pmt_vector<T>>(const pmt_vector<T>& x) \
+    { d_ptr = vector(x).ptr(); }
+#define VectorWrapPmtImpl(T) template <> wrap::wrap<vector<T>>(const vector<T>& x) \
     {                                                                                        \
-        pmt_vector<T> val(x.begin(), x.end());                                               \
+        vector<T> val(x.begin(), x.end());                                               \
         d_ptr = val.ptr();                                                                   \
     }
 #define VectorEqualsImpl(T) \
@@ -57,7 +57,7 @@ func(std::complex<float>)
         return false;                                                                               \
     }
 #define VectorEqualsPmtImpl(T) \
-    template <> bool operator==<pmt_vector<T>>(const wrap& x, const pmt_vector<T>& other) {     \
+    template <> bool operator==<vector<T>>(const wrap& x, const vector<T>& other) {     \
         if (is_pmt_vector<T>(x)) {                                                                  \
             auto xx = get_pmt_vector<T>(x);                                                         \
             if (xx.size() == other.size())                                                          \

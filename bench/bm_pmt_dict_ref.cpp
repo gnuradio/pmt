@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/scalar.hpp>
 
 using namespace pmtf;
 
@@ -24,7 +24,7 @@ bool run_test(const int times, map<std::string>& d, int32_t index)
 
         // if (ref == nullptr)
         //    valid = false;
-        auto s = get_pmt_scalar<int32_t>(ref);
+        auto s = get_scalar<int32_t>(ref);
         if (s.value() != index)
         {
             valid = false;
@@ -67,9 +67,9 @@ int main(int argc, char* argv[])
         for (uint32_t k = 0; k < items; k++)
         {
             // auto key = std::string("key" + std::to_string(k));
-            // auto value = pmt_scalar(k);
+            // auto value = scalar(k);
 
-            starting_map["key" + std::to_string(k)] = pmt_scalar<int32_t>(k);
+            starting_map["key" + std::to_string(k)] = scalar<int32_t>(k);
         }
 
         auto d = map(starting_map);

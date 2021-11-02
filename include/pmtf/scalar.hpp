@@ -24,36 +24,36 @@ namespace pmtf {
 /**
  * @brief Class holds the implementation of a scalar pmt.
  *
- * The scalar types are defined in pmtf_scalar.cpp.  This class should not be
+ * The scalar types are defined in scalar.cpp.  This class should not be
  * used directly. It would be nice to move it to the .cpp and instantiate all
  * of the templates in there. This would involve a fairly large refactoring of
  * the code.
  */
 template <class T>
-class pmt_scalar_value : public base
+class scalar_value : public base
 {
 public:
-    typedef std::shared_ptr<pmt_scalar_value> sptr;
-    static sptr make(const T value) { return std::make_shared<pmt_scalar_value<T>>(value); }
+    typedef std::shared_ptr<scalar_value> sptr;
+    static sptr make(const T value) { return std::make_shared<scalar_value<T>>(value); }
     static sptr from_buffer(const uint8_t* buf)
     {
-        return std::make_shared<pmt_scalar_value<T>>(buf);
+        return std::make_shared<scalar_value<T>>(buf);
     }
     static sptr from_pmt(const pmtf::Pmt* fb_pmt)
     {
-        return std::make_shared<pmt_scalar_value<T>>(fb_pmt);
+        return std::make_shared<scalar_value<T>>(fb_pmt);
     }
 
     void set_value(const T& val);
     T value();
     const T value() const;
 
-    pmt_scalar_value& operator=(const T& other) // copy assignment
+    scalar_value& operator=(const T& other) // copy assignment
     {
         set_value(other);
         return *this;
     }
-    pmt_scalar_value& operator=(const pmt_scalar_value& other)
+    scalar_value& operator=(const scalar_value& other)
     {
         if (this == &other) return *this;
         this->set_value(other.value());
@@ -62,31 +62,31 @@ public:
 
     flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
 
-    pmt_scalar_value(const T& val);
-    pmt_scalar_value(const uint8_t* buf);
-    pmt_scalar_value(const pmtf::Pmt* fb_pmt);
+    scalar_value(const T& val);
+    scalar_value(const uint8_t* buf);
+    scalar_value(const pmtf::Pmt* fb_pmt);
 
     bool is_scalar() const noexcept { return true; }
     void print(std::ostream& os) const { os << value(); }
     
 };
 
-// These structures allow us to see if a arbitrary type is a pmt_scalar_value
+// These structures allow us to see if a arbitrary type is a scalar_value
 // or not.
 template <class T>
 struct is_pmt_scalar_value : std::false_type {};
 
 template <class T>
-struct is_pmt_scalar_value<pmt_scalar_value<T>> : std::true_type {};
+struct is_pmt_scalar_value<scalar_value<T>> : std::true_type {};
 
 /**
- * @brief compare pmt_scalar_value against something else
+ * @brief compare scalar_value against something else
  *
  * Allow for comparisons against other pmt scalars and other types.
- * For example pmt_scalar_value<int>(4) == 4.0 will be true.
+ * For example scalar_value<int>(4) == 4.0 will be true.
  */
 template <class T, class U>
-bool operator==(const pmt_scalar_value<T>& x, const U& y) {
+bool operator==(const scalar_value<T>& x, const U& y) {
     if constexpr(std::is_same_v<T, U>)
         return x.value() == y;
     else if constexpr(is_pmt_scalar_value<U>::value)
@@ -114,36 +114,36 @@ template <> struct cpp_type<Data::ScalarComplex128> { using type=std::complex<do
 template <> struct cpp_type<Data::ScalarBool> { using type=bool; };
 
 /**
- * @brief "Print" out a pmt_scalar_value
+ * @brief "Print" out a scalar_value
  */
 template <class T>
-std::ostream& operator<<(std::ostream& os, const pmt_scalar_value<T>& value) {
+std::ostream& operator<<(std::ostream& os, const scalar_value<T>& value) {
     os << value;
     return os;
 }
 
 /**
- * @brief Wrapper class around a smart pointer to a pmt_scalar_value.
+ * @brief Wrapper class around a smart pointer to a scalar_value.
  *
  * This is the interface that should be used for dealing with scalar values.
  */
 template <class T>
-class pmt_scalar {
+class scalar {
 public:
-    using sptr = typename pmt_scalar_value<T>::sptr;
-    //! Construct a pmt_scalar from a scalar value
-    pmt_scalar(const T& val): d_ptr(pmt_scalar_value<T>::make(val)) {}
-    //! Construct a pmt_scalar from a pmt_scalar_value pointer.
-    pmt_scalar(sptr ptr):
+    using sptr = typename scalar_value<T>::sptr;
+    //! Construct a scalar from a scalar value
+    scalar(const T& val): d_ptr(scalar_value<T>::make(val)) {}
+    //! Construct a scalar from a scalar_value pointer.
+    scalar(sptr ptr):
         d_ptr(ptr) {}
     //! Copy constructor.
-    pmt_scalar(const pmt_scalar<T>& x):
+    scalar(const scalar<T>& x):
         d_ptr(x.d_ptr) {}
    
     //! Get at the smart pointer.
     sptr ptr() const { return d_ptr; }
     bool operator==(const T& val) const { return *d_ptr == val;}
-    bool operator==(const pmt_scalar<T>& val) const { return *d_ptr == *val.d_ptr; }
+    bool operator==(const scalar<T>& val) const { return *d_ptr == *val.d_ptr; }
     auto data_type() { return d_ptr->data_type(); }
     T value() const { return d_ptr->value(); }
 
@@ -153,7 +153,7 @@ public:
     T& operator*() const { return *d_ptr; }
     // Cast operators
     //! Cast to a T value.
-    //! Explicit means that the user must do something like T(pmt_scalar<T>(val));
+    //! Explicit means that the user must do something like T(scalar<T>(val));
     //! Implicit conversions can cause lots of problems, so we are avoiding them.
     explicit operator T() const { return d_ptr->value(); }
     //! Cast to another type
@@ -166,21 +166,21 @@ private:
 };
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const pmt_scalar<T>& value) {
+std::ostream& operator<<(std::ostream& os, const scalar<T>& value) {
     os << *(value.ptr());
     return os;
 }
 
 template <class T, Data dt>
-pmt_scalar<T> _get_pmt_scalar(const wrap& x) {
+scalar<T> _get_pmt_scalar(const wrap& x) {
     if constexpr(std::is_same_v<typename cpp_type<dt>::type, T>)
-        return pmt_scalar<T>(std::dynamic_pointer_cast<pmt_scalar_value<T>>(x.ptr()));
+        return scalar<T>(std::dynamic_pointer_cast<scalar_value<T>>(x.ptr()));
     else
         throw std::runtime_error("Cannot convert scalar types");
 }
 
 template <class T>
-pmt_scalar<T> get_pmt_scalar(const wrap& x) {
+scalar<T> get_scalar(const wrap& x) {
     // Make sure that this is the right type.
     switch(auto dt = x.ptr()->data_type()) {
         case Data::ScalarFloat32: return _get_pmt_scalar<T, Data::ScalarFloat32>(x);
@@ -202,13 +202,13 @@ pmt_scalar<T> get_pmt_scalar(const wrap& x) {
 }
 
 template <class T>
-T get_scalar(const wrap& x) {
-    return get_pmt_scalar<T>(x).ptr()->value();
+T get_scalar_value(const wrap& x) {
+    return get_scalar<T>(x).ptr()->value();
 }
 // Fix this later with SFINAE
 template <class T, Data dt>
 bool _can_be(const wrap& x) {
-    auto value = get_pmt_scalar<typename cpp_type<dt>::type>(x);
+    auto value = get_scalar<typename cpp_type<dt>::type>(x);
     return std::is_convertible_v<typename cpp_type<dt>::type, T>;
 }
 
@@ -268,15 +268,15 @@ T get_as(const wrap& x) {
 // Construct a wrap from a scalar type
 #define WrapConstruct(type) \
     template <> wrap::wrap<type>(const type& x);
-// Construct a wrap from a pmt_scalar
+// Construct a wrap from a scalar
 #define WrapConstructPmt(type) \
-    template <> wrap::wrap<pmt_scalar<type>>(const pmt_scalar<type>& x);
+    template <> wrap::wrap<scalar<type>>(const scalar<type>& x);
 
 #define Equals(type) \
     template <> bool operator==<type>(const wrap& x, const type& other);
 
 #define EqualsPmt(type) \
-    template <> bool operator==<pmt_scalar<type>>(const wrap& x, const pmt_scalar<type>& other);
+    template <> bool operator==<scalar<type>>(const wrap& x, const scalar<type>& other);
 
 #define Apply(func) \
 func(uint8_t) \
@@ -306,21 +306,21 @@ Apply(EqualsPmt)
 
 #define IMPLEMENT_PMT_SCALAR(datatype, fbtype)                      \
     template <>                                                     \
-    datatype pmt_scalar_value<datatype>::value()                          \
+    datatype scalar_value<datatype>::value()                          \
     {                                                               \
         auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());     \
         return pmt->data_as_Scalar##fbtype()->value();              \
     }                                                               \
                                                                     \
     template <>                                                     \
-    const datatype pmt_scalar_value<datatype>::value() const              \
+    const datatype scalar_value<datatype>::value() const              \
     {                                                               \
         auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());     \
         return pmt->data_as_Scalar##fbtype()->value();              \
     }                                                               \
                                                                     \
     template <>                                                     \
-    flatbuffers::Offset<void> pmt_scalar_value<datatype>::rebuild_data(   \
+    flatbuffers::Offset<void> scalar_value<datatype>::rebuild_data(   \
         flatbuffers::FlatBufferBuilder& fbb)                        \
     {                                                               \
         Scalar##fbtype##Builder sb(fbb);                            \
@@ -330,7 +330,7 @@ Apply(EqualsPmt)
     }                                                               \
                                                                     \
     template <>                                                     \
-    void pmt_scalar_value<datatype>::set_value(const datatype& val)       \
+    void scalar_value<datatype>::set_value(const datatype& val)       \
     {                                                               \
         Scalar##fbtype##Builder sb(_fbb);                           \
         sb.add_value(val);                                          \
@@ -339,14 +339,14 @@ Apply(EqualsPmt)
     }                                                               \
                                                                     \
     template <>                                                     \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const datatype& val)           \
+    scalar_value<datatype>::scalar_value(const datatype& val)           \
         : base(Data::Scalar##fbtype)                            \
     {                                                               \
         set_value(val);                                             \
     }                                                               \
                                                                     \
     template <>                                                     \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const uint8_t* buf)            \
+    scalar_value<datatype>::scalar_value(const uint8_t* buf)            \
         : base(Data::Scalar##fbtype)                            \
     {                                                               \
         auto data = GetPmt(buf)->data_as_Scalar##fbtype()->value(); \
@@ -354,33 +354,33 @@ Apply(EqualsPmt)
     }                                                               \
                                                                     \
     template <>                                                     \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const pmtf::Pmt* fb_pmt)       \
+    scalar_value<datatype>::scalar_value(const pmtf::Pmt* fb_pmt)       \
         : base(Data::Scalar##fbtype)                            \
     {                                                               \
         auto data = fb_pmt->data_as_Scalar##fbtype()->value();      \
         set_value(data);                                            \
     }                                                               \
                                                                     \
-    template class pmt_scalar_value<datatype>;
+    template class scalar_value<datatype>;
 
 
 #define IMPLEMENT_PMT_SCALAR_CPLX(datatype, fbtype)                    \
     template <>                                                        \
-    datatype pmt_scalar_value<datatype>::value()                             \
+    datatype scalar_value<datatype>::value()                             \
     {                                                                  \
         auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());        \
         return *((datatype*)(pmt->data_as_Scalar##fbtype()->value())); \
     }                                                                  \
                                                                        \
     template <>                                                        \
-    const datatype pmt_scalar_value<datatype>::value() const                 \
+    const datatype scalar_value<datatype>::value() const                 \
     {                                                                  \
         auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());        \
         return *((datatype*)(pmt->data_as_Scalar##fbtype()->value())); \
     }                                                                  \
                                                                        \
     template <>                                                        \
-    flatbuffers::Offset<void> pmt_scalar_value<datatype>::rebuild_data(      \
+    flatbuffers::Offset<void> scalar_value<datatype>::rebuild_data(      \
         flatbuffers::FlatBufferBuilder& fbb)                           \
     {                                                                  \
         Scalar##fbtype##Builder sb(fbb);                               \
@@ -390,7 +390,7 @@ Apply(EqualsPmt)
     }                                                                  \
                                                                        \
     template <>                                                        \
-    void pmt_scalar_value<datatype>::set_value(const datatype& val)          \
+    void scalar_value<datatype>::set_value(const datatype& val)          \
     {                                                                  \
         Scalar##fbtype##Builder sb(_fbb);                              \
         sb.add_value((fbtype*)&val);                                   \
@@ -399,14 +399,14 @@ Apply(EqualsPmt)
     }                                                                  \
                                                                        \
     template <>                                                        \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const datatype& val)              \
+    scalar_value<datatype>::scalar_value(const datatype& val)              \
         : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         set_value(val);                                                \
     }                                                                  \
                                                                        \
     template <>                                                        \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const uint8_t* buf)               \
+    scalar_value<datatype>::scalar_value(const uint8_t* buf)               \
         : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         auto data = GetPmt(buf)->data_as_Scalar##fbtype()->value();    \
@@ -414,7 +414,7 @@ Apply(EqualsPmt)
     }                                                                  \
                                                                        \
     template <>                                                        \
-    pmt_scalar_value<datatype>::pmt_scalar_value(const pmtf::Pmt* fb_pmt)          \
+    scalar_value<datatype>::scalar_value(const pmtf::Pmt* fb_pmt)          \
         : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         auto data = fb_pmt->data_as_Scalar##fbtype()->value();         \
@@ -422,6 +422,6 @@ Apply(EqualsPmt)
     }                                                                  \
                                                                        \
                                                                        \
-    template class pmt_scalar_value<datatype>;
+    template class scalar_value<datatype>;
 
 } // namespace pmtf

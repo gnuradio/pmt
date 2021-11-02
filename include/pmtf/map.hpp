@@ -29,8 +29,8 @@ easy to work with them.
 Can I just cut out the middle man and have the wrapper class be the main class?
 Then we don't need all of the static make functions.  It handles all of that for
 us.  Can I do this in a useful way?
-So I have a pmt base class and derive from that pmt_scalar, uniform vector, pmt_vector, and map.
-In the scalar case and uniform vector case I can just store it.  The pmt_vector would need to store
+So I have a pmt base class and derive from that scalar, uniform vector, vector, and map.
+In the scalar case and uniform vector case I can just store it.  The vector would need to store
 variants or pointers.
 1) pmt is pointer, classes are wrappers to make it convenient.
     Need one class and one wrapper for each type
@@ -39,7 +39,7 @@ variants or pointers.
 
 Let's start with polymorphism.
 I need the following set of classes.
-pmt_scalar
+scalar
     uniform_vector
     vector
     map
