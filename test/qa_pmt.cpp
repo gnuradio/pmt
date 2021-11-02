@@ -10,9 +10,9 @@
 
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
-#include <pmtf/pmtf_vector.hpp>
+#include <pmtf/vector.hpp>
 #include <pmtf/wrap.hpp>
 
 using namespace pmtf;
@@ -20,47 +20,47 @@ using namespace pmtf;
 // TEST(Pmt, BasicPmtTests)
 // {
 //     std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);
-//     auto x = pmt_scalar(cplx_val);
+//     auto x = scalar(cplx_val);
 
 //     EXPECT_EQ(x, cplx_val);
 //     EXPECT_EQ(x.data_type(), Data::ScalarComplex64);
 
 //     std::vector<int32_t> int_vec_val{ 5, 9, 23445, 63, -25 };
-//     auto int_pmt_vec = pmt_vector<int32_t>(int_vec_val);
+//     auto int_pmt_vec = vector<int32_t>(int_vec_val);
 //     EXPECT_EQ(int_pmt_vec, int_vec_val);
 //     EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorInt32);
 
 //     std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
-//     auto cf_pmt_vec = pmt_vector<std::complex<float>>(cf_vec_val);
+//     auto cf_pmt_vec = vector<std::complex<float>>(cf_vec_val);
 //     EXPECT_EQ(cf_pmt_vec, cf_vec_val);
 //     EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
 // }
 
 TEST(Pmt, PmtScalarValueTests)
 {
-    auto x = pmt_scalar_value<int>(4);
+    auto x = scalar_value<int>(4);
     EXPECT_EQ(x, 4);
-    pmt_scalar_value<int> y(4);
+    scalar_value<int> y(4);
     EXPECT_EQ(x, y);
     x = 5;
     EXPECT_EQ(x, 5.0);
     y = x;
     EXPECT_EQ(x, y);
-    pmt_scalar_value<int> z = 4;
+    scalar_value<int> z = 4;
     int a = x.value();
     EXPECT_EQ(a, 5.0);
 }
 
 TEST(Pmt, PmtScalarTests) {
-    auto x = pmt_scalar<int>(4);
+    auto x = scalar<int>(4);
     EXPECT_EQ(x, 4);
-    pmt_scalar<int> y(4);
+    scalar<int> y(4);
     EXPECT_EQ(x, y);
     x = 5;
     EXPECT_EQ(x, 5.0);
     y = x;
     EXPECT_EQ(x, y);
-    pmt_scalar<int> z = 4;
+    scalar<int> z = 4;
     int a = int(x);
     EXPECT_EQ(a, 5.0);
     float b = float(x);
@@ -77,14 +77,14 @@ TEST(Pmt, PmtVectorValueTests) {
 
 TEST(Pmt, PmtVectorTests) {
     // Init from values
-    auto x = pmt_vector<std::complex<float>>({{1, -1}, {2.1, 3.0}});
+    auto x = vector<std::complex<float>>({{1, -1}, {2.1, 3.0}});
     std::vector<std::complex<float>> y({{1, -1}, {2.1, 3.0}});
     // Do they equal each other
     EXPECT_EQ(x, y );
     // Init from vector
-    auto z =  pmt_vector<std::complex<float>>(y);
+    auto z =  vector<std::complex<float>>(y);
     // Copy constructor
-    auto a =  pmt_vector<std::complex<float>>(x);
+    auto a =  vector<std::complex<float>>(x);
     // Assignment operator
     a = x;
     // TODO: Add in Move contstructor
@@ -120,7 +120,7 @@ TEST(Pmt, PmtVectorTests) {
     // Lookup values in the PMT map and compare with what was put in there
     auto vv1 = map_pmt["key1"];
     std::cout << vv1 << std::endl;
-    EXPECT_EQ(get_pmt_scalar<std::complex<float>>(vv1), val1);
+    EXPECT_EQ(get_scalar<std::complex<float>>(vv1), val1);
 
     auto vv2 = map_pmt["key2"];
     EXPECT_EQ(vv2, val2);
@@ -129,7 +129,7 @@ TEST(Pmt, PmtVectorTests) {
 TEST(Pmt, PmtWrap)
 {
     wrap x = int8_t(4);
-    get_pmt_scalar<int8_t>(x);
+    get_scalar<int8_t>(x);
     get_scalar<int8_t>(x);
 }
 TEST(pmt, CanBe)
@@ -141,8 +141,8 @@ TEST(pmt, CanBe)
     assert(can_be<std::complex<double>>(x) == true);
     assert(can_be<bool>(x) == true);
     assert(can_be<std::string>(x) == false);
-    assert(can_be<pmt_scalar<int32_t>>(x) == true);
-    assert(can_be<pmt_scalar<int8_t>>(x) == true);
+    assert(can_be<scalar<int32_t>>(x) == true);
+    assert(can_be<scalar<int8_t>>(x) == true);
 }
 
 /*TEST(Pmt, VectorWrites)
@@ -152,7 +152,7 @@ TEST(pmt, CanBe)
         std::vector<std::complex<float>> cf_vec_val_modified{ { 4, 5 },
                                                               { 6, 7 },
                                                               { 8, 9 } };
-        auto cf_pmt_vec = pmt_vector(cf_vec_val);
+        auto cf_pmt_vec = vector(cf_vec_val);
         EXPECT_EQ(cf_pmt_vec, cf_vec_val);
         EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
 
@@ -165,7 +165,7 @@ TEST(pmt, CanBe)
     {
         std::vector<uint32_t> int_vec_val{ 1, 2, 3, 4, 5 };
         std::vector<uint32_t> int_vec_val_modified{ 6, 7, 8, 9, 10 };
-        auto int_pmt_vec = pmt_vector(int_vec_val);
+        auto int_pmt_vec = vector(int_vec_val);
         EXPECT_EQ(int_pmt_vec, int_vec_val);
         EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorUInt32);
 
@@ -180,8 +180,8 @@ TEST(pmt, CanBe)
 }
 
 TEST(Pmt, VectorWrapper) {
-    pmt_vector<uint32_t> x(10);
-    pmt_vector<uint32_t> y{1,2,3,4,6,7};
+    vector<uint32_t> x(10);
+    vector<uint32_t> y{1,2,3,4,6,7};
     std::vector<uint32_t> data{1,2,3,4,6,7};
     for (size_t i = 0; i < y.size(); i++) {
         EXPECT_EQ(y[i], data[i]);
@@ -202,25 +202,25 @@ TEST(Pmt, VectorWrapper) {
     }
 
     // Create from an std::vector
-    pmt_vector<uint32_t> x_vec(std::vector<uint32_t>{1,2,3,4,6,7});
+    vector<uint32_t> x_vec(std::vector<uint32_t>{1,2,3,4,6,7});
 
     // Check the other constructors
-    pmt_vector<uint32_t> vec1(4);
+    vector<uint32_t> vec1(4);
     EXPECT_EQ(vec1.size(), 4);
     for (auto& e: vec1)
         EXPECT_EQ(e, 0);
 
-    pmt_vector<uint32_t> vec2(4, 2);
+    vector<uint32_t> vec2(4, 2);
     for (auto& e: vec2)
         EXPECT_EQ(e, 2);
 
-    pmt_vector<uint32_t> vec3(data.begin(), data.end());
+    vector<uint32_t> vec3(data.begin(), data.end());
     EXPECT_EQ(vec3.size(), data.size());
     i = 0;
     for (auto& e: vec3)
         EXPECT_EQ(e, data[i++]);
 
-    pmt_vector<uint32_t> vec4(vec3);
+    vector<uint32_t> vec4(vec3);
     EXPECT_EQ(vec3.ptr(), vec4.ptr());
 }
 

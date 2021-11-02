@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/scalar.hpp>
 
 using namespace pmtf;
 
@@ -22,7 +22,7 @@ bool run_test(const int times, uint64_t nitems)
         #if 1
         for (uint64_t k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
-            auto value = pmt_scalar(k);
+            auto value = scalar(k);
 
             starting_map[key] = value;
         }
@@ -31,7 +31,7 @@ bool run_test(const int times, uint64_t nitems)
         auto d_in = map<std::string>::make(starting_map);
         for (int k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
-            auto value = pmt_scalar<int32_t>::make(k);
+            auto value = scalar<int32_t>::make(k);
 
             d_in->set(key,value);
         }
@@ -42,9 +42,9 @@ bool run_test(const int times, uint64_t nitems)
 
         for (int k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
-            auto value = pmt_scalar<int32_t>::make(k);
+            auto value = scalar<int32_t>::make(k);
 
-            if (std::static_pointer_cast<pmt_scalar<int32_t>>(d_out[key])->value() != k) {
+            if (std::static_pointer_cast<scalar<int32_t>>(d_out[key])->value() != k) {
                 valid = false;
             }
         }

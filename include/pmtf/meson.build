@@ -11,8 +11,8 @@ pmt_gen_h_dep = declare_dependency(sources : [pmt_gen_h])
 
 files = [
     'base.hpp',
-    'pmtf_scalar.hpp',
-    'pmtf_vector.hpp',
+    'scalar.hpp',
+    'vector.hpp',
     'string.hpp',
     'map.hpp',
     'wrap.hpp'

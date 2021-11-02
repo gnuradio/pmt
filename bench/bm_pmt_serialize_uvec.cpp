@@ -4,7 +4,7 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-#include <pmtf/pmtf_vector.hpp>
+#include <pmtf/vector.hpp>
 
 using namespace pmtf;
 
@@ -16,7 +16,7 @@ bool run_test(const int times, const std::vector<int32_t>& data)
     for (int i=0; i< times; i++)
     {
         sb.str(""); // reset channel to empty
-        // auto p1 = pmt_vector<int32_t>(data);
+        // auto p1 = vector<int32_t>(data);
         wrap p1 = data;
         p1.ptr()->serialize(sb);
         auto p2 = base::deserialize(sb);

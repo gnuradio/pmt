@@ -9,8 +9,8 @@
 #include <complex>
 
 #include <pmtf/base.hpp>
-#include <pmtf/pmtf_vector.hpp>
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/vector.hpp>
+#include <pmtf/scalar.hpp>
 
 using namespace pmtf;
 
@@ -80,10 +80,10 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 
 TYPED_TEST(PmtVectorFixture, PmtVectorNull)
 {
-    auto pmtv = pmt_vector<TypeParam>({});
+    auto pmtv = vector<TypeParam>({});
 
     // The following line fails inside of flatbuffers
-    auto pmtw = wrap(pmt_vector<TypeParam>({}));
+    auto pmtw = wrap(vector<TypeParam>({}));
 }
 
 TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
@@ -94,11 +94,11 @@ TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
         vec[i] = this->get_value(i);
     }
     // Init from std::vector
-    auto pmt_vec = pmt_vector<TypeParam>(vec);
+    auto pmt_vec = vector<TypeParam>(vec);
     EXPECT_EQ(pmt_vec == vec, true);
 
     // Copy Constructor
-    auto a = pmt_vector<TypeParam>(pmt_vec);
+    auto a = vector<TypeParam>(pmt_vec);
     EXPECT_EQ(a == vec, true);
     EXPECT_EQ(a == pmt_vec, true);
 
@@ -126,14 +126,14 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
         vec_squared[i] = vec[i] * vec[i];
     }
     // Init from std::vector
-    auto pmt_vec = pmt_vector<TypeParam>(vec);
+    auto pmt_vec = vector<TypeParam>(vec);
 
     for (auto& xx : pmt_vec) {
         xx *= xx;
     }
     EXPECT_EQ(pmt_vec == vec_squared, true);
 
-    pmt_vec = pmt_vector<TypeParam>(vec);
+    pmt_vec = vector<TypeParam>(vec);
     for (auto& xx : pmt_vec) {
         xx += xx;
     }
@@ -153,7 +153,7 @@ TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
     EXPECT_EQ(y == vec, true);
 
     // Try to cast as a scalar type
-    EXPECT_THROW(get_pmt_scalar<int8_t>(generic_pmt_obj), std::runtime_error);
+    EXPECT_THROW(get_scalar<int8_t>(generic_pmt_obj), std::runtime_error);
 }
 
 
@@ -170,7 +170,7 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
         }
     }
 
-    auto pmt_vec = pmt_vector(vec);
+    auto pmt_vec = vector(vec);
     for (auto i = 0; i < this->num_values_; i++) {
         if (i%7 == 2) {
             pmt_vec[i] = pmt_vec[i] + this->get_value(i);
@@ -183,12 +183,12 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
 TYPED_TEST(PmtVectorFixture, OtherConstructors) {
 
     // Check the other constructors
-    pmt_vector<TypeParam> vec1(4);
+    vector<TypeParam> vec1(4);
     EXPECT_EQ(vec1.size(), 4);
     for (auto& e: vec1)
         EXPECT_EQ(e, this->zero_value());
 
-    pmt_vector<TypeParam> vec2(4, this->nonzero_value());
+    vector<TypeParam> vec2(4, this->nonzero_value());
     for (auto& e: vec2)
         EXPECT_EQ(e, this->nonzero_value());
 
@@ -198,13 +198,13 @@ TYPED_TEST(PmtVectorFixture, OtherConstructors) {
         data[i] = this->get_value(i);
     }
 
-    pmt_vector<TypeParam> vec3(data.begin(), data.end());
+    vector<TypeParam> vec3(data.begin(), data.end());
     EXPECT_EQ(vec3.size(), data.size());
     size_t i = 0;
     for (auto& e: vec3)
         EXPECT_EQ(e, data[i++]);
 
-    pmt_vector<TypeParam> vec4(vec3);
+    vector<TypeParam> vec4(vec3);
     EXPECT_EQ(vec3.ptr(), vec4.ptr());
 }
 

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: LGPL-3.0
  *
  */
-#include <pmtf/pmtf_scalar.hpp>
+#include <pmtf/scalar.hpp>
 
 namespace pmtf {
 
@@ -26,22 +26,22 @@ IMPLEMENT_PMT_SCALAR_CPLX(std::complex<float>, Complex64)
 IMPLEMENT_PMT_SCALAR_CPLX(std::complex<double>, Complex128)
 
 #define WrapConstructImpl(type) \
-    template <> wrap::wrap<type>(const type& x) { d_ptr = pmt_scalar(x).ptr(); }
-// Construct a wrap from a pmt_scalar
+    template <> wrap::wrap<type>(const type& x) { d_ptr = scalar(x).ptr(); }
+// Construct a wrap from a scalar
 #define WrapConstructPmtImpl(type) \
-    template <> wrap::wrap<pmt_scalar<type>>(const pmt_scalar<type>& x) { d_ptr = x.ptr(); }
+    template <> wrap::wrap<scalar<type>>(const scalar<type>& x) { d_ptr = x.ptr(); }
 
 #define EqualsImpl(type) \
     template <> bool operator==<type>(const wrap& x, const type& other) { \
        if (can_be<type>(x)) {                                           \
-            auto value = get_pmt_scalar<type>(x);                       \
+            auto value = get_scalar<type>(x);                       \
             return x == other;                                          \
         } else                                                          \
             return false;                                               \
     }
 
 #define EqualsPmtImpl(type) \
-    template <> bool operator==<pmt_scalar<type>>(const wrap& x, const pmt_scalar<type>& other) { \
+    template <> bool operator==<scalar<type>>(const wrap& x, const scalar<type>& other) { \
         return x == other.value();  \
     }
 

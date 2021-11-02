@@ -8,8 +8,8 @@
 #pragma once
 
 #include <pmtf/base.hpp>
-//#include <pmtf/pmtf_vector.hpp>
-//#include <pmtf/pmtf_scalar.hpp>
+//#include <pmtf/vector.hpp>
+//#include <pmtf/scalar.hpp>
 
 namespace pmtf {
 
@@ -49,26 +49,26 @@ class wrap {
     /**
      * @ brief Construct a wrap from a std::vector.
      *
-     * Copy an std::vector into a pmt_vector.
+     * Copy an std::vector into a vector.
      * When we upgrade to c++20, allow for span.  That way it can be more types.
      */
     /*template <class T, class alloc>
     wrap(const std::vector<T, alloc>& x) {
-        auto value = pmt_vector(x);
+        auto value = vector(x);
         d_ptr = value.ptr();
     }*/
     
     /**
      * @ brief Construct a wrap from a "scalar" value.
      *
-     * A scalar is any type defined in pmtf_scalar.hpp.  (e.g. float)
+     * A scalar is any type defined in scalar.hpp.  (e.g. float)
      * Note that this is a catch all, and it will fail if, for example a std::deque
      * is passed in.
      * When we upgrade to c++20, use a concept to limit this constructor.
      */
     /*template <class T>
     wrap(const T& x) {
-        auto value = pmt_scalar(x);
+        auto value = scalar(x);
         d_ptr = value.ptr();  
     };*/
     wrap(base::sptr x): d_ptr(x) {}
@@ -102,7 +102,7 @@ bool operator!=(const wrap& x, const T& other) {
 template <class T>
 bool operator==(const wrap& x, const T& other) {
     if (can_be<T>(x)) {
-        auto value = get_pmt_scalar<T>(x);
+        auto value = get_scalar<T>(x);
         return x == other;
     } else
         return false;
@@ -119,9 +119,9 @@ bool operator!=(const wrap& x, const T& other) {
 //}
 
 /*template <class T>
-pmt_vector<T> get_vector(const wrap& x) {
+vector<T> get_vector(const wrap& x) {
     if (x.ptr()->is_vector())
-        return pmt_vector<T>(std::dynamic_pointer_cast<pmt_vector_value<T>>(x.ptr()));
+        return vector<T>(std::dynamic_pointer_cast<pmt_vector_value<T>>(x.ptr()));
     else
         throw std::runtime_error("Cannot cast pmt to vector<T>");
 }*/
@@ -152,8 +152,8 @@ std::ostream& operator<<(std::ostream& os, const wrap& x);
 
 How to handle a generic container?
 1) Have it hold a pmt ptr.  It has to dynamically ask anything it wants to know.
-2) We could do a hybrid pmt_vector class that takes in any pmt_vector_value.  Then I can cast a
-  pmt to a pmt_vector.  What would a pmt_vector iterator do?  You would still have to know the 
+2) We could do a hybrid vector class that takes in any pmt_vector_value.  Then I can cast a
+  pmt to a vector.  What would a vector iterator do?  You would still have to know the 
   type to do anything useful.
   
 
