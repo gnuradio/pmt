@@ -40,15 +40,15 @@ func(float) \
 func(double) \
 func(std::complex<float>)
 
-#define VectorWrapImpl(T) template <> pmt_wrap::pmt_wrap<std::vector<T>>(const std::vector<T>& x) \
+#define VectorWrapImpl(T) template <> wrap::wrap<std::vector<T>>(const std::vector<T>& x) \
     { d_ptr = pmt_vector(x).ptr(); }
-#define VectorWrapPmtImpl(T) template <> pmt_wrap::pmt_wrap<pmt_vector<T>>(const pmt_vector<T>& x) \
+#define VectorWrapPmtImpl(T) template <> wrap::wrap<pmt_vector<T>>(const pmt_vector<T>& x) \
     {                                                                                        \
         pmt_vector<T> val(x.begin(), x.end());                                               \
         d_ptr = val.ptr();                                                                   \
     }
 #define VectorEqualsImpl(T) \
-    template <> bool operator==<std::vector<T>>(const pmt_wrap& x, const std::vector<T>& other) {   \
+    template <> bool operator==<std::vector<T>>(const wrap& x, const std::vector<T>& other) {   \
         if (is_pmt_vector<T>(x)) {                                                                  \
             auto xx = get_pmt_vector<T>(x);                                                         \
             if (xx.size() == other.size())                                                          \
@@ -57,7 +57,7 @@ func(std::complex<float>)
         return false;                                                                               \
     }
 #define VectorEqualsPmtImpl(T) \
-    template <> bool operator==<pmt_vector<T>>(const pmt_wrap& x, const pmt_vector<T>& other) {     \
+    template <> bool operator==<pmt_vector<T>>(const wrap& x, const pmt_vector<T>& other) {     \
         if (is_pmt_vector<T>(x)) {                                                                  \
             auto xx = get_pmt_vector<T>(x);                                                         \
             if (xx.size() == other.size())                                                          \

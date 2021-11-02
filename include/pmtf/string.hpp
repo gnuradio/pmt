@@ -9,7 +9,7 @@
 
 #include <pmtf/pmtf_generated.h>
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_wrap.hpp>
+#include <pmtf/wrap.hpp>
 #include <complex>
 #include <iostream>
 #include <map>
@@ -19,21 +19,21 @@
 
 namespace pmtf {
 
-class pmt_string_value : public pmt_base
+class string_value : public pmt_base
 {
 public:
-    typedef std::shared_ptr<pmt_string_value> sptr;
+    typedef std::shared_ptr<string_value> sptr;
     static sptr make(const std::string& value)
     {
-        return std::make_shared<pmt_string_value>(value);
+        return std::make_shared<string_value>(value);
     }
     static sptr from_buffer(const uint8_t* buf)
     {
-        return std::make_shared<pmt_string_value>(buf);
+        return std::make_shared<string_value>(buf);
     }
     static sptr from_pmt(const pmtf::Pmt *fb_pmt)
     {
-        return std::make_shared<pmt_string_value>(fb_pmt);
+        return std::make_shared<string_value>(fb_pmt);
     }
 
     void set_value(const char* val);
@@ -52,28 +52,28 @@ public:
 
     flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
 
-    pmt_string_value(const std::string& val);
-    pmt_string_value(const uint8_t* buf);
-    pmt_string_value(const pmtf::Pmt *fb_pmt);
+    string_value(const std::string& val);
+    string_value(const uint8_t* buf);
+    string_value(const pmtf::Pmt *fb_pmt);
     void print(std::ostream& os) const { os << value(); }
 };
 
-class pmt_string {
+class string {
   public:
     using value_type = char;
     using reference = char&;
     using size_type = size_t;
-    using sptr = pmt_string_value::sptr;
-    pmt_string(const std::string& str):
-        d_ptr(pmt_string_value::make(str)) {}
-    pmt_string(const std::string& str, size_t pos, size_t len = std::string::npos):
-        d_ptr(pmt_string_value::make(std::string(str, pos, len))) {}
-    pmt_string(const char* s):
-        d_ptr(pmt_string_value::make(std::string(s))) {}
-    pmt_string(const char* s, size_t n):
-        d_ptr(pmt_string_value::make(std::string(s, n))) {}
+    using sptr = string_value::sptr;
+    string(const std::string& str):
+        d_ptr(string_value::make(str)) {}
+    string(const std::string& str, size_t pos, size_t len = std::string::npos):
+        d_ptr(string_value::make(std::string(str, pos, len))) {}
+    string(const char* s):
+        d_ptr(string_value::make(std::string(s))) {}
+    string(const char* s, size_t n):
+        d_ptr(string_value::make(std::string(s, n))) {}
 
-    pmt_string(sptr p):
+    string(sptr p):
         d_ptr(p) {}
 
     // TODO: Think about real iterators instead of pointers.
@@ -106,7 +106,7 @@ class pmt_string {
 
 // When we switch to c++20, make this a concept.
 template <class U>
-bool operator==(const pmt_string& x, const U& other) {
+bool operator==(const string& x, const U& other) {
     if (other.size() != x.size()) return false;
     auto my_val = x.begin();
     for (auto&& val : other) {
@@ -116,7 +116,7 @@ bool operator==(const pmt_string& x, const U& other) {
     return true;
 }
 
-inline bool operator==(const pmt_string& x, const char other[]) {
+inline bool operator==(const string& x, const char other[]) {
     size_t index = 0;
     while (other[index] != 0 && index < x.size()) {
         if (other[index] != x[index]) return false;
@@ -125,13 +125,13 @@ inline bool operator==(const pmt_string& x, const char other[]) {
     return index == x.size() || x[index] == 0;
 }
 
-inline std::ostream& operator<<(std::ostream& os, const pmt_string& value) {
+inline std::ostream& operator<<(std::ostream& os, const string& value) {
     for (auto& v: value)
         os << v;
     return os;
 }
 
-pmt_string get_pmt_string(const pmt_wrap& x);
+string get_string(const wrap& x);
 
 
 } // namespace pmtf

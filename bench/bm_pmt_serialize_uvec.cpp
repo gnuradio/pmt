@@ -17,7 +17,7 @@ bool run_test(const int times, const std::vector<int32_t>& data)
     {
         sb.str(""); // reset channel to empty
         // auto p1 = pmt_vector<int32_t>(data);
-        pmt_wrap p1 = data;
+        wrap p1 = data;
         p1.ptr()->serialize(sb);
         auto p2 = pmt_base::deserialize(sb);
         if (!(*(p1.ptr()) == *p2))

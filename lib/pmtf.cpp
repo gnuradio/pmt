@@ -7,7 +7,7 @@
  */
 #include <pmtf/pmtf.hpp>
 #include <pmtf/pmtf_scalar.hpp>
-#include <pmtf/pmtf_string.hpp>
+#include <pmtf/string.hpp>
 #include <pmtf/pmtf_vector.hpp>
 #include <map>
 
@@ -34,7 +34,7 @@ pmt_base::sptr pmt_base::from_pmt(const pmtf::Pmt* fb_pmt)
 {
     switch (fb_pmt->data_type()) {
     case Data::PmtString:
-        return std::static_pointer_cast<pmt_base>(pmt_string_value::from_pmt(fb_pmt));
+        return std::static_pointer_cast<pmt_base>(string_value::from_pmt(fb_pmt));
     case Data::ScalarComplex64:
         return std::static_pointer_cast<pmt_base>(
             pmt_scalar_value<std::complex<float>>::from_pmt(fb_pmt));

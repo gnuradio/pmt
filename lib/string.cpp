@@ -5,57 +5,57 @@
  * SPDX-License-Identifier: LGPL-3.0
  *
  */
-#include <pmtf/pmtf_string.hpp>
+#include <pmtf/string.hpp>
 #include <map>
 
 namespace pmtf {
 
-flatbuffers::Offset<void> pmt_string_value::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
+flatbuffers::Offset<void> string_value::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
 {
     // fbb.Reset();
     return CreatePmtStringDirect(fbb, value().c_str()).Union();
 }
 
 
-void pmt_string_value::set_value(const char* val)
+void string_value::set_value(const char* val)
 {
     _data = CreatePmtStringDirect(_fbb, val).Union();
     build();
 }
 
-void pmt_string_value::set_value(const std::string& val)
+void string_value::set_value(const std::string& val)
 {
     _data = CreatePmtStringDirect(_fbb, val.c_str()).Union();
     build();
 }
 
-pmt_string_value::pmt_string_value(const std::string& val)
+string_value::string_value(const std::string& val)
     : pmt_base(Data::PmtString)
 {
     set_value(val);
 }
 
-pmt_string_value::pmt_string_value(const uint8_t *buf)
+string_value::string_value(const uint8_t *buf)
     : pmt_base(Data::PmtString)
 {
     auto data = GetPmt(buf)->data_as_PmtString()->value();
     set_value(*((const std::string*)data));
 }
 
-pmt_string_value::pmt_string_value(const pmtf::Pmt* fb_pmt)
+string_value::string_value(const pmtf::Pmt* fb_pmt)
     : pmt_base(Data::PmtString)
 {
     auto data = fb_pmt->data_as_PmtString()->value();
     set_value(data->c_str());
 }
 
-std::string pmt_string_value::value() const
+std::string string_value::value() const
 {
     auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());
     return std::string(pmt->data_as_PmtString()->value()->str());
 }
 
-char* pmt_string_value::writable_elements()                                 
+char* string_value::writable_elements()                                 
 {                                                                                   
     auto pmt =                                                                      
         GetMutablePmt(buffer_pointer() + 4); /* assuming size prefix is 32 bit */   
@@ -65,25 +65,25 @@ char* pmt_string_value::writable_elements()
     return (char*)(mutable_obj); /* hacky cast */                               
 }                                                                                   
 
-const char* pmt_string_value::elements() const                                
+const char* string_value::elements() const                                
 {                                                                                 
     auto pmt = GetSizePrefixedPmt(_buf);                                          
     auto fb_vec = pmt->data_as_PmtString()->value();                         
     return (const char*)(fb_vec->Data());                                           
 }         
 
-pmt_string get_pmt_string(const pmt_wrap& x) {
+string get_string(const wrap& x) {
     // Make sure that this is the right type.
     switch(x.ptr()->data_type()) {
         case Data::PmtString:
-             return pmt_string(std::dynamic_pointer_cast<pmt_string_value>(x.ptr()));
+             return string(std::dynamic_pointer_cast<string_value>(x.ptr()));
         default:
             throw std::runtime_error("Cannot convert non string pmt.");
     }
 }
 
-template <> pmt_wrap::pmt_wrap<std::string>(const std::string& x) { d_ptr = pmt_string(x).ptr(); }
-template <> pmt_wrap::pmt_wrap<pmt_string>(const pmt_string& x) { d_ptr = x.ptr(); }
-// template <> pmt_wrap::pmt_wrap<char *>(const char *x) { d_ptr = pmt_string(x).ptr(); }
+template <> wrap::wrap<std::string>(const std::string& x) { d_ptr = string(x).ptr(); }
+template <> wrap::wrap<string>(const string& x) { d_ptr = x.ptr(); }
+// template <> wrap::wrap<char *>(const char *x) { d_ptr = string(x).ptr(); }
 
 } // namespace pmtf

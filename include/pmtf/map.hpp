@@ -17,7 +17,7 @@
 #include <vector>
 
 #include <pmtf/pmtf.hpp>
-#include <pmtf/pmtf_wrap.hpp>
+#include <pmtf/wrap.hpp>
 
 // What if this was just a map?
 // Then I wouldn't have a serialize function in it. and it wouldn't be derived from pmt_base.
@@ -29,7 +29,7 @@ easy to work with them.
 Can I just cut out the middle man and have the wrapper class be the main class?
 Then we don't need all of the static make functions.  It handles all of that for
 us.  Can I do this in a useful way?
-So I have a pmt base class and derive from that pmt_scalar, uniform vector, pmt_vector, and pmt_map.
+So I have a pmt base class and derive from that pmt_scalar, uniform vector, pmt_vector, and map.
 In the scalar case and uniform vector case I can just store it.  The pmt_vector would need to store
 variants or pointers.
 1) pmt is pointer, classes are wrappers to make it convenient.
@@ -51,28 +51,28 @@ I need a generator class that can produce any one of them.
 namespace pmtf {
 
 template <class T>
-class pmt_map : public pmt_base
+class map : public pmt_base
 {
 public:
     using key_type = std::string;
-    using mapped_type = pmt_wrap;
+    using mapped_type = wrap;
     using value_type = std::pair<const key_type, mapped_type>;
     using reference = value_type&;
     using const_reference = const value_type&;
-    using map_type = std::map<T, pmt_wrap>;
+    using map_type = std::map<T, wrap>;
 
-    typedef std::shared_ptr<pmt_map> sptr;
+    typedef std::shared_ptr<map> sptr;
     static sptr make(const map_type& val)
     {
-        return std::make_shared<pmt_map<T>>(val);
+        return std::make_shared<map<T>>(val);
     }
     static sptr from_buffer(const uint8_t* buf, size_t size)
     {
-        return std::make_shared<pmt_map<T>>(buf, size);
+        return std::make_shared<map<T>>(buf, size);
     }
     static sptr from_pmt(const pmtf::Pmt* fb_pmt)
     {
-        return std::make_shared<pmt_map<T>>(fb_pmt);
+        return std::make_shared<map<T>>(fb_pmt);
     }
 
     /**************************************************************************
@@ -84,39 +84,39 @@ public:
      *
      * @param
      */
-    pmt_map();
+    map();
 
     /**
      * @brief Construct a new pmt map object from a std::map
      *
      * @param val
      */
-    pmt_map(const map_type& val);
+    map(const map_type& val);
     /**
-     * @brief Construct a new pmt map object from a pmt_map
+     * @brief Construct a new pmt map object from a map
      *
      * @param val
      */
-    pmt_map(const pmt_map& val);
+    map(const map& val);
     /**
      * @brief Construct a new pmt map object from a serialized flatbuffer
      *
      * @param buf
      * @param size
      */
-    pmt_map(const uint8_t* buf, size_t size);
+    map(const uint8_t* buf, size_t size);
     /**
      * @brief Construct a new pmt map object from a flatbuffers interpreted Pmt object
      *
      * @param fb_pmt
      */
-    pmt_map(const pmtf::Pmt* fb_pmt);
+    map(const pmtf::Pmt* fb_pmt);
 
     /**************************************************************************
     * Copy Assignment
     **************************************************************************/
-    pmt_map& operator=(const pmt_map& other);
-    pmt_map& operator=(pmt_map&& other) noexcept;
+    map& operator=(const map& other);
+    map& operator=(map&& other) noexcept;
 
     /**************************************************************************
     * Element Access
@@ -169,9 +169,9 @@ private:
 
 };
 
-/*pmt_map<std::string> get_map(const pmt_wrap& x) {
+/*map<std::string> get_map(const wrap& x) {
     if (x.ptr()->data_type() == Data::PmtMap)
-        return pmt_map<std::string>(std::dynamic_pointer_cast<pmt_map<std::string>>(x.ptr()));
+        return map<std::string>(std::dynamic_pointer_cast<map<std::string>>(x.ptr()));
     else
         throw std::runtime_error("Cannot convert to map");
 }*/
