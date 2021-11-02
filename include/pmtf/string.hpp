@@ -8,7 +8,7 @@
 #pragma once
 
 #include <pmtf/pmtf_generated.h>
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/wrap.hpp>
 #include <complex>
 #include <iostream>
@@ -19,7 +19,7 @@
 
 namespace pmtf {
 
-class string_value : public pmt_base
+class string_value : public base
 {
 public:
     typedef std::shared_ptr<string_value> sptr;

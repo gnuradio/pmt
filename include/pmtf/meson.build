@@ -10,7 +10,7 @@ pmt_gen_h = custom_target('flatc-output',
 pmt_gen_h_dep = declare_dependency(sources : [pmt_gen_h])
 
 files = [
-    'pmtf.hpp',
+    'base.hpp',
     'pmtf_scalar.hpp',
     'pmtf_vector.hpp',
     'string.hpp',

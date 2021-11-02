@@ -7,14 +7,14 @@ namespace pmtf {
 
 template <>
 map<std::string>::map() : 
-    pmt_base(Data::MapString)
+    base(Data::MapString)
 {
     // Don't need anything here.
 }
 
 template <>
 map<std::string>::map(const std::map<std::string, wrap>& val) : 
-    pmt_base(Data::MapString), 
+    base(Data::MapString), 
     _map(val) 
 {
     // Don't need anything here.
@@ -22,7 +22,7 @@ map<std::string>::map(const std::map<std::string, wrap>& val) :
 
 template <>
 map<std::string>::map(const uint8_t* buf, size_t size):
-    pmt_base(Data::MapString)
+    base(Data::MapString)
 {
     set_buffer(buf, size);
     // Possibly make this conversion lazy.
@@ -30,7 +30,7 @@ map<std::string>::map(const uint8_t* buf, size_t size):
     auto entries = pmt->data_as_MapString()->entries();
     for (size_t k=0; k<entries->size(); k++)
     {
-        _map[entries->Get(k)->key()->str()] = pmt_base::from_pmt(entries->Get(k)->value());       
+        _map[entries->Get(k)->key()->str()] = base::from_pmt(entries->Get(k)->value());       
     }
 }
 

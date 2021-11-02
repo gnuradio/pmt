@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 //#include <pmtf/pmtf_vector.hpp>
 //#include <pmtf/pmtf_scalar.hpp>
 
@@ -71,13 +71,13 @@ class wrap {
         auto value = pmt_scalar(x);
         d_ptr = value.ptr();  
     };*/
-    wrap(pmt_base::sptr x): d_ptr(x) {}
+    wrap(base::sptr x): d_ptr(x) {}
     //template <class T>
     //wrap(const std::map<std::string, T>& x);
-    operator typename pmt_base::sptr() const { return d_ptr; }
-    typename pmt_base::sptr ptr() const { return d_ptr; }
+    operator typename base::sptr() const { return d_ptr; }
+    typename base::sptr ptr() const { return d_ptr; }
   private:
-        pmt_base::sptr d_ptr;
+        base::sptr d_ptr;
 };
 
 // This needs to be specialized in each of the other header files.

@@ -5,7 +5,7 @@
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
 #include <pmtf/pmtf_scalar.hpp>
 

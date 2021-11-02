@@ -18,12 +18,12 @@
 
 namespace pmtf {
 
-class pmt_base : public std::enable_shared_from_this<pmt_base>
+class base : public std::enable_shared_from_this<base>
 {
 public:
-    typedef std::shared_ptr<pmt_base> sptr;
+    typedef std::shared_ptr<base> sptr;
 
-    virtual ~pmt_base() {}
+    virtual ~base() {}
 
     Data data_type() const { return _data_type; };
     virtual flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb) = 0;
@@ -88,7 +88,7 @@ public:
         memcpy(&_vec_buf[0], data, len);
     }
 
-    bool operator==(const pmt_base& other)
+    bool operator==(const base& other)
     {
         auto eq_types = (data_type() == other.data_type());
         auto eq_size = (size() == other.size());
@@ -102,7 +102,7 @@ public:
     virtual void print(std::ostream& os) const = 0;
 
 protected:
-    pmt_base(Data data_type) : _data_type(data_type){};
+    base(Data data_type) : _data_type(data_type){};
     virtual void serialize_setup() {}
     Data _data_type;
     flatbuffers::FlatBufferBuilder _fbb;
@@ -115,7 +115,7 @@ protected:
     // PmtBuilder _builder;
 };
 
-typedef pmt_base::sptr pmt_sptr;
+typedef base::sptr pmt_sptr;
 
 template <Data T>
 struct cpp_type {

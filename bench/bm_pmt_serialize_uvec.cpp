@@ -19,7 +19,7 @@ bool run_test(const int times, const std::vector<int32_t>& data)
         // auto p1 = pmt_vector<int32_t>(data);
         wrap p1 = data;
         p1.ptr()->serialize(sb);
-        auto p2 = pmt_base::deserialize(sb);
+        auto p2 = base::deserialize(sb);
         if (!(*(p1.ptr()) == *p2))
             valid = false;
     }

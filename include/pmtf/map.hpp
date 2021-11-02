@@ -16,14 +16,14 @@
 #include <typeinfo>
 #include <vector>
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/wrap.hpp>
 
 // What if this was just a map?
-// Then I wouldn't have a serialize function in it. and it wouldn't be derived from pmt_base.
+// Then I wouldn't have a serialize function in it. and it wouldn't be derived from base.
 /*
 What should the class hierarchy be???
-Presently we have a pmt_base and then several classes dervice from that.
+Presently we have a base and then several classes dervice from that.
 I then define wrappers around pointers to those classes that make it 
 easy to work with them.
 Can I just cut out the middle man and have the wrapper class be the main class?
@@ -51,7 +51,7 @@ I need a generator class that can produce any one of them.
 namespace pmtf {
 
 template <class T>
-class map : public pmt_base
+class map : public base
 {
 public:
     using key_type = std::string;

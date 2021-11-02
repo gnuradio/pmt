@@ -17,14 +17,14 @@
 #include <typeinfo>
 #include <vector>
 
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/wrap.hpp>
 
 namespace pmtf {
 
 
 template <class T>
-class pmt_vector_value : public pmt_base
+class pmt_vector_value : public base
 {
 public:
     typedef std::shared_ptr<pmt_vector_value> sptr;
@@ -185,7 +185,7 @@ std::ostream& operator<<(std::ostream& os, const pmt_vector<T>& value) {
     os << "]";
     return os;
 }
-typedef std::function<std::shared_ptr<pmt_base>(uint8_t*)> pmt_from_buffer_function;
+typedef std::function<std::shared_ptr<base>(uint8_t*)> pmt_from_buffer_function;
 
 template <> struct cpp_type<Data::VectorInt8> { using type=int8_t; };
 template <> struct cpp_type<Data::VectorInt16> { using type=int16_t; };
@@ -321,14 +321,14 @@ Apply(VectorEqualsPmt)
                                                                                       \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const std::vector<datatype>& val)                \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         set_value(val);                                                               \
     }                                                                                 \
                                                                                       \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const datatype* data, size_t len)                \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         set_value(data, len);                                                         \
     }                                                                                 \
@@ -350,14 +350,14 @@ Apply(VectorEqualsPmt)
     }                                                                                 \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const pmt_vector_value<datatype>& val)                \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         set_value(val.elements(), val.size());                                        \
     }                                                                                 \
                                                                                       \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const uint8_t* buf)                              \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         auto data = GetPmt(buf)->data_as_Vector##fbtype()->value();                   \
         size_t len = data->size();                                                    \
@@ -366,7 +366,7 @@ Apply(VectorEqualsPmt)
                                                                                       \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const pmtf::Pmt* fb_pmt)                         \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         auto data = fb_pmt->data_as_Vector##fbtype()->value();                        \
         size_t len = data->size();                                                    \
@@ -471,19 +471,19 @@ Apply(VectorEqualsPmt)
     }                                                                                   \
     template <>                                                                         \
     pmt_vector_value<datatype>::pmt_vector_value(const std::vector<datatype>& val)                  \
-        : pmt_base(Data::Vector##fbtype)                                                \
+        : base(Data::Vector##fbtype)                                                \
     {                                                                                   \
         set_value(val);                                                                 \
     }                                                                                   \
     template <>                                                                         \
     pmt_vector_value<datatype>::pmt_vector_value(const datatype* data, size_t len)                  \
-        : pmt_base(Data::Vector##fbtype)                                                \
+        : base(Data::Vector##fbtype)                                                \
     {                                                                                   \
         set_value(data, len);                                                           \
     }                                                                                   \
     template <>                                                                         \
     pmt_vector_value<datatype>::pmt_vector_value(const uint8_t* buf)                                \
-        : pmt_base(Data::Vector##fbtype)                                                \
+        : base(Data::Vector##fbtype)                                                \
     {                                                                                   \
         auto data = GetPmt(buf)->data_as_Vector##fbtype()->value();                     \
         size_t len = data->size();                                                      \
@@ -491,13 +491,13 @@ Apply(VectorEqualsPmt)
     }                                                                                   \
     template <>                                                                       \
     pmt_vector_value<datatype>::pmt_vector_value(const pmt_vector_value<datatype>& val)                \
-        : pmt_base(Data::Vector##fbtype)                                              \
+        : base(Data::Vector##fbtype)                                              \
     {                                                                                 \
         set_value(val.elements(), val.size());                                        \
     }                                                                                 \
     template <>                                                                         \
     pmt_vector_value<datatype>::pmt_vector_value(const pmtf::Pmt* fb_pmt)                           \
-        : pmt_base(Data::Vector##fbtype)                                                \
+        : base(Data::Vector##fbtype)                                                \
     {                                                                                   \
         auto data = fb_pmt->data_as_Vector##fbtype()->value();                          \
         size_t len = data->size();                                                      \

@@ -8,7 +8,7 @@
 #pragma once
 
 #include <pmtf/pmtf_generated.h>
-#include <pmtf/pmtf.hpp>
+#include <pmtf/base.hpp>
 #include <pmtf/wrap.hpp>
 #include <complex>
 #include <ostream>
@@ -30,7 +30,7 @@ namespace pmtf {
  * the code.
  */
 template <class T>
-class pmt_scalar_value : public pmt_base
+class pmt_scalar_value : public base
 {
 public:
     typedef std::shared_ptr<pmt_scalar_value> sptr;
@@ -340,14 +340,14 @@ Apply(EqualsPmt)
                                                                     \
     template <>                                                     \
     pmt_scalar_value<datatype>::pmt_scalar_value(const datatype& val)           \
-        : pmt_base(Data::Scalar##fbtype)                            \
+        : base(Data::Scalar##fbtype)                            \
     {                                                               \
         set_value(val);                                             \
     }                                                               \
                                                                     \
     template <>                                                     \
     pmt_scalar_value<datatype>::pmt_scalar_value(const uint8_t* buf)            \
-        : pmt_base(Data::Scalar##fbtype)                            \
+        : base(Data::Scalar##fbtype)                            \
     {                                                               \
         auto data = GetPmt(buf)->data_as_Scalar##fbtype()->value(); \
         set_value(data);                                            \
@@ -355,7 +355,7 @@ Apply(EqualsPmt)
                                                                     \
     template <>                                                     \
     pmt_scalar_value<datatype>::pmt_scalar_value(const pmtf::Pmt* fb_pmt)       \
-        : pmt_base(Data::Scalar##fbtype)                            \
+        : base(Data::Scalar##fbtype)                            \
     {                                                               \
         auto data = fb_pmt->data_as_Scalar##fbtype()->value();      \
         set_value(data);                                            \
@@ -400,14 +400,14 @@ Apply(EqualsPmt)
                                                                        \
     template <>                                                        \
     pmt_scalar_value<datatype>::pmt_scalar_value(const datatype& val)              \
-        : pmt_base(Data::Scalar##fbtype)                               \
+        : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         set_value(val);                                                \
     }                                                                  \
                                                                        \
     template <>                                                        \
     pmt_scalar_value<datatype>::pmt_scalar_value(const uint8_t* buf)               \
-        : pmt_base(Data::Scalar##fbtype)                               \
+        : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         auto data = GetPmt(buf)->data_as_Scalar##fbtype()->value();    \
         set_value(*((const datatype*)data));                           \
@@ -415,7 +415,7 @@ Apply(EqualsPmt)
                                                                        \
     template <>                                                        \
     pmt_scalar_value<datatype>::pmt_scalar_value(const pmtf::Pmt* fb_pmt)          \
-        : pmt_base(Data::Scalar##fbtype)                               \
+        : base(Data::Scalar##fbtype)                               \
     {                                                                  \
         auto data = fb_pmt->data_as_Scalar##fbtype()->value();         \
         set_value(*((const datatype*)data));                           \
