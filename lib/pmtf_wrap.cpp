@@ -16,5 +16,7 @@ std::ostream& operator<<(std::ostream& os, const pmt_wrap& x) {
 }
 
 template <> pmt_wrap::pmt_wrap<decltype(nullptr)>(const decltype(nullptr)& x) { d_ptr = nullptr; }
-
+template <> bool operator==<decltype(nullptr)>(const pmt_wrap& x, const decltype(nullptr)& other) {
+        return false;  
+    }
 }
