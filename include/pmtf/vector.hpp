@@ -249,6 +249,11 @@ vector<T> get_vector(const wrap& x) {
 }
 
 template <class T>
+auto get_vector_value(const wrap& x) {
+    return get_vector<T>(x).ptr()->value();
+}
+
+template <class T>
 bool is_pmt_vector(const wrap& x) {
     return x.ptr()->data_type() == pmt_vector_type<T>();
 }

@@ -50,68 +50,84 @@ I need a generator class that can produce any one of them.
 
 namespace pmtf {
 
+
 template <class T>
-class map : public base
+class map_value : public base
 {
 public:
-    using key_type = std::string;
-    using mapped_type = wrap;
-    using value_type = std::pair<const key_type, mapped_type>;
-    using reference = value_type&;
-    using const_reference = const value_type&;
     using map_type = std::map<T, wrap>;
-
-    typedef std::shared_ptr<map> sptr;
+    typedef std::shared_ptr<map_value> sptr;
     static sptr make(const map_type& val)
     {
-        return std::make_shared<map<T>>(val);
+        return std::make_shared<map_value<T>>(val);
     }
     static sptr from_buffer(const uint8_t* buf, size_t size)
     {
-        return std::make_shared<map<T>>(buf, size);
+        return std::make_shared<map_value<T>>(buf, size);
     }
-    static sptr from_pmt(const pmtf::Pmt* fb_pmt)
-    {
-        return std::make_shared<map<T>>(fb_pmt);
-    }
+    // static sptr from_pmt(const pmtf::Pmt* fb_pmt)
+    // {
+    //     return std::make_shared<map_value<T>>(fb_pmt);
+    // }
 
     /**************************************************************************
     * Constructors
     **************************************************************************/
 
-    /**
-     * @brief Construct a new pmt map object that is empty
-     *
-     * @param
-     */
-    map();
+    map_value();
+    map_value(const map_type& val);
+    map_value(const map_value& val);
+    map_value(const uint8_t* buf, size_t size);
+    // map_value(const pmtf::Pmt* fb_pmt);
 
-    /**
-     * @brief Construct a new pmt map object from a std::map
-     *
-     * @param val
-     */
-    map(const map_type& val);
-    /**
-     * @brief Construct a new pmt map object from a map
-     *
-     * @param val
-     */
-    map(const map& val);
-    /**
-     * @brief Construct a new pmt map object from a serialized flatbuffer
-     *
-     * @param buf
-     * @param size
-     */
-    map(const uint8_t* buf, size_t size);
-    /**
-     * @brief Construct a new pmt map object from a flatbuffers interpreted Pmt object
-     *
-     * @param fb_pmt
-     */
-    map(const pmtf::Pmt* fb_pmt);
+    flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
 
+    void print(std::ostream& os) const {
+        os << "{";
+        for (const auto& [k, v]: _map) {
+            os << k << ": " << v << ", "; 
+        }
+        os << "}";
+    } 
+
+    map_type& value() { return _map; }
+private:
+    // This stores the actual data.
+    map_type _map;
+
+    void fill_flatbuffer();
+    virtual void serialize_setup();
+
+
+};
+
+template <class T>
+class map {
+public:
+    using map_type = std::map<T, wrap>;
+    using key_type = T;
+    using mapped_type = wrap;
+    using value_type = std::pair<const key_type, mapped_type>;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    
+    using sptr = typename map_value<T>::sptr;
+    map() : d_ptr(map_value<T>::make({})) {}
+    //! Construct a map from a std::map
+    map(const std::map<T,wrap>& val): d_ptr(map_value<T>::make(val)) {}
+    //! Construct a map from a map_value pointer.
+    map(sptr ptr):
+        d_ptr(ptr) {}
+    //! Copy constructor.
+    map(const map<T>& x):
+        d_ptr(x.d_ptr) {}
+   
+    //! Get at the smart pointer.
+    sptr ptr() const { return d_ptr; }
+    // bool operator==(const map<T>& val) const { return *d_ptr == *val.d_ptr; }
+    auto data_type() { return d_ptr->data_type(); }
+    auto value() const { return d_ptr->value(); }
+   
     /**************************************************************************
     * Copy Assignment
     **************************************************************************/
@@ -128,46 +144,45 @@ public:
     /**************************************************************************
     * Iterators
     **************************************************************************/
-    typename map_type::iterator begin() noexcept { return _map.begin(); }
-    typename map_type::const_iterator begin() const noexcept { return _map.begin(); }
+    typename map_type::iterator begin() noexcept { return d_ptr->value().begin(); }
+    typename map_type::const_iterator begin() const noexcept { return d_ptr->value().begin(); }
     //typename std::map<T, pmt_sptr>::const_iterator begin() const noexcept { return _map.begin(); }
-    typename map_type::iterator end() noexcept { return _map.end(); }
-    typename map_type::const_iterator end() const noexcept { return _map.end(); }
+    typename map_type::iterator end() noexcept { return d_ptr->value().end(); }
+    typename map_type::const_iterator end() const noexcept { return d_ptr->value().end(); }
     //typename const std::map<T, pmt_sptr>::iterator end() const noexcept { return _map.end(); }
 
     /**************************************************************************
     * Capacity
     **************************************************************************/
-    bool empty() const noexcept { return _map.empty(); }
-    size_t size() const noexcept { return _map.size(); }
-    size_t max_size() const noexcept { return _map.max_size(); }
+    bool empty() const noexcept { return d_ptr->value().empty(); }
+    size_t size() const noexcept { return d_ptr->value().size(); }
+    size_t max_size() const noexcept { return d_ptr->value().max_size(); }
 
     /**************************************************************************
     * Modifiers
     **************************************************************************/
     
 
-
-    flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
-
-    void print(std::ostream& os) const {
-        os << "{";
-        for (const auto& [k, v]: *this) {
-            os << k << ": " << v << ", "; 
-        }
-        os << "}";
-    } 
-
-
 private:
-    // This stores the actual data.
-    map_type _map;
-
-    void fill_flatbuffer();
-    virtual void serialize_setup();
-
-
+    sptr d_ptr;
 };
+
+
+template<class T>
+map<T> get_map(const wrap& x) {
+    // Make sure that this is the right type.
+    switch(x.ptr()->data_type()) {
+        case Data::MapString :
+             return map<T>(std::dynamic_pointer_cast<map_value<T>>(x.ptr()));
+        default:
+            throw std::runtime_error("Cannot convert non string keyed pmt map.");
+    }
+}
+
+template <class T>
+auto get_map_value(const wrap& x) {
+    return get_map<T>(x).ptr()->value();
+}
 
 /*map<std::string> get_map(const wrap& x) {
     if (x.ptr()->data_type() == Data::PmtMap)
