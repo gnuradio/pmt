@@ -6,14 +6,14 @@
 namespace pmtf {
 
 template <>
-map<std::string>::map() : 
+map_value<std::string>::map_value() : 
     base(Data::MapString)
 {
     // Don't need anything here.
 }
 
 template <>
-map<std::string>::map(const std::map<std::string, wrap>& val) : 
+map_value<std::string>::map_value(const map_type& val) : 
     base(Data::MapString), 
     _map(val) 
 {
@@ -21,7 +21,7 @@ map<std::string>::map(const std::map<std::string, wrap>& val) :
 }
 
 template <>
-map<std::string>::map(const uint8_t* buf, size_t size):
+map_value<std::string>::map_value(const uint8_t* buf, size_t size):
     base(Data::MapString)
 {
     set_buffer(buf, size);
@@ -35,19 +35,19 @@ map<std::string>::map(const uint8_t* buf, size_t size):
 }
 
 template <>
-flatbuffers::Offset<void> map<std::string>::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
+flatbuffers::Offset<void> map_value<std::string>::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
 {
     throw std::runtime_error("This should not get called");
 }
 
 template <>
-wrap& map<std::string>::operator[](const map::key_type& key)
+wrap& map<std::string>::operator[](const std::string& key)
 {
-    return _map[key];
+    return this->d_ptr->value()[key];
 }
 
 template <>
-void map<std::string>::fill_flatbuffer()
+void map_value<std::string>::fill_flatbuffer()
 {
     _fbb.Reset();
     std::vector<flatbuffers::Offset<MapEntryString>> entries;
@@ -67,8 +67,16 @@ void map<std::string>::fill_flatbuffer()
 }
 
 template <>
-void map<std::string>::serialize_setup()
+void map_value<std::string>::serialize_setup()
 {
     fill_flatbuffer();
 }
+
+template <> wrap::wrap<std::map<std::string,wrap>>(const std::map<std::string,wrap>& x) { d_ptr = map<std::string>(x).ptr(); }
+template <> wrap::wrap<map<std::string>>(const map<std::string>& x) { d_ptr = x.ptr(); }
+
+template class map_value<std::string>;
+template class map<std::string>;
+
 }
+
