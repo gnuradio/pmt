@@ -50,7 +50,7 @@ func(std::complex<float>)
 #define VectorEqualsImpl(T) \
     template <> bool operator==<std::vector<T>>(const wrap& x, const std::vector<T>& other) {   \
         if (is_pmt_vector<T>(x)) {                                                                  \
-            auto xx = get_pmt_vector<T>(x);                                                         \
+            auto xx = get_vector<T>(x);                                                         \
             if (xx.size() == other.size())                                                          \
                 return std::equal(xx.begin(), xx.end(), other.begin());                              \
         }                                                                                           \
@@ -59,7 +59,7 @@ func(std::complex<float>)
 #define VectorEqualsPmtImpl(T) \
     template <> bool operator==<vector<T>>(const wrap& x, const vector<T>& other) {     \
         if (is_pmt_vector<T>(x)) {                                                                  \
-            auto xx = get_pmt_vector<T>(x);                                                         \
+            auto xx = get_vector<T>(x);                                                         \
             if (xx.size() == other.size())                                                          \
                 return std::equal(xx.begin(), xx.end(), other.begin());                              \
         }                                                                                           \

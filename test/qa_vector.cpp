@@ -149,7 +149,7 @@ TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
     }
 
     wrap generic_pmt_obj = std::vector<TypeParam>(vec);
-    auto y = get_pmt_vector<TypeParam>(generic_pmt_obj); 
+    auto y = get_vector<TypeParam>(generic_pmt_obj); 
     EXPECT_EQ(y == vec, true);
 
     // Try to cast as a scalar type

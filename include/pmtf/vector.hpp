@@ -225,7 +225,7 @@ vector<T> _get_pmt_vector(const wrap& x) {
 }
 
 template <class T>
-vector<T> get_pmt_vector(const wrap& x) {
+vector<T> get_vector(const wrap& x) {
     // TODO: I can flip this around and make functions to convert T to a dt at compile time.
     //   Then just check if vector_data_type<T> == x.ptr()->data_type()
     // Make sure that this is the right type.
