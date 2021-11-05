@@ -160,7 +160,7 @@ public:
     sptr ptr() { return d_ptr; }
     size_type size() const { return d_ptr->size(); }
     auto data_type() { return d_ptr->data_type(); }
-    
+    auto data() { return d_ptr->data(); }
 private:
     sptr d_ptr;
 };
