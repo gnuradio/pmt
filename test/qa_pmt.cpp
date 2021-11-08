@@ -162,6 +162,28 @@ TEST(Pmt, MapWrapper) {
     EXPECT_EQ(item1_as_scalar,4);
     auto res = (get_vector_value<int>(w_as_map["qwer"]) == std::vector<int>{1,2,4});
     EXPECT_TRUE(res);
+
+
+    auto a = map<std::string>({
+        {"int_field", wrap(int(7))},
+        {"dbl_field", wrap(double(3.2))},
+    });
+    auto b = vector<std::complex<float>>(100, {-1,1});
+    auto pdu = wrap(map<std::string>(
+        {
+            {"meta", a},
+            {"data", b},
+        }
+    ));
+
+    auto meta = get_map<std::string>(get_map<std::string>(pdu)["meta"]);
+    auto samples = get_vector<std::complex<float>>(get_map<std::string>(pdu)["data"]);
+
+    auto int_val = get_scalar_value<int>(meta["int_field"]);
+    auto dbl_val = get_scalar_value<double>(meta["dbl_field"]);
+
+    EXPECT_EQ(int_val,7);
+    EXPECT_EQ(dbl_val,3.2);
 }
 
 
