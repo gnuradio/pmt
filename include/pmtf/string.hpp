@@ -56,6 +56,8 @@ public:
     string_value(const uint8_t* buf);
     string_value(const pmtf::Pmt *fb_pmt);
     void print(std::ostream& os) const { os << value(); }
+
+    virtual bool is_string() const noexcept { return true; }
 };
 
 class string {

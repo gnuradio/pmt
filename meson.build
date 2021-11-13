@@ -20,6 +20,7 @@ subdir('include/pmtf')
 subdir('lib')
 subdir('test')
 subdir('bench')
+subdir('python/pmtf')
 
 # cmake = import('cmake')
 
