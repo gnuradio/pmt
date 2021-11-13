@@ -98,6 +98,7 @@ public:
     virtual bool is_scalar() const noexcept { return false; }
     virtual bool is_vector() const noexcept { return false; }
     virtual bool is_map() const noexcept { return false; }
+    virtual bool is_string() const noexcept { return false; }
 
     virtual void print(std::ostream& os) const = 0;
 
