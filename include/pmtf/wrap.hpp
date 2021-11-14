@@ -8,10 +8,22 @@
 #pragma once
 
 #include <pmtf/base.hpp>
+#include <variant>
 //#include <pmtf/vector.hpp>
 //#include <pmtf/scalar.hpp>
 
 namespace pmtf {
+
+typedef std::variant<
+        std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t,
+        uint32_t, int64_t, uint64_t, float, double, std::complex<float>,
+        std::complex<double>, std::vector<bool>, std::vector<int8_t>,
+        std::vector<uint8_t>, std::vector<int16_t>, std::vector<uint16_t>,
+        std::vector<int32_t>, std::vector<uint32_t>, std::vector<int64_t>,
+        std::vector<uint64_t>, std::vector<float>, std::vector<double>,
+        std::vector<std::complex<float>>, std::vector<std::complex<double>>>
+        wrap_variant_t;
+
 
 /**
  * @brief Class to hold any kind of pmt object.
