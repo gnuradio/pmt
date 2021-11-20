@@ -33,6 +33,10 @@ template <> struct scalar_traits<int8_t> { using traits = ScalarInt8::Traits; };
 template <> struct scalar_traits<int16_t> { using traits = ScalarInt16::Traits; };
 template <> struct scalar_traits<int32_t> { using traits = ScalarInt32::Traits; };
 template <> struct scalar_traits<int64_t> { using traits = ScalarInt64::Traits; };
+template <> struct scalar_traits<float> { using traits = VectorFloat32::Traits; };
+template <> struct scalar_traits<double> { using traits = VectorFloat64::Traits; };
+template <> struct scalar_traits<std::complex<float>> { using traits = ScalarComplex64::Traits; };
+template <> struct scalar_traits<std::complex<double>> { using traits = ScalarComplex128::Traits; };
 
 template <class T>
 class scalar: public base {
@@ -76,6 +80,26 @@ public:
     explicit operator U() const { return U(value()); }
     
 };
+
+template <class T>
+struct is_scalar : std::false_type {};
+
+template <class T>
+struct is_scalar<scalar<T>> : std::true_type {};
+
+template <class T, class U>
+bool operator==(const scalar<T>& x, const U& y) {
+    // U is a plain old data type (scalar<float> == float)
+    if constexpr(std::is_same_v<T, U>)
+        return x.value() == y;
+    // U is another pmt::scalar
+    else if constexpr(is_scalar<U>::value)
+        return x.value() == y.value();
+    // Can U be converted to T?
+    else if constexpr(std::is_convertible_v<U, T>)
+        return x.value() == T(y);
+    return false;
+}
 
 /**
  * @brief Class holds the implementation of a scalar pmt.

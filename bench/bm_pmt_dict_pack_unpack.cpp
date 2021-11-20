@@ -11,7 +11,7 @@ namespace po = boost::program_options;
 
 using namespace pmtf;
 
-bool run_test(const int times, uint64_t nitems)
+/*bool run_test(const int times, uint64_t nitems)
 {
 
     bool valid = true;
@@ -51,11 +51,11 @@ bool run_test(const int times, uint64_t nitems)
         #endif
     }
     return valid;
-}
+}*/
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples;
+    /*uint64_t samples;
     uint64_t items;
     uint64_t index;
 
@@ -91,5 +91,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }
+    }*/
 }

@@ -16,6 +16,7 @@
 #include <memory>
 #include <typeindex>
 #include <typeinfo>
+#include <pmtf/gsl-lite.hpp>
 
 namespace pmtf {
 
@@ -23,14 +24,18 @@ class string : public base {
 public:
     using traits = PmtString::Traits;
     using type = typename traits::type;
+    using value_type = char;
+    using reference = char&;
+    using const_reference = const char&;
+    using size_type = size_t;
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
     ~string() {}
-    std::string_view value() {
+    gsl::span<char> value() {
         auto pmt = GetSizePrefixedPmt(_buf.data());
         auto buf = const_cast<flatbuffers::String*>(pmt->data_as<type>()->value());
-        return std::string_view(buf->data(), buf->size());
+        return gsl::span<char>(buf->data(), buf->size());
     }
     std::string_view value() const {
         auto pmt = GetSizePrefixedPmt(_buf.data());
@@ -45,6 +50,17 @@ public:
         _MakeString(&value[0], std::string(value).size());
         return *this;
     }
+    char* data() { return value().data(); }
+    const char* data() const { return value().data(); }
+    size_t size() const { return value().size(); }
+    char& operator[] (size_type n) {
+        // operator[] doesn't do bounds checking, use at for that
+        // TODO: implement at
+        return data()[n];
+    }
+    const char& operator[] (size_type n) const {
+        return data()[n];
+    }
     
     constexpr Data data_type() override { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
@@ -58,6 +74,26 @@ private:
     
 };
 
+// When we switch to c++20, make this a concept.
+/*template <class U>
+bool operator==(const string& x, const U& other) {
+    if (other.size() != x.size()) return false;
+    auto my_val = x.begin();
+    for (auto&& val : other) {
+        if (*my_val != val) return false;
+        my_val++;
+    }
+    return true;
+}*/
+
+inline bool operator==(const string& x, const char other[]) {
+    size_t index = 0;
+    while (other[index] != 0 && index < x.size()) {
+        if (other[index] != x[index]) return false;
+        index++;
+    }
+    return index == x.size() || x[index] == 0;
+}
 /*class string_value : public base
 {
 public:

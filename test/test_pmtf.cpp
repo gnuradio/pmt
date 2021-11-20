@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
     // auto cplx_pmt = vector<std::complex<float>>::make(std::complex<float>(1.2,-3.4));
     // std::cout << cplx_pmt.value() << std::endl;
 
-    auto x = std::vector<int>{ 4, 5, 6 };
+    /*auto x = std::vector<int>{ 4, 5, 6 };
     auto int_vec_pmt2 = vector<int32_t>{ 7, 8, 9 };
 
     int_vec_pmt2[1] = 3;
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
     std::stringbuf sb; // fake channel
     sb.str("");        // reset channel to empty
-    bool ret = int_vec_pmt2.ptr()->serialize(sb);
+    bool ret = int_vec_pmt2->serialize(sb);
     std::cout << ret << std::endl;
     auto base_ptr = base::deserialize(sb);
 
@@ -40,5 +40,5 @@ int main(int argc, char* argv[])
     // for (auto d : vec) {
     //     std::cout << d << ",";
     // }
-    std::cout << std::endl;
+    std::cout << std::endl;*/
 }

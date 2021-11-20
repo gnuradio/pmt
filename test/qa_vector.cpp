@@ -14,7 +14,7 @@
 
 using namespace pmtf;
 
-using testing_types = ::testing::Types<uint8_t,
+/*using testing_types = ::testing::Types<uint8_t,
                                        int8_t,
                                        uint16_t,
                                        int16_t,
@@ -206,5 +206,5 @@ TYPED_TEST(PmtVectorFixture, OtherConstructors) {
 
     vector<TypeParam> vec4(vec3);
     EXPECT_EQ(vec3.ptr(), vec4.ptr());
-}
+}*/
 

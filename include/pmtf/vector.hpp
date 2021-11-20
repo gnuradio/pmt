@@ -40,6 +40,17 @@ template <> struct vector_traits<double> { using traits = VectorFloat64::Traits;
 template <> struct vector_traits<std::complex<float>> { using traits = VectorComplex64::Traits; };
 template <> struct vector_traits<std::complex<double>> { using traits = VectorComplex128::Traits; };
 
+// We need to know the struct type for complex values
+template <class T> struct scalar_type;
+template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
+template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
+
+template <class T>
+struct is_complex : std::false_type {};
+
+template <class T>
+struct is_complex<std::complex<T>> : std::true_type {};
+
 template <class T>
 class vector: public base {
 public:
@@ -70,7 +81,7 @@ public:
     const_span value() const {
         auto pmt = GetSizePrefixedPmt(_buf.data());
         auto buf = pmt->data_as<type>()->value();
-        return gsl::span<const T>(buf->data(), buf->size());
+        return gsl::span<const T>(reinterpret_cast<const T*>(buf->data()), buf->size());
     }
     constexpr Data data_type() override { return DataTraits<type>::enum_value; }
     vector& operator=(const T& value) {
@@ -101,10 +112,27 @@ public:
 private:
     void _MakeVector(const T* data, size_t size) {
         flatbuffers::FlatBufferBuilder fbb;
-        auto offset = fbb.CreateVector(data, size);
-        _Create(fbb, traits::Create(fbb, offset).Union());
+        if constexpr(is_complex<T>::value) {
+            auto offset = fbb.CreateVectorOfNativeStructs<typename scalar_type<T>::type, T>(data, size);
+            _Create(fbb, traits::Create(fbb, offset).Union());
+        } else {
+            auto offset = fbb.CreateVector(data, size);
+            _Create(fbb, traits::Create(fbb, offset).Union());
+        }
     }
 };
+
+// When we switch to c++20, make this a concept.
+template <class T, class U>
+bool operator==(const vector<T>& x, const U& other) {
+    if (other.size() != x.size()) return false;
+    auto my_val = x.begin();
+    for (auto&& val : other) {
+        if (*my_val != val) return false;
+        my_val++;
+    }
+    return true;
+}
 /*
 template <class T>
 class pmt_vector_value : public base

@@ -9,7 +9,7 @@
 
 namespace pmtf {
 
-std::ostream& operator<<(std::ostream& os, const wrap& x) {
+/*std::ostream& operator<<(std::ostream& os, const wrap& x) {
     // We need a virtual member function so that we can use polymorphism.
     x.ptr()->print(os);
     return os;
@@ -18,5 +18,5 @@ std::ostream& operator<<(std::ostream& os, const wrap& x) {
 template <> wrap::wrap<decltype(nullptr)>(const decltype(nullptr)& x) { d_ptr = nullptr; }
 template <> bool operator==<decltype(nullptr)>(const wrap& x, const decltype(nullptr)& other) {
         return false;  
-    }
+    }*/
 }

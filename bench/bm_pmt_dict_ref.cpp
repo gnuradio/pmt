@@ -11,7 +11,7 @@ namespace po = boost::program_options;
 
 using namespace pmtf;
 
-bool run_test(const int times, map<std::string>& d, int32_t index)
+/*bool run_test(const int times, map& d, int32_t index)
 {
     std::stringbuf sb; // fake channel
 
@@ -31,11 +31,11 @@ bool run_test(const int times, map<std::string>& d, int32_t index)
         }
     }
     return valid;
-}
+}*/
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples;
+    /*uint64_t samples;
     uint32_t items;
     uint32_t index;
 
@@ -84,5 +84,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }
+    }*/
 }

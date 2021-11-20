@@ -8,7 +8,7 @@ namespace po = boost::program_options;
 
 using namespace pmtf;
 
-bool run_test(const int times, const std::vector<int32_t>& data)
+/*bool run_test(const int times, const std::vector<int32_t>& data)
 {
     bool valid = true;
 
@@ -25,11 +25,11 @@ bool run_test(const int times, const std::vector<int32_t>& data)
     }
 
     return valid;
-}
+}*/
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples;
+    /*uint64_t samples;
     size_t veclen;
 
     po::options_description desc("Basic Test Flow Graph");
@@ -65,5 +65,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }
+    }*/
 }

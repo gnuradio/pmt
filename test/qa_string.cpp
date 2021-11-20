@@ -14,8 +14,8 @@ TEST(PmtString, Basic)
     EXPECT_EQ(str_pmt, "hello");
     }
     {
-    string str_pmt = "goodbye";
-    EXPECT_EQ(str_pmt, "goodbye");
+    /*string str_pmt = "goodbye";
+    EXPECT_EQ(str_pmt, "goodbye");*/
     }
 }
 
@@ -36,18 +36,18 @@ TEST(PmtString, Serdes)
     
     std::stringbuf sb; // fake channel
     sb.str("");        // reset channel to empty
-    bool ret = str_pmt.ptr()->serialize(sb);
-    std::cout << ret << std::endl;
-    auto base_ptr = base::deserialize(sb);
+    //bool ret = str_pmt.ptr()->serialize(sb);
+    //std::cout << ret << std::endl;
+    //auto base_ptr = base::deserialize(sb);
 
     
-    EXPECT_EQ(get_string(base_ptr), "hello");
+    //EXPECT_EQ(get_string(base_ptr), "hello");
 }
 
 TEST(Pmt, PmtWrap)
 {
-    wrap x;
+    /*wrap x;
     x = std::string("hello");
     
-    EXPECT_EQ(get_string(x), "hello");
+    EXPECT_EQ(get_string(x), "hello");*/
 }

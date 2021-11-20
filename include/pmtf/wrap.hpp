@@ -37,15 +37,15 @@ class wrap {
      *
      * Note that is has a nullptr, not a null pmt.  Don't try to access it.
      */
-    wrap() : d_ptr(nullptr) {}
+    //wrap() : d_ptr(nullptr) {}
     /**
      * @ brief declare template constructor.
      * 
      * Do not define the constructor.  It will cause a compiler error unless the
      * type T is specialized in a different header file.
      */
-    template <class T>
-    wrap(const T& value);
+    //template <class T>
+    //wrap(const T& value);
     /**
      * @ brief Construct a wrap from a std::vector.
      *
@@ -71,23 +71,23 @@ class wrap {
         auto value = scalar(x);
         d_ptr = value.ptr();  
     };*/
-    wrap(base::sptr x): d_ptr(x) {}
+    //wrap(base::sptr x): d_ptr(x) {}
     //template <class T>
     //wrap(const std::map<std::string, T>& x);
-    operator typename base::sptr() const { return d_ptr; }
-    typename base::sptr ptr() const { return d_ptr; }
-  private:
-        base::sptr d_ptr;
+    //operator typename base::sptr() const { return d_ptr; }
+    //typename base::sptr ptr() const { return d_ptr; }
+  //private:
+  //      base::sptr d_ptr;
 };
 
 // This needs to be specialized in each of the other header files.
-template <class T>
+/*template <class T>
 bool operator==(const wrap& x, const T& other);
 
 template <class T>
 bool operator!=(const wrap& x, const T& other) {
     return !operator==(x, other);
-}
+}*/
 
 /*map<std::string> get_map(const wrap& x) {
     if (x.ptr()->data_type() == Data::PmtMap) {
@@ -126,7 +126,7 @@ vector<T> get_vector(const wrap& x) {
         throw std::runtime_error("Cannot cast pmt to vector<T>");
 }*/
 
-std::ostream& operator<<(std::ostream& os, const wrap& x);
+//std::ostream& operator<<(std::ostream& os, const wrap& x);
 
 /*template <class U>
 bool operator==(const wrap& x1, const U& x2) {

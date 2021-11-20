@@ -86,12 +86,12 @@ TEST(Pmt, PmtVectorTests) {
     // Copy constructor
     auto a =  vector<std::complex<float>>(x);
     // Assignment operator
-    a = x;
+    /*a = x;
     // TODO: Add in Move contstructor
     // Make sure we can do a range based for loop
     for (auto& xx : x) {
         xx += 1;
-    }
+    }*/
     // Print
     std::cout << x << std::endl;
 }
@@ -126,7 +126,7 @@ TEST(Pmt, PmtVectorTests) {
     EXPECT_EQ(vv2, val2);
 }*/
 
-TEST(Pmt, PmtWrap)
+/*TEST(Pmt, PmtWrap)
 {
     wrap x = int8_t(4);
     get_scalar<int8_t>(x);
@@ -143,7 +143,7 @@ TEST(pmt, CanBe)
     assert(can_be<std::string>(x) == false);
     assert(can_be<scalar<int32_t>>(x) == true);
     assert(can_be<scalar<int8_t>>(x) == true);
-}
+}*/
 
 /*TEST(Pmt, VectorWrites)
 {
@@ -234,9 +234,9 @@ TEST(Pmt, MapWrapper) {
 }
 */
 
-TEST(Pmt, PmtWrap2) {
+/*TEST(Pmt, PmtWrap2) {
     wrap x;
     wrap y;
 
     x = 3;
-}
+}*/
