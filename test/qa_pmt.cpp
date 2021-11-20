@@ -49,6 +49,14 @@ TEST(Pmt, asdf)
     y.value()[2] = 4.5;
     std::cout << y.value()[2] << std::endl;
     //std::cout << y << std::endl;
+
+    pmt_map m;
+    m["abc"] = std::make_shared<pmt_scalar<uint8_t>>(x);
+    m["def"] = std::make_shared<pmt_vector<float>>(y);
+    std::cout << m << std::endl;
+    for (const auto& [k, v]: m) {
+        std::cout << k << ": " << v << std::endl;
+    }
 }
 
 TEST(Pmt, PmtScalarValueTests)

@@ -47,7 +47,13 @@ public:
     pmt_vector(const std::vector<T>& value) {
         flatbuffers::FlatBufferBuilder fbb;
         auto offset = fbb.CreateVector(value.data(), value.size());
-        
+
+        _Create(fbb, traits::Create(fbb, offset).Union());
+    }
+    pmt_vector(const pmt_vector<T>& value) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = fbb.CreateVector(value.data(), value.size());
+
         _Create(fbb, traits::Create(fbb, offset).Union());
     }
     ~pmt_vector() {}

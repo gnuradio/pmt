@@ -43,6 +43,10 @@ public:
         flatbuffers::FlatBufferBuilder fbb;
         _Create(fbb, traits::Create(fbb, value).Union());
     }
+    pmt_scalar(const pmt_scalar<T>& other) {
+        flatbuffers::FlatBufferBuilder fbb;
+        _Create(fbb, traits::Create(fbb, other.value()).Union());
+    }
     ~pmt_scalar() {}
     T value() const {
         auto pmt = GetSizePrefixedPmt(_buf.data());

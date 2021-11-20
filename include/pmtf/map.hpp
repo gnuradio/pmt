@@ -50,6 +50,55 @@ I need a generator class that can produce any one of them.
 
 namespace pmtf {
 
+class pmt_map : public pmt {
+public:
+    using traits = MapString::Traits;
+    using type = typename traits::type;
+
+    using key_type = std::string;
+    using mapped_type = std::shared_ptr<pmt>;
+    using value_type = std::pair<const key_type, mapped_type>;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using map_type = std::map<key_type, mapped_type>;
+
+    pmt_map() {}
+    ~pmt_map() {}
+
+    /**************************************************************************
+    * Iterators
+    **************************************************************************/
+    typename map_type::iterator begin() noexcept { return _map.begin(); }
+    typename map_type::const_iterator begin() const noexcept { return _map.begin(); }
+    typename map_type::iterator end() noexcept { return _map.end(); }
+    typename map_type::const_iterator end() const noexcept { return _map.end(); }
+
+    /**************************************************************************
+    * Element Access
+    **************************************************************************/
+    mapped_type& at(const key_type& key) { return _map.at(key); }
+    const mapped_type& at(const key_type& key ) const { return _map.at(key); }
+    mapped_type& operator[]( const key_type& key) { return _map[key]; }
+
+    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+
+    void print(std::ostream& os) const {
+        os << "{";
+        for (const auto& [k, v]: *this) {
+            os << k << ": ";
+            v->print(os);
+            os << ", ";
+        }
+        os << "}";
+    } 
+private:
+    // This stores the actual data.
+    map_type _map;
+
+    //virtual void serialize_setup();
+
+};
+
 template <class T>
 class map : public base
 {

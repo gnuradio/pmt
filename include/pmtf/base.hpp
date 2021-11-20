@@ -43,6 +43,11 @@ protected:
         
 };
 
+inline std::ostream& operator<<(std::ostream& os, const pmt& p) {
+    p.print(os);
+    return os;
+}
+
 class base : public std::enable_shared_from_this<base>
 {
 public:
