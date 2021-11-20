@@ -10,7 +10,7 @@
 
 namespace pmtf {
 
-flatbuffers::Offset<void> string_value::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
+/*flatbuffers::Offset<void> string_value::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
 {
     // fbb.Reset();
     return CreatePmtStringDirect(fbb, value().c_str()).Union();
@@ -58,14 +58,14 @@ std::string string_value::value() const
 char* string_value::writable_elements()                                 
 {                                                                                   
     auto pmt =                                                                      
-        GetMutablePmt(buffer_pointer() + 4); /* assuming size prefix is 32 bit */   
-    auto mutable_obj = ((pmtf::VectorInt8*)pmt->mutable_data())                 
+        GetMutablePmt(buffer_pointer() + 4);*/ /* assuming size prefix is 32 bit */   
+    /*auto mutable_obj = ((pmtf::VectorInt8*)pmt->mutable_data())                 
                            ->mutable_value()
                            ->Data();                                   
-    return (char*)(mutable_obj); /* hacky cast */                               
-}                                                                                   
+    return (char*)(mutable_obj);*/ /* hacky cast */                               
+//}                                                                                   
 
-const char* string_value::elements() const                                
+/*const char* string_value::elements() const                                
 {                                                                                 
     auto pmt = GetSizePrefixedPmt(_buf);                                          
     auto fb_vec = pmt->data_as_PmtString()->value();                         
@@ -84,6 +84,6 @@ string get_string(const wrap& x) {
 
 template <> wrap::wrap<std::string>(const std::string& x) { d_ptr = string(x).ptr(); }
 template <> wrap::wrap<string>(const string& x) { d_ptr = x.ptr(); }
-// template <> wrap::wrap<char *>(const char *x) { d_ptr = string(x).ptr(); }
+// template <> wrap::wrap<char *>(const char *x) { d_ptr = string(x).ptr(); }*/
 
 } // namespace pmtf

@@ -11,7 +11,7 @@
 namespace pmtf {
 
 
-IMPLEMENT_PMT_VECTOR(int8_t, Int8)
+/*IMPLEMENT_PMT_VECTOR(int8_t, Int8)
 IMPLEMENT_PMT_VECTOR(uint8_t, UInt8)
 IMPLEMENT_PMT_VECTOR(int16_t, Int16)
 IMPLEMENT_PMT_VECTOR(uint16_t, UInt16)
@@ -71,5 +71,5 @@ Apply(VectorWrapImpl)
 Apply(VectorWrapPmtImpl)
 Apply(VectorEqualsImpl)
 Apply(VectorEqualsPmtImpl)
-
+*/
 } // namespace pmtf

@@ -30,7 +30,7 @@ namespace pmtf {
 // Static PMT Base functions
 ///////////////////////////////////////////////////////////////////////////////////
 
-base::sptr base::from_pmt(const pmtf::Pmt* fb_pmt)
+/*base::sptr base::from_pmt(const pmtf::Pmt* fb_pmt)
 {
     switch (fb_pmt->data_type()) {
     case Data::PmtString:
@@ -95,6 +95,6 @@ base::sptr base::from_buffer(const uint8_t* buf, size_t size)
 
 template class scalar_value<std::complex<float>>;
 template class pmt_vector_value<std::int32_t>;
-// template class pmt_vector_value<std::complex<float>>;
+// template class pmt_vector_value<std::complex<float>>;*/
 
 } // namespace pmtf

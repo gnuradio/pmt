@@ -38,11 +38,11 @@ using namespace pmtf;
 
 TEST(Pmt, asdf)
 {
-    auto x = pmt_scalar<uint8_t>(4);
+    auto x = scalar<uint8_t>(4);
     std::cout << int(x.value()) << std::endl;
     x = 5;
     std::cout << int(x.value()) << std::endl;
-    auto y = pmt_vector<float>(std::vector<float>{1,2,3});
+    auto y = vector<float>(std::vector<float>{1,2,3});
     for (const auto& zz : y) {
         std::cout << zz << std::endl;
     }
@@ -50,28 +50,13 @@ TEST(Pmt, asdf)
     std::cout << y.value()[2] << std::endl;
     //std::cout << y << std::endl;
 
-    pmt_map m;
-    m["abc"] = std::make_shared<pmt_scalar<uint8_t>>(x);
-    m["def"] = std::make_shared<pmt_vector<float>>(y);
+    map m;
+    m["abc"] = std::make_shared<scalar<uint8_t>>(x);
+    m["def"] = std::make_shared<vector<float>>(y);
     std::cout << m << std::endl;
     for (const auto& [k, v]: m) {
         std::cout << k << ": " << v << std::endl;
     }
-}
-
-TEST(Pmt, PmtScalarValueTests)
-{
-    auto x = scalar_value<int>(4);
-    EXPECT_EQ(x, 4);
-    scalar_value<int> y(4);
-    EXPECT_EQ(x, y);
-    x = 5;
-    EXPECT_EQ(x, 5.0);
-    y = x;
-    EXPECT_EQ(x, y);
-    scalar_value<int> z = 4;
-    int a = x.value();
-    EXPECT_EQ(a, 5.0);
 }
 
 TEST(Pmt, PmtScalarTests) {
@@ -88,14 +73,6 @@ TEST(Pmt, PmtScalarTests) {
     EXPECT_EQ(a, 5.0);
     float b = float(x);
     EXPECT_EQ(b, 5.0);
-}
-
-TEST(Pmt, PmtVectorValueTests) {
-    auto x = pmt_vector_value<std::complex<float>>({{1, -1}, {2.1, 3.0}});
-    std::vector<std::complex<float>> y({{1, -1}, {2.1, 3.0}});
-    EXPECT_EQ(x == y, true );
-    auto z =  pmt_vector_value<std::complex<float>>(y);
-    auto a =  pmt_vector_value<std::complex<float>>(x);
 }
 
 TEST(Pmt, PmtVectorTests) {

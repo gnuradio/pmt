@@ -10,7 +10,7 @@
 namespace pmtf {
 
 
-IMPLEMENT_PMT_SCALAR(int8_t, Int8)
+/*IMPLEMENT_PMT_SCALAR(int8_t, Int8)
 IMPLEMENT_PMT_SCALAR(uint8_t, UInt8)
 IMPLEMENT_PMT_SCALAR(int16_t, Int16)
 IMPLEMENT_PMT_SCALAR(uint16_t, UInt16)
@@ -63,7 +63,7 @@ func(std::complex<double>)
 Apply(WrapConstructImpl)
 Apply(WrapConstructPmtImpl)
 Apply(EqualsImpl)
-Apply(EqualsPmtImpl)
+Apply(EqualsPmtImpl)*/
 
 
 } // namespace pmtf

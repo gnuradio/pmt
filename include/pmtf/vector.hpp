@@ -36,27 +36,32 @@ template <> struct vector_traits<int16_t> { using traits = VectorInt16::Traits; 
 template <> struct vector_traits<int32_t> { using traits = VectorInt32::Traits; };
 template <> struct vector_traits<int64_t> { using traits = VectorInt64::Traits; };
 template <> struct vector_traits<float> { using traits = VectorFloat32::Traits; };
+template <> struct vector_traits<double> { using traits = VectorFloat64::Traits; };
+template <> struct vector_traits<std::complex<float>> { using traits = VectorComplex64::Traits; };
+template <> struct vector_traits<std::complex<double>> { using traits = VectorComplex128::Traits; };
 
 template <class T>
-class pmt_vector: public pmt {
+class vector: public base {
 public:
     using traits = typename vector_traits<T>::traits;
     using type = typename traits::type;
     using span = typename gsl::span<T>;
     using const_span = typename gsl::span<const T>;
-    pmt_vector(const std::vector<T>& value) {
-        flatbuffers::FlatBufferBuilder fbb;
-        auto offset = fbb.CreateVector(value.data(), value.size());
-
-        _Create(fbb, traits::Create(fbb, offset).Union());
+    using value_type = T;
+    using reference = T&;
+    using const_reference = const T&;
+    using size_type = size_t;
+    vector(const std::vector<T>& value) {
+        _MakeVector(value.data(), value.size());
     }
-    pmt_vector(const pmt_vector<T>& value) {
-        flatbuffers::FlatBufferBuilder fbb;
-        auto offset = fbb.CreateVector(value.data(), value.size());
-
-        _Create(fbb, traits::Create(fbb, offset).Union());
+    vector(const vector<T>& value) {
+        _MakeVector(value.data(), value.size());
     }
-    ~pmt_vector() {}
+    vector(std::initializer_list<value_type> il) {
+        _MakeVector(il.begin(), il.size());
+    }
+        
+    ~vector() {}
     span value() {
         auto pmt = GetSizePrefixedPmt(_buf.data());
         auto buf = const_cast<flatbuffers::Vector<T>*>(pmt->data_as<type>()->value());
@@ -68,14 +73,8 @@ public:
         return gsl::span<const T>(buf->data(), buf->size());
     }
     constexpr Data data_type() override { return DataTraits<type>::enum_value; }
-    pmt_vector& operator=(const T& value) {
-        auto pmt = GetSizePrefixedPmt(_buf.data());
-        auto vector = const_cast<type*>(pmt->data_as<type>());
-        vector->mutate_value(value);
-        return *this;        
-    }
-    pmt_vector& operator=(const pmt_vector<T>& value) {
-        return this->operator=(value.value());
+    vector& operator=(const T& value) {
+        _MakeVector(value.begin(), value.size()); 
     }
     T* data() { return value().data(); }
     const T* data() const { return value().data(); }
@@ -84,6 +83,14 @@ public:
     typename span::iterator end() { return value().end(); }
     typename span::const_iterator begin() const { return value().begin(); }
     typename span::const_iterator end() const { return value().end(); }
+    reference operator[] (size_type n) {
+        // operator[] doesn't do bounds checking, use at for that
+        // TODO: implement at
+        return data()[n];
+    }
+    const reference operator[] (size_type n) const {
+        return data()[n];
+    }
     void print(std::ostream& os) const {
         os << "[";
         for (auto& e : value()) {
@@ -91,9 +98,14 @@ public:
         }
         os << "]";
     }
-    
+private:
+    void _MakeVector(const T* data, size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = fbb.CreateVector(data, size);
+        _Create(fbb, traits::Create(fbb, offset).Union());
+    }
 };
-
+/*
 template <class T>
 class pmt_vector_value : public base
 {
@@ -116,32 +128,32 @@ public:
         return std::make_shared<pmt_vector_value<T>>(fb_pmt);
     }
 
-
+*/
     /**
      * @brief Construct a new pmt vector object from a std::vector
      *
      * @param val
      */
-    pmt_vector_value(const std::vector<T>& val);
+    //pmt_vector_value(const std::vector<T>& val);
     /**
      * @brief Construct a new pmt vector object from an array
      *
      * @param data
      * @param len
      */
-    pmt_vector_value(const T* data, size_t len);
+    //pmt_vector_value(const T* data, size_t len);
     /**
      * @brief Construct a new pmt vector object from a serialized flatbuffer
      *
      * @param buf
      */
-    pmt_vector_value(const uint8_t* buf);
+    //pmt_vector_value(const uint8_t* buf);
     /**
      * @ brief Copy constructor
      *
      * @param val
      */
-    pmt_vector_value(const pmt_vector_value<T>& val);
+    /*pmt_vector_value(const pmt_vector_value<T>& val);
     pmt_vector_value(const pmtf::Pmt* fb_pmt);
 
     void set_value(const std::vector<T>& val);
@@ -352,7 +364,7 @@ Apply(VectorEqualsPmt)
 #undef VectorWrapPmt
 #undef VectorEquals
 #undef VectorEqualsPmt
-#undef Apply
+#undef Apply*/
 
 #define IMPLEMENT_PMT_VECTOR(datatype, fbtype)                                        \
     template <>                                                                       \

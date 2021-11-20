@@ -5,7 +5,7 @@
 
 namespace pmtf {
 
-template <>
+/*template <>
 map<std::string>::map() : 
     base(Data::MapString)
 {
@@ -70,5 +70,5 @@ template <>
 void map<std::string>::serialize_setup()
 {
     fill_flatbuffer();
-}
+}*/
 }

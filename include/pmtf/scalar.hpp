@@ -35,19 +35,19 @@ template <> struct scalar_traits<int32_t> { using traits = ScalarInt32::Traits; 
 template <> struct scalar_traits<int64_t> { using traits = ScalarInt64::Traits; };
 
 template <class T>
-class pmt_scalar: public pmt {
+class scalar: public base {
 public:
     using traits = typename scalar_traits<T>::traits;
     using type = typename traits::type;
-    pmt_scalar(const T& value) {
+    scalar(const T& value) {
         flatbuffers::FlatBufferBuilder fbb;
         _Create(fbb, traits::Create(fbb, value).Union());
     }
-    pmt_scalar(const pmt_scalar<T>& other) {
+    scalar(const scalar<T>& other) {
         flatbuffers::FlatBufferBuilder fbb;
         _Create(fbb, traits::Create(fbb, other.value()).Union());
     }
-    ~pmt_scalar() {}
+    ~scalar() {}
     T value() const {
         auto pmt = GetSizePrefixedPmt(_buf.data());
         // data_as uses ScalarUint8 as type not T, so I need to define something that
@@ -55,16 +55,25 @@ public:
         return pmt->data_as<type>()->value();
     }
     constexpr Data data_type() override { return DataTraits<type>::enum_value; }
-    pmt_scalar& operator=(const T& value) {
+    scalar& operator=(const T& value) {
         auto pmt = GetSizePrefixedPmt(_buf.data());
         auto scalar = const_cast<type*>(pmt->data_as<type>());
         scalar->mutate_value(value);
         return *this;        
     }
-    pmt_scalar& operator=(const pmt_scalar<T>& value) {
+    scalar& operator=(const scalar<T>& value) {
         return this->operator=(value.value());
     }
     void print(std::ostream& os) const { os << value(); }
+    // Cast operators
+    //! Cast to a T value.
+    //! Explicit means that the user must do something like T(scalar<T>(val));
+    //! Implicit conversions can cause lots of problems, so we are avoiding them.
+    explicit operator T() const { return value(); }
+    //! Cast to another type
+    //! Will cause a compilation failure if we can't do the cast.
+    template <class U>
+    explicit operator U() const { return U(value()); }
     
 };
 
@@ -76,7 +85,7 @@ public:
  * of the templates in there. This would involve a fairly large refactoring of
  * the code.
  */
-template <class T>
+/*template <class T>
 class scalar_value : public base
 {
 public:
@@ -124,7 +133,7 @@ template <class T>
 struct is_pmt_scalar_value : std::false_type {};
 
 template <class T>
-struct is_pmt_scalar_value<scalar_value<T>> : std::true_type {};
+struct is_pmt_scalar_value<scalar_value<T>> : std::true_type {};*/
 
 /**
  * @brief compare scalar_value against something else
@@ -132,7 +141,7 @@ struct is_pmt_scalar_value<scalar_value<T>> : std::true_type {};
  * Allow for comparisons against other pmt scalars and other types.
  * For example scalar_value<int>(4) == 4.0 will be true.
  */
-template <class T, class U>
+/*template <class T, class U>
 bool operator==(const scalar_value<T>& x, const U& y) {
     if constexpr(std::is_same_v<T, U>)
         return x.value() == y;
@@ -158,23 +167,23 @@ template <> struct cpp_type<Data::ScalarFloat32> { using type=float; };
 template <> struct cpp_type<Data::ScalarFloat64> { using type=double; };
 template <> struct cpp_type<Data::ScalarComplex64> { using type=std::complex<float>; };
 template <> struct cpp_type<Data::ScalarComplex128> { using type=std::complex<double>; };
-template <> struct cpp_type<Data::ScalarBool> { using type=bool; };
+template <> struct cpp_type<Data::ScalarBool> { using type=bool; };*/
 
 /**
  * @brief "Print" out a scalar_value
  */
-template <class T>
+/*template <class T>
 std::ostream& operator<<(std::ostream& os, const scalar_value<T>& value) {
     os << value;
     return os;
-}
+}*/
 
 /**
  * @brief Wrapper class around a smart pointer to a scalar_value.
  *
  * This is the interface that should be used for dealing with scalar values.
  */
-template <class T>
+/*template <class T>
 class scalar {
 public:
     using sptr = typename scalar_value<T>::sptr;
@@ -469,6 +478,6 @@ Apply(EqualsPmt)
     }                                                                  \
                                                                        \
                                                                        \
-    template class scalar_value<datatype>;
+    template class scalar_value<datatype>;*/
 
 } // namespace pmtf

@@ -18,12 +18,29 @@
 
 namespace pmtf {
 
-class pmt {
+class base {
 public:
-    pmt() {}
-    virtual ~pmt() noexcept {}
-    virtual Data data_type() = 0;
-    virtual void print(std::ostream& os) const = 0;
+    using sptr=std::shared_ptr<base>;
+    base() {}
+    virtual ~base() noexcept {}
+    virtual Data data_type() { return Data::NONE; }
+    virtual void print(std::ostream& os) const {}
+    bool serialize(std::streambuf& sb)
+    {
+        serialize_setup();
+        return sb.sputn(reinterpret_cast<char*>(_buf.data()), _buf.size()) != std::streambuf::traits_type::eof();
+    }
+    static sptr deserialize(std::streambuf& sb)
+    {
+        char buf[4];
+        sb.sgetn(buf, 4);
+        uint32_t size = *((uint32_t*)&buf[0]);
+        uint8_t* tmp_buf = new uint8_t[size];
+        sb.sgetn((char*)tmp_buf, size);
+        return std::make_shared<base>(tmp_buf, size); 
+    }
+    // This will take owernship of the pointer.  Should only be used to deserialize
+    base(uint8_t* data, size_t size) : _buf(nullptr, false, nullptr, 0, data, size) {} 
 protected:
     flatbuffers::DetachedBuffer _buf;
     // This will probably work, but hold off
@@ -40,15 +57,16 @@ protected:
         fbb.FinishSizePrefixed(blob);
         _buf = fbb.Release();
     }
+    virtual void serialize_setup() {}
         
 };
 
-inline std::ostream& operator<<(std::ostream& os, const pmt& p) {
+inline std::ostream& operator<<(std::ostream& os, const base& p) {
     p.print(os);
     return os;
 }
 
-class base : public std::enable_shared_from_this<base>
+/*class base : public std::enable_shared_from_this<base>
 {
 public:
     typedef std::shared_ptr<base> sptr;
@@ -149,7 +167,7 @@ typedef base::sptr pmt_sptr;
 
 template <Data T>
 struct cpp_type {
-};
+};*/
 
 
 } // namespace pmtf

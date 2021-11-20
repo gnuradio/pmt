@@ -50,20 +50,20 @@ I need a generator class that can produce any one of them.
 
 namespace pmtf {
 
-class pmt_map : public pmt {
+class map : public base {
 public:
     using traits = MapString::Traits;
     using type = typename traits::type;
 
     using key_type = std::string;
-    using mapped_type = std::shared_ptr<pmt>;
+    using mapped_type = std::shared_ptr<base>;
     using value_type = std::pair<const key_type, mapped_type>;
     using reference = value_type&;
     using const_reference = const value_type&;
     using map_type = std::map<key_type, mapped_type>;
 
-    pmt_map() {}
-    ~pmt_map() {}
+    map() {}
+    ~map() {}
 
     /**************************************************************************
     * Iterators
@@ -99,7 +99,7 @@ private:
 
 };
 
-template <class T>
+/*template <class T>
 class map : public base
 {
 public:
@@ -122,7 +122,7 @@ public:
     static sptr from_pmt(const pmtf::Pmt* fb_pmt)
     {
         return std::make_shared<map<T>>(fb_pmt);
-    }
+    }*/
 
     /**************************************************************************
     * Constructors
@@ -133,68 +133,68 @@ public:
      *
      * @param
      */
-    map();
+    //map();
 
     /**
      * @brief Construct a new pmt map object from a std::map
      *
      * @param val
      */
-    map(const map_type& val);
+    //map(const map_type& val);
     /**
      * @brief Construct a new pmt map object from a map
      *
      * @param val
      */
-    map(const map& val);
+    //map(const map& val);
     /**
      * @brief Construct a new pmt map object from a serialized flatbuffer
      *
      * @param buf
      * @param size
      */
-    map(const uint8_t* buf, size_t size);
+    //map(const uint8_t* buf, size_t size);
     /**
      * @brief Construct a new pmt map object from a flatbuffers interpreted Pmt object
      *
      * @param fb_pmt
      */
-    map(const pmtf::Pmt* fb_pmt);
+    //map(const pmtf::Pmt* fb_pmt);
 
     /**************************************************************************
     * Copy Assignment
     **************************************************************************/
-    map& operator=(const map& other);
-    map& operator=(map&& other) noexcept;
+    //map& operator=(const map& other);
+    //map& operator=(map&& other) noexcept;
 
     /**************************************************************************
     * Element Access
     **************************************************************************/
-    mapped_type& at(const key_type& key);
-    const mapped_type& at(const key_type& key ) const;
-    mapped_type& operator[]( const key_type& key);
+    //mapped_type& at(const key_type& key);
+    //const mapped_type& at(const key_type& key ) const;
+    //mapped_type& operator[]( const key_type& key);
 
     /**************************************************************************
     * Iterators
     **************************************************************************/
-    typename map_type::iterator begin() noexcept { return _map.begin(); }
+    /*typename map_type::iterator begin() noexcept { return _map.begin(); }
     typename map_type::const_iterator begin() const noexcept { return _map.begin(); }
     //typename std::map<T, pmt_sptr>::const_iterator begin() const noexcept { return _map.begin(); }
     typename map_type::iterator end() noexcept { return _map.end(); }
     typename map_type::const_iterator end() const noexcept { return _map.end(); }
-    //typename const std::map<T, pmt_sptr>::iterator end() const noexcept { return _map.end(); }
+    //typename const std::map<T, pmt_sptr>::iterator end() const noexcept { return _map.end(); }*/
 
     /**************************************************************************
     * Capacity
     **************************************************************************/
-    bool empty() const noexcept { return _map.empty(); }
+    /*bool empty() const noexcept { return _map.empty(); }
     size_t size() const noexcept { return _map.size(); }
     size_t max_size() const noexcept { return _map.max_size(); }
-
+*/
     /**************************************************************************
     * Modifiers
     **************************************************************************/
-    
+  /*  
 
 
     flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
@@ -216,7 +216,7 @@ private:
     virtual void serialize_setup();
 
 
-};
+};*/
 
 /*map<std::string> get_map(const wrap& x) {
     if (x.ptr()->data_type() == Data::PmtMap)

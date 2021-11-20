@@ -19,7 +19,46 @@
 
 namespace pmtf {
 
-class string_value : public base
+class string : public base {
+public:
+    using traits = PmtString::Traits;
+    using type = typename traits::type;
+    string(const std::string& value) {
+        _MakeString(value.data(), value.size());
+    }
+    ~string() {}
+    std::string_view value() {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto buf = const_cast<flatbuffers::String*>(pmt->data_as<type>()->value());
+        return std::string_view(buf->data(), buf->size());
+    }
+    std::string_view value() const {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto buf = pmt->data_as<type>()->value();
+        return std::string_view(buf->data(), buf->size());
+    }
+    string& operator=(const std::string& value) {
+        _MakeString(value.data(), value.size());
+        return *this;
+    }
+    string& operator=(const char value[]) {
+        _MakeString(&value[0], std::string(value).size());
+        return *this;
+    }
+    
+    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    void print(std::ostream& os) const { os << value(); }
+private:
+    void _MakeString(const char* data, size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = fbb.CreateString(data, size);
+
+        _Create(fbb, traits::Create(fbb, offset).Union());
+    }
+    
+};
+
+/*class string_value : public base
 {
 public:
     typedef std::shared_ptr<string_value> sptr;
@@ -131,7 +170,7 @@ inline std::ostream& operator<<(std::ostream& os, const string& value) {
     return os;
 }
 
-string get_string(const wrap& x);
+string get_string(const wrap& x);*/
 
 
 } // namespace pmtf
