@@ -39,4 +39,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Vi temporary files
+*.swp
+*.swo
+
 build/

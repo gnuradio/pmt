@@ -18,6 +18,31 @@
 
 namespace pmtf {
 
+class pmt {
+public:
+    pmt() {}
+    virtual ~pmt() noexcept {}
+    virtual Data data_type() = 0;
+    virtual void print(std::ostream& os) const = 0;
+protected:
+    flatbuffers::DetachedBuffer _buf;
+    // This will probably work, but hold off
+    // Need a Create<T> function that works for everything.
+    /*template <class T>
+    _Create(const T& value) {
+
+    }*/
+    void _Create(flatbuffers::FlatBufferBuilder& fbb, flatbuffers::Offset<void> offset) {
+        PmtBuilder pb(fbb);
+        pb.add_data_type(this->data_type());
+        pb.add_data(offset);
+        auto blob = pb.Finish();
+        fbb.FinishSizePrefixed(blob);
+        _buf = fbb.Release();
+    }
+        
+};
+
 class base : public std::enable_shared_from_this<base>
 {
 public:

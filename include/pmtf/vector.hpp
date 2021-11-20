@@ -19,9 +19,74 @@
 
 #include <pmtf/base.hpp>
 #include <pmtf/wrap.hpp>
+#include <pmtf/gsl-lite.hpp>
 
 namespace pmtf {
 
+//template <class T>
+//inline flatbuffers::Offset<void> CreateVector(flatbuffers::FlatBufferBuilder& fbb, const T& value);
+
+template <class T> struct vector_traits;
+template <> struct vector_traits<uint8_t> { using traits = VectorUInt8::Traits; };
+template <> struct vector_traits<uint16_t> { using traits = VectorUInt16::Traits; };
+template <> struct vector_traits<uint32_t> { using traits = VectorUInt32::Traits; };
+template <> struct vector_traits<uint64_t> { using traits = VectorUInt64::Traits; };
+template <> struct vector_traits<int8_t> { using traits = VectorInt8::Traits; };
+template <> struct vector_traits<int16_t> { using traits = VectorInt16::Traits; };
+template <> struct vector_traits<int32_t> { using traits = VectorInt32::Traits; };
+template <> struct vector_traits<int64_t> { using traits = VectorInt64::Traits; };
+template <> struct vector_traits<float> { using traits = VectorFloat32::Traits; };
+
+template <class T>
+class pmt_vector: public pmt {
+public:
+    using traits = typename vector_traits<T>::traits;
+    using type = typename traits::type;
+    using span = typename gsl::span<T>;
+    using const_span = typename gsl::span<const T>;
+    pmt_vector(const std::vector<T>& value) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = fbb.CreateVector(value.data(), value.size());
+        
+        _Create(fbb, traits::Create(fbb, offset).Union());
+    }
+    ~pmt_vector() {}
+    span value() {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto buf = const_cast<flatbuffers::Vector<T>*>(pmt->data_as<type>()->value());
+        return gsl::span<T>(buf->data(), buf->size());
+    }
+    const_span value() const {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto buf = pmt->data_as<type>()->value();
+        return gsl::span<const T>(buf->data(), buf->size());
+    }
+    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    pmt_vector& operator=(const T& value) {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto vector = const_cast<type*>(pmt->data_as<type>());
+        vector->mutate_value(value);
+        return *this;        
+    }
+    pmt_vector& operator=(const pmt_vector<T>& value) {
+        return this->operator=(value.value());
+    }
+    T* data() { return value().data(); }
+    const T* data() const { return value().data(); }
+    size_t size() const { return value().size(); }
+    typename span::iterator begin() { return value().begin(); }
+    typename span::iterator end() { return value().end(); }
+    typename span::const_iterator begin() const { return value().begin(); }
+    typename span::const_iterator end() const { return value().end(); }
+    void print(std::ostream& os) const {
+        os << "[";
+        for (auto& e : value()) {
+            os << e << ", ";
+        }
+        os << "]";
+    }
+    
+};
 
 template <class T>
 class pmt_vector_value : public base

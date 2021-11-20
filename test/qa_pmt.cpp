@@ -36,6 +36,21 @@ using namespace pmtf;
 //     EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
 // }
 
+TEST(Pmt, asdf)
+{
+    auto x = pmt_scalar<uint8_t>(4);
+    std::cout << int(x.value()) << std::endl;
+    x = 5;
+    std::cout << int(x.value()) << std::endl;
+    auto y = pmt_vector<float>(std::vector<float>{1,2,3});
+    for (const auto& zz : y) {
+        std::cout << zz << std::endl;
+    }
+    y.value()[2] = 4.5;
+    std::cout << y.value()[2] << std::endl;
+    //std::cout << y << std::endl;
+}
+
 TEST(Pmt, PmtScalarValueTests)
 {
     auto x = scalar_value<int>(4);

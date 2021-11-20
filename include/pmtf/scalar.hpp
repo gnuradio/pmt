@@ -21,6 +21,49 @@
 
 namespace pmtf {
 
+template <class T>
+inline flatbuffers::Offset<void> CreateScalar(flatbuffers::FlatBufferBuilder& fbb, const T& value);
+
+template <class T> struct scalar_traits;
+template <> struct scalar_traits<uint8_t> { using traits = ScalarUInt8::Traits; };
+template <> struct scalar_traits<uint16_t> { using traits = ScalarUInt16::Traits; };
+template <> struct scalar_traits<uint32_t> { using traits = ScalarUInt32::Traits; };
+template <> struct scalar_traits<uint64_t> { using traits = ScalarUInt64::Traits; };
+template <> struct scalar_traits<int8_t> { using traits = ScalarInt8::Traits; };
+template <> struct scalar_traits<int16_t> { using traits = ScalarInt16::Traits; };
+template <> struct scalar_traits<int32_t> { using traits = ScalarInt32::Traits; };
+template <> struct scalar_traits<int64_t> { using traits = ScalarInt64::Traits; };
+
+template <class T>
+class pmt_scalar: public pmt {
+public:
+    using traits = typename scalar_traits<T>::traits;
+    using type = typename traits::type;
+    pmt_scalar(const T& value) {
+        flatbuffers::FlatBufferBuilder fbb;
+        _Create(fbb, traits::Create(fbb, value).Union());
+    }
+    ~pmt_scalar() {}
+    T value() const {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        // data_as uses ScalarUint8 as type not T, so I need to define something that
+        // does the lookup and then declare a using at the top of the class.
+        return pmt->data_as<type>()->value();
+    }
+    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    pmt_scalar& operator=(const T& value) {
+        auto pmt = GetSizePrefixedPmt(_buf.data());
+        auto scalar = const_cast<type*>(pmt->data_as<type>());
+        scalar->mutate_value(value);
+        return *this;        
+    }
+    pmt_scalar& operator=(const pmt_scalar<T>& value) {
+        return this->operator=(value.value());
+    }
+    void print(std::ostream& os) const { os << value(); }
+    
+};
+
 /**
  * @brief Class holds the implementation of a scalar pmt.
  *
