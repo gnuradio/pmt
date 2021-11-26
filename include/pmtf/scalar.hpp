@@ -39,35 +39,32 @@ template <> struct scalar_traits<std::complex<float>> { using traits = ScalarCom
 template <> struct scalar_traits<std::complex<double>> { using traits = ScalarComplex128::Traits; };
 
 template <class T>
-class scalar: public base {
+class scalar {
 public:
     using traits = typename scalar_traits<T>::traits;
     using type = typename traits::type;
-    scalar(const T& value) {
-        flatbuffers::FlatBufferBuilder fbb;
-        _Create(fbb, traits::Create(fbb, value).Union());
-    }
-    scalar(const scalar<T>& other) {
-        flatbuffers::FlatBufferBuilder fbb;
-        _Create(fbb, traits::Create(fbb, other.value()).Union());
-    }
+    scalar(const T& value) { _Create(value); }
+    scalar(const scalar<T>& other) { _Create(other.value()); }
     ~scalar() {}
     T value() const {
-        auto pmt = GetSizePrefixedPmt(_buf.data());
+        std::shared_ptr<base_buffer> scalar = _get_buf();
+        return scalar->data_as<type>()->value();
+        //return _get_buf()->data_as<type>()->value();
+        //auto pmt = GetSizePrefixedPmt(_buf.data());
         // data_as uses ScalarUint8 as type not T, so I need to define something that
         // does the lookup and then declare a using at the top of the class.
-        return pmt->data_as<type>()->value();
+        //return pmt->data_as<type>()->value();
     }
-    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    constexpr Data data_type() { return DataTraits<type>::enum_value; }
     scalar& operator=(const T& value) {
-        auto pmt = GetSizePrefixedPmt(_buf.data());
-        auto scalar = const_cast<type*>(pmt->data_as<type>());
-        scalar->mutate_value(value);
+        std::shared_ptr<base_buffer> scalar = _get_buf();
+        scalar->data_as<type>()->mutate_value(value);
         return *this;        
     }
     scalar& operator=(const scalar<T>& value) {
         return this->operator=(value.value());
     }
+    const pmt& get_pmt_buffer() const { return _buf; }
     void print(std::ostream& os) const { os << value(); }
     // Cast operators
     //! Cast to a T value.
@@ -78,8 +75,29 @@ public:
     //! Will cause a compilation failure if we can't do the cast.
     template <class U>
     explicit operator U() const { return U(value()); }
+private:
+    void _Create(const T& value) {
+        flatbuffers::FlatBufferBuilder fbb(128);
+        auto offset = traits::Create(fbb, value).Union();
+        auto pmt = CreatePmt(fbb, data_type(), offset);
+        fbb.FinishSizePrefixed(pmt);
+        _get_buf() = std::make_shared<base_buffer>(fbb.Release());
+    }
+    std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
+    const std::shared_ptr<base_buffer> _get_buf() const { return _buf._scalar; }
+    pmt _buf;
     
 };
+
+template <>
+inline pmt& pmt::operator=<uint8_t>(const uint8_t& x) { return operator=(scalar(x).get_pmt_buffer()); }
+template <>
+inline pmt& pmt::operator=<scalar<uint8_t>>(const scalar<uint8_t>& x) { return operator=(x.get_pmt_buffer()); }
+template <>
+inline pmt::pmt<uint8_t>(const uint8_t& x) { operator=(scalar(x).get_pmt_buffer()); }
+template <>
+inline pmt::pmt<scalar<uint8_t>>(const scalar<uint8_t>& x) { operator=(x.get_pmt_buffer()); }
+
 
 template <class T>
 struct is_scalar : std::false_type {};

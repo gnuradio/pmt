@@ -49,14 +49,15 @@ TEST(Pmt, asdf)
     y.value()[2] = 4.5;
     std::cout << y.value()[2] << std::endl;
     //std::cout << y << std::endl;
+    pmt z = x;
 
     map m;
-    m["abc"] = std::make_shared<scalar<uint8_t>>(x);
-    m["def"] = std::make_shared<vector<float>>(y);
-    std::cout << m << std::endl;
-    for (const auto& [k, v]: m) {
-        std::cout << k << ": " << v << std::endl;
-    }
+    m["abc"] = x;
+    //m["def"] = y;
+    //std::cout << m << std::endl;
+    //for (const auto& [k, v]: m) {
+    //    std::cout << k << ": " << v << std::endl;
+    //}
 }
 
 TEST(Pmt, PmtScalarTests) {

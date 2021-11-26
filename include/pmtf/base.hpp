@@ -17,6 +17,54 @@
 #include <vector>
 
 namespace pmtf {
+/*!
+Class is a wrapper around a flatbuffers buffer that contains a Pmt.
+It offers several convenience functions.
+*/
+class base_buffer {
+public:
+    base_buffer() {}
+    base_buffer(flatbuffers::DetachedBuffer&& buf): _buf(std::move(buf)) {}
+    Data data_type();
+    const Pmt* data() const { return GetSizePrefixedPmt(_buf.data()); }
+    Pmt* data() { return const_cast<Pmt*>(GetSizePrefixedPmt(_buf.data())); }
+    template <class type>
+    const type* data_as() const { return data()->data_as<type>(); }
+    template <class type>
+    type* data_as() { return const_cast<type*>(data()->data_as<type>()); }
+    size_t size() { return _buf.size(); }
+private:
+    flatbuffers::DetachedBuffer _buf;
+
+};
+
+/*!
+Pmt class is a collection of base_buffers.  This makes it easy for us to work
+with collections of pmts like maps and vectors.
+
+Do I want to have shared pointers to pmts or pmts have shared pointers??
+A map needs to have shared pointers to its values.
+*/
+struct pmt {
+public:
+    pmt(): _scalar(nullptr), _map(nullptr) {}
+    pmt(const pmt& other) {
+        _scalar = other._scalar;
+        _map = other._map;
+    }
+    template <class T>
+    pmt(const T& other);
+    pmt& operator=(const pmt& other) {
+        _scalar = other._scalar;
+        _map = other._map;
+        return *this;
+    }
+    template <class T>
+    pmt& operator=(const T& other);
+    //template <class T> pmt(const T& x);
+    std::shared_ptr<base_buffer> _scalar;
+    std::shared_ptr<std::map<std::string, pmt>> _map;
+};
 
 class base {
 public:
@@ -40,8 +88,9 @@ public:
         return std::make_shared<base>(tmp_buf, size); 
     }
     // This will take owernship of the pointer.  Should only be used to deserialize
-    base(uint8_t* data, size_t size) : _buf(nullptr, false, nullptr, 0, data, size) {} 
+    base(uint8_t* data, size_t size): _buf(nullptr, false, nullptr, 0, data, size) {}
 protected:
+    // Multiple pmts can point to the same memory.
     flatbuffers::DetachedBuffer _buf;
     // This will probably work, but hold off
     // Need a Create<T> function that works for everything.

@@ -52,7 +52,7 @@ template <class T>
 struct is_complex<std::complex<T>> : std::true_type {};
 
 template <class T>
-class vector: public base {
+class vector {
 public:
     using traits = typename vector_traits<T>::traits;
     using type = typename traits::type;
@@ -74,16 +74,14 @@ public:
         
     ~vector() {}
     span value() {
-        auto pmt = GetSizePrefixedPmt(_buf.data());
-        auto buf = const_cast<flatbuffers::Vector<T>*>(pmt->data_as<type>()->value());
-        return gsl::span<T>(buf->data(), buf->size());
+        auto buf = _buf.data_as<type>()->value();
+        return gsl::span<T>(const_cast<T*>(buf->data()), buf->size());
     }
     const_span value() const {
-        auto pmt = GetSizePrefixedPmt(_buf.data());
-        auto buf = pmt->data_as<type>()->value();
+        auto buf = _buf.data_as<type>()->value();
         return gsl::span<const T>(reinterpret_cast<const T*>(buf->data()), buf->size());
     }
-    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    constexpr Data data_type() { return DataTraits<type>::enum_value; }
     vector& operator=(const T& value) {
         _MakeVector(value.begin(), value.size()); 
     }
@@ -120,7 +118,25 @@ private:
             _Create(fbb, traits::Create(fbb, offset).Union());
         }
     }
+    void _Create(flatbuffers::FlatBufferBuilder& fbb, flatbuffers::Offset<void> offset) {
+        PmtBuilder pb(fbb);
+        pb.add_data_type(this->data_type());
+        pb.add_data(offset);
+        auto blob = pb.Finish();
+        fbb.FinishSizePrefixed(blob);
+        _buf = fbb.Release();
+    }
+    base_buffer _buf;
 };
+
+template <class T>
+std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
+    os << "[ ";
+    for (auto& v: value)
+        os << v << " ";
+    os << "]";
+    return os;
+}
 
 // When we switch to c++20, make this a concept.
 template <class T, class U>

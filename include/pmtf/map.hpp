@@ -50,50 +50,52 @@ I need a generator class that can produce any one of them.
 
 namespace pmtf {
 
-class map : public base {
+class map {
 public:
     using traits = MapString::Traits;
     using type = typename traits::type;
 
     using key_type = std::string;
-    using mapped_type = std::shared_ptr<base>;
+    using mapped_type = pmt;
     using value_type = std::pair<const key_type, mapped_type>;
     using reference = value_type&;
     using const_reference = const value_type&;
     using map_type = std::map<key_type, mapped_type>;
 
-    map() {}
+    map() { _map._map = std::make_shared<map_type>(); }
     ~map() {}
 
     /**************************************************************************
     * Iterators
     **************************************************************************/
-    typename map_type::iterator begin() noexcept { return _map.begin(); }
-    typename map_type::const_iterator begin() const noexcept { return _map.begin(); }
-    typename map_type::iterator end() noexcept { return _map.end(); }
-    typename map_type::const_iterator end() const noexcept { return _map.end(); }
+    typename map_type::iterator begin() noexcept { return _get_map()->begin(); }
+    typename map_type::const_iterator begin() const noexcept { return _get_map()->begin(); }
+    typename map_type::iterator end() noexcept { return _get_map()->end(); }
+    typename map_type::const_iterator end() const noexcept { return _get_map()->end(); }
 
     /**************************************************************************
     * Element Access
     **************************************************************************/
-    mapped_type& at(const key_type& key) { return _map.at(key); }
-    const mapped_type& at(const key_type& key ) const { return _map.at(key); }
-    mapped_type& operator[]( const key_type& key) { return _map[key]; }
+    mapped_type& at(const key_type& key) { return _get_map()->at(key); }
+    const mapped_type& at(const key_type& key ) const { return _get_map()->at(key); }
+    mapped_type& operator[]( const key_type& key) { return _get_map()->operator[](key); }
 
-    constexpr Data data_type() override { return DataTraits<type>::enum_value; }
+    constexpr Data data_type() { return DataTraits<type>::enum_value; }
 
     void print(std::ostream& os) const {
         os << "{";
         for (const auto& [k, v]: *this) {
             os << k << ": ";
-            v->print(os);
+            //v->print(os);
             os << ", ";
         }
         os << "}";
     } 
 private:
+    std::shared_ptr<map_type> _get_map() { return _map._map; }
+    const std::shared_ptr<map_type> _get_map() const { return _map._map; }
     // This stores the actual data.
-    map_type _map;
+    pmt _map;
 
     //virtual void serialize_setup();
 
