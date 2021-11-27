@@ -20,6 +20,15 @@ if get_option('enable_testing')
         install : true)
     test('PMT Basic Tests', e)
 
+    srcs = ['qa_scalar.cpp']
+    e = executable('qa_pmt_scalar', 
+        srcs, 
+        include_directories : incdir, 
+        dependencies: [pmtf_dep,
+                    gtest_dep], 
+        install : true)
+    test('PMT Scalar Tests', e)
+
     srcs = ['qa_vector.cpp']
     e = executable('qa_pmt_vector', 
         srcs, 

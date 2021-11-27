@@ -43,22 +43,26 @@ class scalar {
 public:
     using traits = typename scalar_traits<T>::traits;
     using type = typename traits::type;
+    scalar() { _Create(T(0)); }
     scalar(const T& value) { _Create(value); }
     scalar(const scalar<T>& other) { _Create(other.value()); }
     ~scalar() {}
     T value() const {
         std::shared_ptr<base_buffer> scalar = _get_buf();
-        return scalar->data_as<type>()->value();
-        //return _get_buf()->data_as<type>()->value();
-        //auto pmt = GetSizePrefixedPmt(_buf.data());
-        // data_as uses ScalarUint8 as type not T, so I need to define something that
-        // does the lookup and then declare a using at the top of the class.
-        //return pmt->data_as<type>()->value();
+        if constexpr(is_complex<T>::value)
+            return *reinterpret_cast<const T*>(scalar->data_as<type>()->value());
+        else
+            return scalar->data_as<type>()->value();
     }
     constexpr Data data_type() { return DataTraits<type>::enum_value; }
     scalar& operator=(const T& value) {
         std::shared_ptr<base_buffer> scalar = _get_buf();
-        scalar->data_as<type>()->mutate_value(value);
+        if constexpr(is_complex<T>::value) {
+            auto mv = scalar->data_as<type>()->mutable_value();
+            mv->mutate_re(value.real());
+            mv->mutate_im(value.imag());
+        } else
+            scalar->data_as<type>()->mutate_value(value);
         return *this;        
     }
     scalar& operator=(const scalar<T>& value) {
@@ -139,6 +143,12 @@ bool operator==(const scalar<T>& x, const U& y) {
     else if constexpr(std::is_convertible_v<U, T>)
         return x.value() == T(y);
     return false;
+}
+
+template <class T>
+std::ostream& operator<<(std::ostream& os, const scalar<T>& x) {
+    os << x.value();
+    return os;
 }
 
 /**
