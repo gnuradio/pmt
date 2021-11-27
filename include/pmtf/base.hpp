@@ -115,6 +115,17 @@ inline std::ostream& operator<<(std::ostream& os, const base& p) {
     return os;
 }
 
+template <class T>
+struct is_complex : std::false_type {};
+
+template <class T>
+struct is_complex<std::complex<T>> : std::true_type {};
+
+// We need to know the struct type for complex values
+template <class T> struct scalar_type;
+template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
+template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
+
 /*class base : public std::enable_shared_from_this<base>
 {
 public:

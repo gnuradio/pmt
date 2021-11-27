@@ -40,17 +40,6 @@ template <> struct vector_traits<double> { using traits = VectorFloat64::Traits;
 template <> struct vector_traits<std::complex<float>> { using traits = VectorComplex64::Traits; };
 template <> struct vector_traits<std::complex<double>> { using traits = VectorComplex128::Traits; };
 
-// We need to know the struct type for complex values
-template <class T> struct scalar_type;
-template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
-template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
-
-template <class T>
-struct is_complex : std::false_type {};
-
-template <class T>
-struct is_complex<std::complex<T>> : std::true_type {};
-
 template <class T>
 class vector {
 public:

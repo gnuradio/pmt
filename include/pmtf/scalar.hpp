@@ -33,8 +33,8 @@ template <> struct scalar_traits<int8_t> { using traits = ScalarInt8::Traits; };
 template <> struct scalar_traits<int16_t> { using traits = ScalarInt16::Traits; };
 template <> struct scalar_traits<int32_t> { using traits = ScalarInt32::Traits; };
 template <> struct scalar_traits<int64_t> { using traits = ScalarInt64::Traits; };
-template <> struct scalar_traits<float> { using traits = VectorFloat32::Traits; };
-template <> struct scalar_traits<double> { using traits = VectorFloat64::Traits; };
+template <> struct scalar_traits<float> { using traits = ScalarFloat32::Traits; };
+template <> struct scalar_traits<double> { using traits = ScalarFloat64::Traits; };
 template <> struct scalar_traits<std::complex<float>> { using traits = ScalarComplex64::Traits; };
 template <> struct scalar_traits<std::complex<double>> { using traits = ScalarComplex128::Traits; };
 
@@ -78,7 +78,14 @@ public:
 private:
     void _Create(const T& value) {
         flatbuffers::FlatBufferBuilder fbb(128);
-        auto offset = traits::Create(fbb, value).Union();
+        flatbuffers::Offset<void> offset;
+        //auto offset = traits::Create(fbb, value).Union();
+        if constexpr(is_complex<T>::value) {
+            auto ptr = reinterpret_cast<const typename scalar_type<T>::type*>(&value);
+            offset = traits::Create(fbb, ptr).Union();
+        } else {
+            offset = traits::Create(fbb, value).Union();
+        }
         auto pmt = CreatePmt(fbb, data_type(), offset);
         fbb.FinishSizePrefixed(pmt);
         _get_buf() = std::make_shared<base_buffer>(fbb.Release());
@@ -89,21 +96,36 @@ private:
     
 };
 
-template <>
-inline pmt& pmt::operator=<uint8_t>(const uint8_t& x) { return operator=(scalar(x).get_pmt_buffer()); }
-template <>
-inline pmt& pmt::operator=<scalar<uint8_t>>(const scalar<uint8_t>& x) { return operator=(x.get_pmt_buffer()); }
-template <>
-inline pmt::pmt<uint8_t>(const uint8_t& x) { operator=(scalar(x).get_pmt_buffer()); }
-template <>
-inline pmt::pmt<scalar<uint8_t>>(const scalar<uint8_t>& x) { operator=(x.get_pmt_buffer()); }
-
-
 template <class T>
 struct is_scalar : std::false_type {};
 
 template <class T>
 struct is_scalar<scalar<T>> : std::true_type {};
+
+// In C++20 we can replace this with a concept.
+#define IMPLEMENT_SCALAR_PMT(type) \
+template <> inline pmt& pmt::operator=<type>(const type& x) \
+    { return operator=(scalar(x).get_pmt_buffer()); } \
+template <> inline pmt& pmt::operator=<scalar<type>>(const scalar<type>& x) \
+    { return operator=(x.get_pmt_buffer()); } \
+template <> inline pmt::pmt<type>(const type& x) \
+    { operator=(scalar(x).get_pmt_buffer()); } \
+template <> inline pmt::pmt<scalar<type>>(const scalar<type>& x) \
+    { operator=(x.get_pmt_buffer()); }
+
+IMPLEMENT_SCALAR_PMT(uint8_t)
+IMPLEMENT_SCALAR_PMT(uint16_t)
+IMPLEMENT_SCALAR_PMT(uint32_t)
+IMPLEMENT_SCALAR_PMT(uint64_t)
+IMPLEMENT_SCALAR_PMT(int8_t)
+IMPLEMENT_SCALAR_PMT(int16_t)
+IMPLEMENT_SCALAR_PMT(int32_t)
+IMPLEMENT_SCALAR_PMT(int64_t)
+IMPLEMENT_SCALAR_PMT(float)
+IMPLEMENT_SCALAR_PMT(double)
+IMPLEMENT_SCALAR_PMT(std::complex<float>)
+IMPLEMENT_SCALAR_PMT(std::complex<double>)
+
 
 template <class T, class U>
 bool operator==(const scalar<T>& x, const U& y) {
