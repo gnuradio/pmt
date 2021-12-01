@@ -33,6 +33,7 @@ public:
     template <class type>
     type* data_as() { return const_cast<type*>(data()->data_as<type>()); }
     size_t size() { return _buf.size(); }
+    const uint8_t* raw() const { return _buf.data(); }
 private:
     flatbuffers::DetachedBuffer _buf;
 
@@ -48,6 +49,10 @@ A map needs to have shared pointers to its values.
 struct pmt {
 public:
     pmt(): _scalar(nullptr), _map(nullptr) {}
+    pmt(const std::shared_ptr<base_buffer>& other) {
+        _scalar = other;
+        _map = nullptr;
+    }
     pmt(const pmt& other) {
         _scalar = other._scalar;
         _map = other._map;
@@ -64,7 +69,26 @@ public:
     //template <class T> pmt(const T& x);
     std::shared_ptr<base_buffer> _scalar;
     std::shared_ptr<std::map<std::string, pmt>> _map;
+
+    size_t serialize(std::streambuf& sb) const {
+        std::cout << "Write: " << _scalar->size() << std::endl;
+        if (_scalar) return sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
+        else throw std::runtime_error("Not implemented yet");
+    }
+    static pmt deserialize(std::streambuf& sb) {
+        uint32_t size;
+        sb.sgetn(reinterpret_cast<char*>(&size), sizeof(size));
+        std::cout << size << std::endl;
+        char* x = new char[size + sizeof(uint32_t)];
+        *reinterpret_cast<uint32_t*>(x) = size;
+        sb.sgetn(x + sizeof(uint32_t), size);
+        // This will not free when done...
+        flatbuffers::DetachedBuffer buf(nullptr, false, nullptr, 0, reinterpret_cast<uint8_t*>(x), size);
+        return pmt(std::make_shared<base_buffer>(std::move(buf)));
+    }
 };
+
+
 
 class base {
 public:

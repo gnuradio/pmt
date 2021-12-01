@@ -136,7 +136,12 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
 
 TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     // Serialize/Deserialize and make sure that it works
-    EXPECT_EQ(1 == 0, true);
+    auto value = this->get_value(0);
+    scalar<TypeParam> x(value);
+    std::stringbuf sb;
+    x.get_pmt_buffer().serialize(sb);
+    auto y = pmt::deserialize(sb);
+    EXPECT_EQ(x.value(), scalar<TypeParam>(y).value());
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarWrap)

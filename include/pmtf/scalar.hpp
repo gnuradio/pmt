@@ -46,6 +46,7 @@ public:
     scalar() { _Create(T(0)); }
     scalar(const T& value) { _Create(value); }
     scalar(const scalar<T>& other) { _Create(other.value()); }
+    scalar(const pmt& other): _buf(other) {} 
     ~scalar() {}
     T value() const {
         std::shared_ptr<base_buffer> scalar = _get_buf();
