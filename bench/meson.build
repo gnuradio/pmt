@@ -1,5 +1,6 @@
 incdir = include_directories('../include')
 
+if (boost_dep.found())
 srcs = ['bm_pmt_serialize_uvec.cpp']
 executable('bm_pmt_serialize_uvec', 
     srcs, 
@@ -23,3 +24,4 @@ executable('bm_pmt_dict_pack_unpack',
     dependencies: [pmtf_dep,
                    boost_dep], 
     install : true)
+endif
