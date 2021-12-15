@@ -21,10 +21,15 @@
 #include <pmtf/wrap.hpp>
 #include <pmtf/gsl-lite.hpp>
 
-namespace pmtf {
+// Need to define packing functions for complex<double>
+// flatbuffers knows how to pack the other types that we use.
+namespace flatbuffers {
+    pmtf::Complex128 Pack(std::complex<double> const& obj);
 
-//template <class T>
-//inline flatbuffers::Offset<void> CreateVector(flatbuffers::FlatBufferBuilder& fbb, const T& value);
+    std::complex<double> UnPack(const pmtf::Complex128& obj);
+}
+
+namespace pmtf {
 
 template <class T> struct vector_traits;
 template <> struct vector_traits<uint8_t> { using traits = VectorUInt8::Traits; };
@@ -39,6 +44,13 @@ template <> struct vector_traits<float> { using traits = VectorFloat32::Traits; 
 template <> struct vector_traits<double> { using traits = VectorFloat64::Traits; };
 template <> struct vector_traits<std::complex<float>> { using traits = VectorComplex64::Traits; };
 template <> struct vector_traits<std::complex<double>> { using traits = VectorComplex128::Traits; };
+
+
+// There are two vector constructors that take two arguments.
+// For integer types, they can get confused.  Need to use SFINAE to
+// disambiguate them.
+template <typename T>
+using IsNotInteger = std::enable_if_t<!std::is_integral_v<T>>;
 
 template <class T>
 class vector {
@@ -60,15 +72,38 @@ public:
     vector(std::initializer_list<value_type> il) {
         _MakeVector(il.begin(), il.size());
     }
+
+    vector(size_t size) {
+        _MakeVector(size);
+    }
+    explicit vector(size_t size, const T& set_value) {
+        _MakeVector(size);
+        std::fill(value().begin(), value().end(), set_value);
+    }
+    template <class InputIterator, typename = IsNotInteger<InputIterator>>
+    vector(InputIterator first, InputIterator last) {
+        _MakeVector(&(*first), std::distance(first, last));
+    }
         
     ~vector() {}
     span value() {
-        auto buf = _buf.data_as<type>()->value();
-        return gsl::span<T>(const_cast<T*>(buf->data()), buf->size());
+        std::shared_ptr<base_buffer> vector = _get_buf();
+        auto buf = vector->data_as<type>()->value();
+        if constexpr(is_complex<T>::value) {
+            auto tbuf = reinterpret_cast<const T*>(buf->data());
+            return gsl::span<T>(const_cast<T*>(tbuf), buf->size());
+        } else {
+            return gsl::span<T>(const_cast<T*>(buf->data()), buf->size());
+        }
     }
     const_span value() const {
-        auto buf = _buf.data_as<type>()->value();
-        return gsl::span<const T>(reinterpret_cast<const T*>(buf->data()), buf->size());
+        std::shared_ptr<base_buffer> vector = _get_buf();
+        auto buf = vector->data_as<type>()->value();
+        if constexpr(is_complex<T>::value) {
+            return gsl::span<const T>(reinterpret_cast<const T*>(buf->data()), buf->size());
+        } else {
+            return gsl::span<const T>(buf->data(), buf->size());
+        }
     }
     constexpr Data data_type() { return DataTraits<type>::enum_value; }
     vector& operator=(const T& value) {
@@ -77,6 +112,7 @@ public:
     T* data() { return value().data(); }
     const T* data() const { return value().data(); }
     size_t size() const { return value().size(); }
+    const pmt& get_pmt_buffer() const { return _buf; }
     typename span::iterator begin() { return value().begin(); }
     typename span::iterator end() { return value().end(); }
     typename span::const_iterator begin() const { return value().begin(); }
@@ -100,10 +136,24 @@ private:
     void _MakeVector(const T* data, size_t size) {
         flatbuffers::FlatBufferBuilder fbb;
         if constexpr(is_complex<T>::value) {
-            auto offset = fbb.CreateVectorOfNativeStructs<typename scalar_type<T>::type, T>(data, size);
+            using stype = typename scalar_type<T>::type;
+            //auto offset = fbb.CreateVectorOfNativeStructs<stype>(reinterpret_cast<const stype*>(data), size);
+            auto offset = fbb.CreateVectorOfNativeStructs<stype>(data, size);
             _Create(fbb, traits::Create(fbb, offset).Union());
         } else {
             auto offset = fbb.CreateVector(data, size);
+            _Create(fbb, traits::Create(fbb, offset).Union());
+        }
+    }
+    void _MakeVector(size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        if constexpr(is_complex<T>::value) {
+            uint8_t* ignore;
+            auto offset = fbb.CreateUninitializedVector(size, sizeof(T), &ignore);
+            _Create(fbb, traits::Create(fbb, offset).Union());
+        } else {
+            T* ignore;
+            auto offset = fbb.CreateUninitializedVector(size, &ignore);
             _Create(fbb, traits::Create(fbb, offset).Union());
         }
     }
@@ -113,9 +163,11 @@ private:
         pb.add_data(offset);
         auto blob = pb.Finish();
         fbb.FinishSizePrefixed(blob);
-        _buf = fbb.Release();
+        _get_buf() = std::make_shared<base_buffer>(fbb.Release());
     }
-    base_buffer _buf;
+    std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
+    const std::shared_ptr<base_buffer> _get_buf() const { return _buf._scalar; }
+    pmt _buf;
 };
 
 template <class T>
@@ -137,6 +189,14 @@ bool operator==(const vector<T>& x, const U& other) {
         my_val++;
     }
     return true;
+}
+
+template <class T>
+vector<T> get_vector(const pmt& p) {
+    if (p.data_type() == vector<T>::type)
+        return vector<T>(p);
+    // This error message stinks.  Fix it.
+    throw std::runtime_error("Can't convert pmt to this type");
 }
 /*
 template <class T>

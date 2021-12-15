@@ -8,6 +8,14 @@
 #include <pmtf/vector.hpp>
 #include <algorithm>
 
+namespace flatbuffers {
+    pmtf::Complex128 Pack(const std::complex<double>& obj) {
+        return pmtf::Complex128(obj.real(), obj.imag());
+    }
+    std::complex<double> UnPack(const pmtf::Complex128& obj) {
+        return std::complex<double>(obj.re(), obj.im());
+    }
+}
 namespace pmtf {
 
 

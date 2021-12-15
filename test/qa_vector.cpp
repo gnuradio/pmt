@@ -14,7 +14,7 @@
 
 using namespace pmtf;
 
-/*using testing_types = ::testing::Types<uint8_t,
+using testing_types = ::testing::Types<uint8_t,
                                        int8_t,
                                        uint16_t,
                                        int16_t,
@@ -24,11 +24,8 @@ using namespace pmtf;
                                        int64_t,
                                        float,
                                        double,
-                                       std::complex<float>>; //,
-                                                             // std::complex<double>>;
-
-// using testing_types = ::testing::Types<float>; //,
-//                                                //    std::complex<double>>;
+                                       std::complex<float>,
+                                       std::complex<double>>;
 
 
 template <typename T>
@@ -78,17 +75,16 @@ std::complex<double> PmtVectorFixture<std::complex<double>>::nonzero_value()
 
 TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 
-TYPED_TEST(PmtVectorFixture, PmtVectorNull)
+/*TYPED_TEST(PmtVectorFixture, PmtVectorNull)
 {
     auto pmtv = vector<TypeParam>({});
 
     // The following line fails inside of flatbuffers
     auto pmtw = wrap(vector<TypeParam>({}));
-}
+}*/
 
 TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
 {
-
     std::vector<TypeParam> vec(this->num_values_);
     for (auto i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(i);
@@ -127,7 +123,6 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
     }
     // Init from std::vector
     auto pmt_vec = vector<TypeParam>(vec);
-
     for (auto& xx : pmt_vec) {
         xx *= xx;
     }
@@ -140,7 +135,7 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
     EXPECT_EQ(pmt_vec == vec_doubled, true);
 }
 
-TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
+/*TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
 {
     // Initialize a PMT Wrap from a std::vector object
     std::vector<TypeParam> vec(this->num_values_);
@@ -154,10 +149,10 @@ TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
 
     // Try to cast as a scalar type
     EXPECT_THROW(get_scalar<int8_t>(generic_pmt_obj), std::runtime_error);
-}
+}*/
 
 
-TYPED_TEST(PmtVectorFixture, VectorWrites)
+/*TYPED_TEST(PmtVectorFixture, VectorWrites)
 {
     // Initialize a PMT Wrap from a std::vector object
     std::vector<TypeParam> vec(this->num_values_);
@@ -178,17 +173,16 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
     }
     EXPECT_EQ(pmt_vec, vec_modified);
 
-}
+}*/
 
 TYPED_TEST(PmtVectorFixture, OtherConstructors) {
 
     // Check the other constructors
     vector<TypeParam> vec1(4);
     EXPECT_EQ(vec1.size(), 4);
-    for (auto& e: vec1)
-        EXPECT_EQ(e, this->zero_value());
 
     vector<TypeParam> vec2(4, this->nonzero_value());
+    std::cout << vec2.size() << std::endl;
     for (auto& e: vec2)
         EXPECT_EQ(e, this->nonzero_value());
 
@@ -205,6 +199,6 @@ TYPED_TEST(PmtVectorFixture, OtherConstructors) {
         EXPECT_EQ(e, data[i++]);
 
     vector<TypeParam> vec4(vec3);
-    EXPECT_EQ(vec3.ptr(), vec4.ptr());
-}*/
+    EXPECT_EQ(vec3.value(), vec4.value());
+}
 

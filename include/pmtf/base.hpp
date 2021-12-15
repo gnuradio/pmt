@@ -86,6 +86,12 @@ public:
         flatbuffers::DetachedBuffer buf(nullptr, false, nullptr, 0, reinterpret_cast<uint8_t*>(x), size);
         return pmt(std::make_shared<base_buffer>(std::move(buf)));
     }
+    Data data_type() const {
+        if (_scalar != nullptr) {
+            return _scalar->data_type();
+        }
+        throw std::runtime_error("Cannot get data type for unitialized pmt");
+    }
 };
 
 

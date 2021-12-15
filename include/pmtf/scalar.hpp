@@ -152,6 +152,14 @@ std::ostream& operator<<(std::ostream& os, const scalar<T>& x) {
     return os;
 }
 
+template <class T>
+scalar<T> get_scalar(const pmt& p) {
+    if (p.data_type() == scalar<T>::type)
+        return scalar<T>(p);
+    // This error message stinks.  Fix it.
+    throw std::runtime_error("Can't convert pmt to this type");
+}
+
 /**
  * @brief Class holds the implementation of a scalar pmt.
  *
