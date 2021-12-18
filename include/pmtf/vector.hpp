@@ -63,27 +63,41 @@ public:
     using reference = T&;
     using const_reference = const T&;
     using size_type = size_t;
-    vector(const std::vector<T>& value) {
-        _MakeVector(value.data(), value.size());
-    }
-    vector(const vector<T>& value) {
-        _MakeVector(value.data(), value.size());
-    }
-    vector(std::initializer_list<value_type> il) {
-        _MakeVector(il.begin(), il.size());
-    }
 
+    // Default constructor
+    vector() {
+        _MakeVector(0);
+    }
+    // Constuct with unitialized memory
     vector(size_t size) {
         _MakeVector(size);
     }
+    // Fill Constructor
     explicit vector(size_t size, const T& set_value) {
         _MakeVector(size);
         std::fill(value().begin(), value().end(), set_value);
     }
+    // Range Constuctor
+    // Need the IsNotInteger to not conflict with the fill constructor
     template <class InputIterator, typename = IsNotInteger<InputIterator>>
     vector(InputIterator first, InputIterator last) {
         _MakeVector(&(*first), std::distance(first, last));
     }
+    // Copy from vector Constructor
+    vector(const std::vector<T>& value) {
+        _MakeVector(value.data(), value.size());
+    }
+    // Copy Constructor
+    vector(const vector<T>& value) {
+        _MakeVector(value.data(), value.size());
+    }
+    // Initializer list Constructor
+    vector(std::initializer_list<value_type> il) {
+        _MakeVector(il.begin(), il.size());
+    }
+
+    // From a pmt buffer
+    vector(const pmt& other): _buf(other) {}
         
     ~vector() {}
     span value() {

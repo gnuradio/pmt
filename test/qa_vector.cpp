@@ -83,13 +83,38 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
     auto pmtw = wrap(vector<TypeParam>({}));
 }*/
 
-TYPED_TEST(PmtVectorFixture, PmtVectorBasic)
+TYPED_TEST(PmtVectorFixture, VectorConstructors)
 {
+    // Empty Constructor
+    vector<TypeParam> empty_vec;
+    EXPECT_EQ(empty_vec.size(), 0);
+    int num_values = this->num_values_;
+
+    // Size Constructor ( but uninit memory)
+    vector<TypeParam> sized_vec(num_values);
+    EXPECT_EQ(sized_vec.size(), num_values);
+
+    // Fill Constructor
+    vector<TypeParam> fill_vec(num_values, this->nonzero_value());
+    EXPECT_EQ(fill_vec.size(), num_values);
+    for (const auto& x: fill_vec) {
+        EXPECT_EQ(x, this->nonzero_value());
+    }
+
+    // Init from std::vector
     std::vector<TypeParam> vec(this->num_values_);
     for (auto i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(i);
     }
-    // Init from std::vector
+
+    // Range Constructor
+    vector<TypeParam> range_vec(vec.begin(), vec.end());
+    EXPECT_EQ(range_vec.size(), num_values);
+    for (size_t i = 0; i < range_vec.size(); i++) {
+        EXPECT_EQ(range_vec[i], vec[i]);
+    }
+
+    // Copy from std::vector
     auto pmt_vec = vector<TypeParam>(vec);
     EXPECT_EQ(pmt_vec == vec, true);
 
@@ -133,6 +158,19 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
         xx += xx;
     }
     EXPECT_EQ(pmt_vec == vec_doubled, true);
+}
+
+TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
+    // Serialize/Deserialize and make sure that it works
+    std::vector<TypeParam> vec(this->num_values_);
+    for (auto i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(i);
+    }
+    vector<TypeParam> x(vec);
+    std::stringbuf sb;
+    x.get_pmt_buffer().serialize(sb);
+    auto y = pmt::deserialize(sb);
+    EXPECT_EQ(x.value(), vector<TypeParam>(y).value());
 }
 
 /*TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
