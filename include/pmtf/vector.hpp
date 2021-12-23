@@ -18,7 +18,6 @@
 #include <vector>
 
 #include <pmtf/base.hpp>
-#include <pmtf/wrap.hpp>
 #include <pmtf/gsl-lite.hpp>
 
 // Need to define packing functions for complex<double>
@@ -187,9 +186,13 @@ private:
 template <class T>
 std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     os << "[ ";
-    for (auto& v: value)
-        os << v << " ";
-    os << "]";
+    bool first = true;
+    for (auto& v: value) {
+        if (!first) os << ", ";
+        first = false;
+        os << v;
+    }
+    os << " ]";
     return os;
 }
 
@@ -212,6 +215,27 @@ vector<T> get_vector(const pmt& p) {
     // This error message stinks.  Fix it.
     throw std::runtime_error("Can't convert pmt to this type");
 }
+
+#define Apply(func) \
+func(uint8_t) \
+func(uint16_t) \
+func(uint32_t) \
+func(uint64_t) \
+func(int8_t) \
+func(int16_t) \
+func(int32_t) \
+func(int64_t) \
+func(float) \
+func(double) \
+func(std::complex<float>)\
+func(std::complex<double>)
+
+#define VectorPmt(T) \
+template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
+    { *this = vector<T>(x).get_pmt_buffer(); }
+Apply(VectorPmt)
+#undef VectorPmt
+#undef Apply
 /*
 template <class T>
 class pmt_vector_value : public base

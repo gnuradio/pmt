@@ -25,7 +25,7 @@ class base_buffer {
 public:
     base_buffer() {}
     base_buffer(flatbuffers::DetachedBuffer&& buf): _buf(std::move(buf)) {}
-    Data data_type();
+    Data data_type() { return data()->data_type(); }
     const Pmt* data() const { return GetSizePrefixedPmt(_buf.data()); }
     Pmt* data() { return const_cast<Pmt*>(GetSizePrefixedPmt(_buf.data())); }
     template <class type>
@@ -72,8 +72,19 @@ public:
 
     size_t serialize(std::streambuf& sb) const {
         std::cout << "Write: " << _scalar->size() << std::endl;
-        if (_scalar) return sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
-        else throw std::runtime_error("Not implemented yet");
+        size_t length = 0;
+        length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
+        if (_map) {
+            uint32_t length;
+            for (const auto& [k, v]: *_map) {
+                // For right now just prefix the size to the key and send it
+                length = k.size();
+                length += sb.sputn(reinterpret_cast<const char*>(&length), sizeof(uint32_t));
+                length += sb.sputn(k.c_str(), length);
+                length += v.serialize(sb);
+            }
+        }
+        return length;
     }
     static pmt deserialize(std::streambuf& sb) {
         uint32_t size;
@@ -84,8 +95,23 @@ public:
         sb.sgetn(x + sizeof(uint32_t), size);
         // This will not free when done...
         flatbuffers::DetachedBuffer buf(nullptr, false, nullptr, 0, reinterpret_cast<uint8_t*>(x), size);
-        return pmt(std::make_shared<base_buffer>(std::move(buf)));
+        pmt cur(std::make_shared<base_buffer>(std::move(buf)));
+        if (cur.data_type() == Data::MapHeaderString) {
+            cur._map = std::make_shared<std::map<std::string, pmt>>();
+            uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
+            std::vector<char> data;
+            for (size_t i = 0; i < count; i++) {
+                // Read length then string
+                sb.sgetn(reinterpret_cast<char*>(&size), sizeof(uint32_t));
+                data.resize(size);
+                sb.sgetn(data.data(), size);
+                // Deserialize the pmt map value
+                (*cur._map)[std::string(data.begin(), data.end())] = deserialize(sb);
+            }
+        }
+        return cur;
     }
+
     Data data_type() const {
         if (_scalar != nullptr) {
             return _scalar->data_type();
@@ -156,6 +182,8 @@ template <class T> struct scalar_type;
 template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
 template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
 
+template <Data T>
+struct cpp_type;
 /*class base : public std::enable_shared_from_this<base>
 {
 public:

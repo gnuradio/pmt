@@ -133,8 +133,11 @@ table MapEntryString {
     value:Pmt;
 }
 
-table MapString {
-    entries:[MapEntryString];
+//table MapString {
+//    entries:[MapEntryString];
+//}
+table MapHeaderString {
+    count:uint32;
 }
 
 union Data { PmtString, ScalarFloat32, ScalarFloat64, ScalarComplex64, ScalarComplex128, 
@@ -145,7 +148,7 @@ VectorFloat32, VectorFloat64, VectorComplex64, VectorComplex128,
 VectorInt8, VectorInt16, VectorInt32, VectorInt64, 
 VectorUInt8, VectorUInt16, VectorUInt32, VectorUInt64,
 VectorBool, VectorPmt,
-MapString
+MapHeaderString, MapEntryString
 }
 
 

@@ -9,7 +9,6 @@
 
 #include <pmtf/pmtf_generated.h>
 #include <pmtf/base.hpp>
-#include <pmtf/wrap.hpp>
 #include <complex>
 #include <ostream>
 #include <map>
@@ -55,7 +54,7 @@ public:
         else
             return scalar->data_as<type>()->value();
     }
-    constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     scalar& operator=(const T& value) {
         std::shared_ptr<base_buffer> scalar = _get_buf();
         if constexpr(is_complex<T>::value) {
@@ -154,12 +153,28 @@ std::ostream& operator<<(std::ostream& os, const scalar<T>& x) {
 
 template <class T>
 scalar<T> get_scalar(const pmt& p) {
-    if (p.data_type() == scalar<T>::type)
+    if (p.data_type() == scalar<T>::data_type())
         return scalar<T>(p);
     // This error message stinks.  Fix it.
     throw std::runtime_error("Can't convert pmt to this type");
 }
 
+// These structures allow us to write template functions that depend on the
+// flatbuffer data type.  This allows us to do things like verify that the
+// datatype is correct when we want to interpret a pmt as another type.
+template <> struct cpp_type<Data::ScalarInt8> { using type=int8_t; };
+template <> struct cpp_type<Data::ScalarInt16> { using type=int16_t; };
+template <> struct cpp_type<Data::ScalarInt32> { using type=int32_t; };
+template <> struct cpp_type<Data::ScalarInt64> { using type=int64_t; };
+template <> struct cpp_type<Data::ScalarUInt8> { using type=uint8_t; };
+template <> struct cpp_type<Data::ScalarUInt16> { using type=uint16_t; };
+template <> struct cpp_type<Data::ScalarUInt32> { using type=uint32_t; };
+template <> struct cpp_type<Data::ScalarUInt64> { using type=uint64_t; };
+template <> struct cpp_type<Data::ScalarFloat32> { using type=float; };
+template <> struct cpp_type<Data::ScalarFloat64> { using type=double; };
+template <> struct cpp_type<Data::ScalarComplex64> { using type=std::complex<float>; };
+template <> struct cpp_type<Data::ScalarComplex128> { using type=std::complex<double>; };
+template <> struct cpp_type<Data::ScalarBool> { using type=bool; };
 /**
  * @brief Class holds the implementation of a scalar pmt.
  *

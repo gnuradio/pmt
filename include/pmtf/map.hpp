@@ -17,7 +17,6 @@
 #include <vector>
 
 #include <pmtf/base.hpp>
-#include <pmtf/wrap.hpp>
 
 // What if this was just a map?
 // Then I wouldn't have a serialize function in it. and it wouldn't be derived from base.
@@ -52,7 +51,8 @@ namespace pmtf {
 
 class map {
 public:
-    using traits = MapString::Traits;
+    using traits = MapHeaderString::Traits;
+    using entryTraits = MapEntryString::Traits;
     using type = typename traits::type;
 
     using key_type = std::string;
@@ -62,7 +62,19 @@ public:
     using const_reference = const value_type&;
     using map_type = std::map<key_type, mapped_type>;
 
-    map() { _map._map = std::make_shared<map_type>(); }
+    // Construct empty map
+    map() {
+        _MakeEmptyMap();
+    }
+    // Copy from std map
+    map(const std::map<std::string, pmt>& other) {
+        _MakeEmptyMap();
+        for (auto& [k, v]: other)
+            this->operator[](k) = v;
+    }
+    map(const pmt& other): _map(other) {}
+    //template <class T>
+    //map(std::map<string
     ~map() {}
 
     /**************************************************************************
@@ -81,6 +93,7 @@ public:
     mapped_type& operator[]( const key_type& key) { return _get_map()->operator[](key); }
 
     constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    const pmt& get_pmt_buffer() const { return _map; }
 
     void print(std::ostream& os) const {
         os << "{";
@@ -94,13 +107,25 @@ public:
 private:
     std::shared_ptr<map_type> _get_map() { return _map._map; }
     const std::shared_ptr<map_type> _get_map() const { return _map._map; }
+    std::shared_ptr<base_buffer> _get_header() { return _map._scalar; }
+    const std::shared_ptr<base_buffer> _get_header() const { return _map._scalar; }
     // This stores the actual data.
     pmt _map;
+    void _MakeEmptyMap() {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = traits::Create(fbb, 0).Union();
+        auto pmt = CreatePmt(fbb, data_type(), offset);
+        fbb.FinishSizePrefixed(pmt);
+        _get_header() = std::make_shared<base_buffer>(fbb.Release());
+        _map._map = std::make_shared<std::map<std::string, pmtf::pmt>>();
+    }
 
     //virtual void serialize_setup();
 
 };
 
+template <> inline pmt::pmt<map>(const map& x) \
+    { *this = x.get_pmt_buffer(); }
 /*template <class T>
 class map : public base
 {
