@@ -100,6 +100,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarConstruction)
     scalar<TypeParam> c(value);
     EXPECT_EQ(c == value, true);
     EXPECT_EQ(c == pmt_scalar, true);
+    EXPECT_EQ(value == c, true);
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarValue) {

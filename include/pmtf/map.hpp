@@ -72,7 +72,7 @@ public:
         for (auto& [k, v]: other)
             this->operator[](k) = v;
     }
-    map(const pmt& other): _map(other) {}
+    explicit map(const pmt& other): _map(other) {}
     //template <class T>
     //map(std::map<string
     ~map() {}
@@ -90,9 +90,19 @@ public:
     **************************************************************************/
     mapped_type& at(const key_type& key) { return _get_map()->at(key); }
     const mapped_type& at(const key_type& key ) const { return _get_map()->at(key); }
-    mapped_type& operator[]( const key_type& key) { return _get_map()->operator[](key); }
+    mapped_type& operator[]( const key_type& key) {
+        auto& x =_get_map()->operator[](key);
+        // Need to make sure that the number of keys is up to date
+        std::shared_ptr<base_buffer> scalar = _map._scalar;
+        scalar->data_as<type>()->mutate_count(_get_map()->size());
+        return x;
+    }
 
-    constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    size_t size() const { return _get_map()->size(); }
+    size_t size2() const { return _map._scalar->data_as<type>()->count(); }
+    size_t count(const key_type& key) const { return _get_map()->count(key); }
+
+    static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     const pmt& get_pmt_buffer() const { return _map; }
 
     void print(std::ostream& os) const {
@@ -113,10 +123,10 @@ private:
     pmt _map;
     void _MakeEmptyMap() {
         flatbuffers::FlatBufferBuilder fbb;
-        auto offset = traits::Create(fbb, 0).Union();
+        auto offset = traits::Create(fbb, 1).Union();
         auto pmt = CreatePmt(fbb, data_type(), offset);
         fbb.FinishSizePrefixed(pmt);
-        _get_header() = std::make_shared<base_buffer>(fbb.Release());
+        _map._scalar = std::make_shared<base_buffer>(fbb.Release());
         _map._map = std::make_shared<std::map<std::string, pmtf::pmt>>();
     }
 
@@ -126,130 +136,12 @@ private:
 
 template <> inline pmt::pmt<map>(const map& x) \
     { *this = x.get_pmt_buffer(); }
-/*template <class T>
-class map : public base
-{
-public:
-    using key_type = std::string;
-    using mapped_type = wrap;
-    using value_type = std::pair<const key_type, mapped_type>;
-    using reference = value_type&;
-    using const_reference = const value_type&;
-    using map_type = std::map<T, wrap>;
 
-    typedef std::shared_ptr<map> sptr;
-    static sptr make(const map_type& val)
-    {
-        return std::make_shared<map<T>>(val);
-    }
-    static sptr from_buffer(const uint8_t* buf, size_t size)
-    {
-        return std::make_shared<map<T>>(buf, size);
-    }
-    static sptr from_pmt(const pmtf::Pmt* fb_pmt)
-    {
-        return std::make_shared<map<T>>(fb_pmt);
-    }*/
-
-    /**************************************************************************
-    * Constructors
-    **************************************************************************/
-
-    /**
-     * @brief Construct a new pmt map object that is empty
-     *
-     * @param
-     */
-    //map();
-
-    /**
-     * @brief Construct a new pmt map object from a std::map
-     *
-     * @param val
-     */
-    //map(const map_type& val);
-    /**
-     * @brief Construct a new pmt map object from a map
-     *
-     * @param val
-     */
-    //map(const map& val);
-    /**
-     * @brief Construct a new pmt map object from a serialized flatbuffer
-     *
-     * @param buf
-     * @param size
-     */
-    //map(const uint8_t* buf, size_t size);
-    /**
-     * @brief Construct a new pmt map object from a flatbuffers interpreted Pmt object
-     *
-     * @param fb_pmt
-     */
-    //map(const pmtf::Pmt* fb_pmt);
-
-    /**************************************************************************
-    * Copy Assignment
-    **************************************************************************/
-    //map& operator=(const map& other);
-    //map& operator=(map&& other) noexcept;
-
-    /**************************************************************************
-    * Element Access
-    **************************************************************************/
-    //mapped_type& at(const key_type& key);
-    //const mapped_type& at(const key_type& key ) const;
-    //mapped_type& operator[]( const key_type& key);
-
-    /**************************************************************************
-    * Iterators
-    **************************************************************************/
-    /*typename map_type::iterator begin() noexcept { return _map.begin(); }
-    typename map_type::const_iterator begin() const noexcept { return _map.begin(); }
-    //typename std::map<T, pmt_sptr>::const_iterator begin() const noexcept { return _map.begin(); }
-    typename map_type::iterator end() noexcept { return _map.end(); }
-    typename map_type::const_iterator end() const noexcept { return _map.end(); }
-    //typename const std::map<T, pmt_sptr>::iterator end() const noexcept { return _map.end(); }*/
-
-    /**************************************************************************
-    * Capacity
-    **************************************************************************/
-    /*bool empty() const noexcept { return _map.empty(); }
-    size_t size() const noexcept { return _map.size(); }
-    size_t max_size() const noexcept { return _map.max_size(); }
-*/
-    /**************************************************************************
-    * Modifiers
-    **************************************************************************/
-  /*  
-
-
-    flatbuffers::Offset<void> rebuild_data(flatbuffers::FlatBufferBuilder& fbb);
-
-    void print(std::ostream& os) const {
-        os << "{";
-        for (const auto& [k, v]: *this) {
-            os << k << ": " << v << ", "; 
-        }
-        os << "}";
-    } 
-
-
-private:
-    // This stores the actual data.
-    map_type _map;
-
-    void fill_flatbuffer();
-    virtual void serialize_setup();
-
-
-};*/
-
-/*map<std::string> get_map(const wrap& x) {
-    if (x.ptr()->data_type() == Data::PmtMap)
-        return map<std::string>(std::dynamic_pointer_cast<map<std::string>>(x.ptr()));
-    else
-        throw std::runtime_error("Cannot convert to map");
-}*/
+inline map get_map(const pmt& p) {
+    if (p.data_type() == map::data_type())
+        return map(p);
+    // This error message stinks.  Fix it.
+    throw std::runtime_error("Can't convert pmt to map");
+}
 
 }
