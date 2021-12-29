@@ -200,12 +200,7 @@ std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
 template <class T>
 bool operator==(const vector<T>& x, const gsl::span<const T>& other) {
     if (other.size() != x.size()) return false;
-    auto my_val = x.begin();
-    for (auto&& val : other) {
-        if (*my_val != val) return false;
-        my_val++;
-    }
-    return true;
+    return std::equal(x.begin(), x.end(), other.begin());
 }
 
 template <class T>

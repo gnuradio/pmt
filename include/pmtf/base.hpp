@@ -71,7 +71,6 @@ public:
     std::shared_ptr<std::map<std::string, pmt>> _map;
 
     size_t serialize(std::streambuf& sb) const {
-        std::cout << "Write: " << _scalar->size() << std::endl;
         size_t length = 0;
         length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
         if (_map) {
@@ -89,24 +88,20 @@ public:
     static pmt deserialize(std::streambuf& sb) {
         uint32_t size;
         sb.sgetn(reinterpret_cast<char*>(&size), sizeof(size));
-        std::cout << size << std::endl;
         char* x = new char[size + sizeof(uint32_t)];
         *reinterpret_cast<uint32_t*>(x) = size;
         sb.sgetn(x + sizeof(uint32_t), size);
-        // This will not free when done...
-        flatbuffers::DetachedBuffer buf(nullptr, false, nullptr, 0, reinterpret_cast<uint8_t*>(x), size);
+        flatbuffers::DetachedBuffer buf(nullptr, false, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
         pmt cur(std::make_shared<base_buffer>(std::move(buf)));
         if (cur.data_type() == Data::MapHeaderString) {
             cur._map = std::make_shared<std::map<std::string, pmt>>();
             uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
-            std::cout << "count = " << count << std::endl;
             std::vector<char> data;
             for (size_t i = 0; i < count; i++) {
                 // Read length then string
                 sb.sgetn(reinterpret_cast<char*>(&size), sizeof(uint32_t));
                 data.resize(size);
                 sb.sgetn(data.data(), size);
-                std::cout << "key = " << std::string(data.begin(), data.end()) << std::endl;
                 // Deserialize the pmt map value
                 (*cur._map)[std::string(data.begin(), data.end())] = deserialize(sb);
             }

@@ -5,10 +5,11 @@
 namespace po = boost::program_options;
 
 #include <pmtf/vector.hpp>
+#include <pmtf/wrap.hpp>
 
 using namespace pmtf;
 
-/*bool run_test(const int times, const std::vector<int32_t>& data)
+bool run_test(const int times, const std::vector<int32_t>& data)
 {
     bool valid = true;
 
@@ -17,19 +18,19 @@ using namespace pmtf;
     {
         sb.str(""); // reset channel to empty
         // auto p1 = vector<int32_t>(data);
-        wrap p1 = data;
-        p1.ptr()->serialize(sb);
-        auto p2 = base::deserialize(sb);
-        if (!(*(p1.ptr()) == *p2))
+        pmt p1 = data;
+        p1.serialize(sb);
+        auto p2 = pmt::deserialize(sb);
+        if (p1 != p2)
             valid = false;
     }
 
     return valid;
-}*/
+}
 
 int main(int argc, char* argv[])
 {
-    /*uint64_t samples;
+    uint64_t samples;
     size_t veclen;
 
     po::options_description desc("Basic Test Flow Graph");
@@ -65,5 +66,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }*/
+    }
 }
