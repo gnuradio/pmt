@@ -131,55 +131,6 @@ using IsNotPmt = std::enable_if_t<!std::is_same_v<T, pmt>, bool>;
 
 
 
-class base {
-public:
-    using sptr=std::shared_ptr<base>;
-    base() {}
-    virtual ~base() noexcept {}
-    virtual Data data_type() { return Data::NONE; }
-    virtual void print(std::ostream& os) const {}
-    bool serialize(std::streambuf& sb)
-    {
-        serialize_setup();
-        return sb.sputn(reinterpret_cast<char*>(_buf.data()), _buf.size()) != std::streambuf::traits_type::eof();
-    }
-    static sptr deserialize(std::streambuf& sb)
-    {
-        char buf[4];
-        sb.sgetn(buf, 4);
-        uint32_t size = *((uint32_t*)&buf[0]);
-        uint8_t* tmp_buf = new uint8_t[size];
-        sb.sgetn((char*)tmp_buf, size);
-        return std::make_shared<base>(tmp_buf, size); 
-    }
-    // This will take owernship of the pointer.  Should only be used to deserialize
-    base(uint8_t* data, size_t size): _buf(nullptr, false, nullptr, 0, data, size) {}
-protected:
-    // Multiple pmts can point to the same memory.
-    flatbuffers::DetachedBuffer _buf;
-    // This will probably work, but hold off
-    // Need a Create<T> function that works for everything.
-    /*template <class T>
-    _Create(const T& value) {
-
-    }*/
-    void _Create(flatbuffers::FlatBufferBuilder& fbb, flatbuffers::Offset<void> offset) {
-        PmtBuilder pb(fbb);
-        pb.add_data_type(this->data_type());
-        pb.add_data(offset);
-        auto blob = pb.Finish();
-        fbb.FinishSizePrefixed(blob);
-        _buf = fbb.Release();
-    }
-    virtual void serialize_setup() {}
-        
-};
-
-inline std::ostream& operator<<(std::ostream& os, const base& p) {
-    p.print(os);
-    return os;
-}
-
 template <class T>
 struct is_complex : std::false_type {};
 

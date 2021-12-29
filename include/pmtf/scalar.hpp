@@ -197,7 +197,6 @@ bool operator==(const pmt& x, const T& y) {
 
 template <class T>
 bool operator==(const pmt& x, const scalar<T>& y) {
-    std::cout << "Correct ==\n";
     return x == y.value();
 }
 template <class T>
