@@ -17,23 +17,83 @@
 
 using namespace pmtf;
 
-// TEST(Pmt, BasicPmtTests)
+// // TEST(Pmt, BasicPmtTests)
+// // {
+// //     std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);
+// //     auto x = scalar(cplx_val);
+
+// //     EXPECT_EQ(x, cplx_val);
+// //     EXPECT_EQ(x.data_type(), Data::ScalarComplex64);
+
+// //     std::vector<int32_t> int_vec_val{ 5, 9, 23445, 63, -25 };
+// //     auto int_pmt_vec = vector<int32_t>(int_vec_val);
+// //     EXPECT_EQ(int_pmt_vec, int_vec_val);
+// //     EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorInt32);
+
+// //     std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
+// //     auto cf_pmt_vec = vector<std::complex<float>>(cf_vec_val);
+// //     EXPECT_EQ(cf_pmt_vec, cf_vec_val);
+// //     EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
+// // }
+
+// TEST(Pmt, PmtScalarValueTests)
 // {
-//     std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);
-//     auto x = scalar(cplx_val);
+//     auto x = scalar_value<int>(4);
+//     EXPECT_EQ(x, 4);
+//     scalar_value<int> y(4);
+//     EXPECT_EQ(x, y);
+//     x = 5;
+//     EXPECT_EQ(x, 5.0);
+//     y = x;
+//     EXPECT_EQ(x, y);
+//     scalar_value<int> z = 4;
+//     int a = x.value();
+//     EXPECT_EQ(a, 5.0);
+// }
 
-//     EXPECT_EQ(x, cplx_val);
-//     EXPECT_EQ(x.data_type(), Data::ScalarComplex64);
+// TEST(Pmt, PmtScalarTests) {
+//     auto x = scalar<int>(4);
+//     EXPECT_EQ(x, 4);
+//     scalar<int> y(4);
+//     EXPECT_EQ(x, y);
+//     x = 5;
+//     EXPECT_EQ(x, 5.0);
+//     y = x;
+//     EXPECT_EQ(x, y);
+//     scalar<int> z = 4;
+//     int a = int(x);
+//     EXPECT_EQ(a, 5.0);
+//     float b = float(x);
+//     EXPECT_EQ(b, 5.0);
+// }
 
-//     std::vector<int32_t> int_vec_val{ 5, 9, 23445, 63, -25 };
-//     auto int_pmt_vec = vector<int32_t>(int_vec_val);
-//     EXPECT_EQ(int_pmt_vec, int_vec_val);
-//     EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorInt32);
+// TEST(Pmt, PmtVectorValueTests) {
+//     auto x = pmt_vector_value<std::complex<float>>({{1, -1}, {2.1, 3.0}});
+//     std::vector<std::complex<float>> y({{1, -1}, {2.1, 3.0}});
+//     EXPECT_EQ(x == y, true );
+//     auto z =  pmt_vector_value<std::complex<float>>(y);
+//     auto a =  pmt_vector_value<std::complex<float>>(x);
+// }
 
-//     std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
-//     auto cf_pmt_vec = vector<std::complex<float>>(cf_vec_val);
-//     EXPECT_EQ(cf_pmt_vec, cf_vec_val);
-//     EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
+// TEST(Pmt, PmtVectorTests) {
+//     // Init from values
+//     auto x = vector<std::complex<float>>({{1, -1}, {2.1, 3.0}});
+//     std::vector<std::complex<float>> y({{1, -1}, {2.1, 3.0}});
+//     // Do they equal each other
+//     EXPECT_EQ(x, y );
+//     // Init from vector
+//     auto z =  vector<std::complex<float>>(y);
+//     // Copy constructor
+//     auto a =  vector<std::complex<float>>(x);
+//     // Assignment operator
+//     a = x;
+//     // TODO: Add in Move contstructor
+//     // Make sure we can do a range based for loop
+//     for (auto& xx : x) {
+//         xx += 1;
+//     }
+//     // Print
+//     std::cout << x << std::endl;
 // }
 
 TEST(Pmt, asdf)
@@ -60,180 +120,91 @@ TEST(Pmt, asdf)
     //}
 }
 
-TEST(Pmt, PmtScalarTests) {
-    auto x = scalar<int>(4);
-    EXPECT_EQ(x, 4);
-    scalar<int> y(4);
-    EXPECT_EQ(x, y);
-    x = 5;
-    EXPECT_EQ(x, 5.0);
-    y = x;
-    EXPECT_EQ(x, y);
-    scalar<int> z = 4;
-    int a = int(x);
-    EXPECT_EQ(a, 5.0);
-    float b = float(x);
-    EXPECT_EQ(b, 5.0);
-}
+// //     EXPECT_EQ(str_pmt, "hello");
+// // }
 
-TEST(Pmt, PmtVectorTests) {
-    // Init from values
-    auto x = vector<std::complex<float>>({{1, -1}, {2.1, 3.0}});
-    std::vector<std::complex<float>> y({{1, -1}, {2.1, 3.0}});
-    // Do they equal each other
-    EXPECT_EQ(x, y );
-    // Init from vector
-    auto z =  vector<std::complex<float>>(y);
-    // Copy constructor
-    auto a =  vector<std::complex<float>>(x);
-    // Assignment operator
-    /*a = x;
-    // TODO: Add in Move contstructor
-    // Make sure we can do a range based for loop
-    for (auto& xx : x) {
-        xx += 1;
-    }*/
-    // Print
-    std::cout << x << std::endl;
-}
 
-// TEST(Pmt, PmtStringTests)
+// /*TEST(Pmt, PmtMapTests)
 // {
-//     auto str_pmt = string("hello");
-//     std::cout << str_pmt << std::endl;
+//     std::complex<float> val1(1.2, -3.4);
+//     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-//     EXPECT_EQ(str_pmt, "hello");
+//     // Create the PMT map
+//     std::map<std::string, wrap> input_map({
+//         { "key1", val1 },
+//         { "key2", val2 },
+//     });
+//     auto map_pmt = map<std::string>(input_map);
+
+//     // Lookup values in the PMT map and compare with what was put in there
+//     auto vv1 = map_pmt["key1"];
+//     std::cout << vv1 << std::endl;
+//     EXPECT_EQ(get_scalar<std::complex<float>>(vv1), val1);
+
+//     auto vv2 = map_pmt["key2"];
+//     EXPECT_EQ(vv2, val2);
+// }*/
+
+// TEST(Pmt, PmtWrap)
+// {
+//     wrap x = int8_t(4);
+//     get_scalar<int8_t>(x);
+//     get_scalar<int8_t>(x);
+// }
+// TEST(pmt, CanBe)
+// {
+//     wrap x = int32_t(257);
+//     assert(can_be<int8_t>(x) == true);
+//     assert(can_be<uint64_t>(x) == true);
+//     assert(can_be<float>(x) == true);
+//     assert(can_be<std::complex<double>>(x) == true);
+//     assert(can_be<bool>(x) == true);
+//     assert(can_be<std::string>(x) == false);
+//     assert(can_be<scalar<int32_t>>(x) == true);
+//     assert(can_be<scalar<int8_t>>(x) == true);
 // }
 
-
-/*TEST(Pmt, PmtMapTests)
-{
-    std::complex<float> val1(1.2, -3.4);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
-
-    // Create the PMT map
-    std::map<std::string, wrap> input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
-    auto map_pmt = map<std::string>(input_map);
-
-    // Lookup values in the PMT map and compare with what was put in there
-    auto vv1 = map_pmt["key1"];
-    std::cout << vv1 << std::endl;
-    EXPECT_EQ(get_scalar<std::complex<float>>(vv1), val1);
-
-    auto vv2 = map_pmt["key2"];
-    EXPECT_EQ(vv2, val2);
-}*/
-
-/*TEST(Pmt, PmtWrap)
-{
-    wrap x = int8_t(4);
-    get_scalar<int8_t>(x);
-    get_scalar<int8_t>(x);
-}
-TEST(pmt, CanBe)
-{
-    wrap x = int32_t(257);
-    assert(can_be<int8_t>(x) == true);
-    assert(can_be<uint64_t>(x) == true);
-    assert(can_be<float>(x) == true);
-    assert(can_be<std::complex<double>>(x) == true);
-    assert(can_be<bool>(x) == true);
-    assert(can_be<std::string>(x) == false);
-    assert(can_be<scalar<int32_t>>(x) == true);
-    assert(can_be<scalar<int8_t>>(x) == true);
-}*/
-
-/*TEST(Pmt, VectorWrites)
-{
-    {
-        std::vector<std::complex<float>> cf_vec_val{ { 0, 1 }, { 2, 3 }, { 4, 5 } };
-        std::vector<std::complex<float>> cf_vec_val_modified{ { 4, 5 },
-                                                              { 6, 7 },
-                                                              { 8, 9 } };
-        auto cf_pmt_vec = vector(cf_vec_val);
-        EXPECT_EQ(cf_pmt_vec, cf_vec_val);
-        EXPECT_EQ(cf_pmt_vec.data_type(), Data::VectorComplex64);
-
-        cf_vec_val[0] = { 4, 5 };
-        cf_vec_val[1] = { 6, 7 };
-        cf_vec_val[2] = { 8, 9 };
-
-        EXPECT_EQ(cf_pmt_vec, cf_vec_val_modified);
-    }
-    {
-        std::vector<uint32_t> int_vec_val{ 1, 2, 3, 4, 5 };
-        std::vector<uint32_t> int_vec_val_modified{ 6, 7, 8, 9, 10 };
-        auto int_pmt_vec = vector(int_vec_val);
-        EXPECT_EQ(int_pmt_vec, int_vec_val);
-        EXPECT_EQ(int_pmt_vec.data_type(), Data::VectorUInt32);
-
-        int_vec_val[0] = 6;
-        int_vec_val[1] = 7;
-        int_vec_val[2] = 8;
-        int_vec_val[3] = 9;
-        int_vec_val[4] = 10;
-
-        EXPECT_EQ(int_pmt_vec, int_vec_val_modified);
-    }
-}
-
-TEST(Pmt, VectorWrapper) {
-    vector<uint32_t> x(10);
-    vector<uint32_t> y{1,2,3,4,6,7};
-    std::vector<uint32_t> data{1,2,3,4,6,7};
-    for (size_t i = 0; i < y.size(); i++) {
-        EXPECT_EQ(y[i], data[i]);
-    }
-    // Make sure that range based for loop works.
-    size_t i = 0;
-    for (auto& e : y) {
-        EXPECT_EQ(e, data[i++]);
-    }
-
-    // Make sure I can mutate the data
-    for (auto& e: y) {
-        e += 2;
-    }
-    i = 0;
-    for (auto& e: y) {
-        EXPECT_EQ(e, data[i++]+2);
-    }
-
-    // Create from an std::vector
-    vector<uint32_t> x_vec(std::vector<uint32_t>{1,2,3,4,6,7});
-
-    // Check the other constructors
-    vector<uint32_t> vec1(4);
-    EXPECT_EQ(vec1.size(), 4);
-    for (auto& e: vec1)
-        EXPECT_EQ(e, 0);
-
-    vector<uint32_t> vec2(4, 2);
-    for (auto& e: vec2)
-        EXPECT_EQ(e, 2);
-
-    vector<uint32_t> vec3(data.begin(), data.end());
-    EXPECT_EQ(vec3.size(), data.size());
-    i = 0;
-    for (auto& e: vec3)
-        EXPECT_EQ(e, data[i++]);
-
-    vector<uint32_t> vec4(vec3);
-    EXPECT_EQ(vec3.ptr(), vec4.ptr());
-}
-
-TEST(Pmt, MapWrapper) {
+/*TEST(Pmt, MapWrapper) {
     map<std::string> x;
     x["abc"] = 4;
     x["qwer"] = std::vector<int>{1,2,4};
     for (auto& [key, value]: x) {
         std::cout << key << std::endl;
     }
-}
-*/
+
+    wrap w(x);
+    auto w_as_map = get_map<std::string>(w);
+
+    auto item1 = w_as_map["abc"];
+    auto item1_as_scalar = get_scalar_value<int>(item1);
+
+    EXPECT_EQ(item1_as_scalar,4);
+    auto res = (get_vector_value<int>(w_as_map["qwer"]) == std::vector<int>{1,2,4});
+    EXPECT_TRUE(res);
+
+
+    auto a = map<std::string>({
+        {"int_field", wrap(int(7))},
+        {"dbl_field", wrap(double(3.2))},
+    });
+    auto b = vector<std::complex<float>>(100, {-1,1});
+    auto pdu = wrap(map<std::string>(
+        {
+            {"meta", a},
+            {"data", b},
+        }
+    ));
+
+    auto meta = get_map<std::string>(get_map<std::string>(pdu)["meta"]);
+    auto samples = get_vector<std::complex<float>>(get_map<std::string>(pdu)["data"]);
+
+    auto int_val = get_scalar_value<int>(meta["int_field"]);
+    auto dbl_val = get_scalar_value<double>(meta["dbl_field"]);
+
+    EXPECT_EQ(int_val,7);
+    EXPECT_EQ(dbl_val,3.2);
+}*/
+
 
 /*TEST(Pmt, PmtWrap2) {
     wrap x;

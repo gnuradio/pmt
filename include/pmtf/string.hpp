@@ -31,6 +31,8 @@ public:
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
+    template <class T, typename = IsPmt<T>>
+    string(const T& other): _buf(other) {} 
     ~string() {}
     gsl::span<char> value() {
         std::shared_ptr<base_buffer> scalar = _get_buf();
@@ -62,7 +64,7 @@ public:
         return data()[n];
     }
     
-    constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
 private:
     pmt _buf;
@@ -107,6 +109,12 @@ inline std::ostream& operator<<(std::ostream& os, const string& value) {
 }
 
 /*string get_string(const wrap& x);*/
+inline string get_string(const pmt& p) {
+    if (p.data_type() == string::data_type())
+        return string(p);
+    // This error message stinks.  Fix it.
+    throw std::runtime_error("Can't convert pmt to this string");
+}
 
 
 } // namespace pmtf

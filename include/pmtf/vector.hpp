@@ -118,7 +118,7 @@ public:
             return gsl::span<const T>(buf->data(), buf->size());
         }
     }
-    constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     vector& operator=(const T& value) {
         _MakeVector(value.begin(), value.size()); 
     }
@@ -300,10 +300,16 @@ bool operator==(const vector<T>& x, const U& other) {
 
 template <class T>
 vector<T> get_vector(const pmt& p) {
-    if (p.data_type() == vector<T>::type)
+    if (p.data_type() == vector<T>::data_type())
         return vector<T>(p);
     // This error message stinks.  Fix it.
     throw std::runtime_error("Can't convert pmt to this type");
+}
+
+template <class T>
+std::vector<T> get_std_vector(const pmt& p) {
+    auto vec = get_vector<T>(p);
+    return std::vector(vec.begin(), vec.end());
 }
 
 #define Apply(func) \

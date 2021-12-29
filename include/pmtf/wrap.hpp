@@ -11,6 +11,8 @@
 #include <pmtf/vector.hpp>
 #include <pmtf/scalar.hpp>
 #include <pmtf/map.hpp>
+#include <pmtf/string.hpp>
+#include <variant>
 
 namespace pmtf {
 
@@ -52,6 +54,17 @@ inline bool operator==(const pmt& value, const pmt& other) {
             throw std::runtime_error("Unknown pmt type passed to operator==");
     }
 }
+
+typedef std::variant<
+        std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t,
+        uint32_t, int64_t, uint64_t, float, double, std::complex<float>,
+        std::complex<double>, std::vector<bool>, std::vector<int8_t>,
+        std::vector<uint8_t>, std::vector<int16_t>, std::vector<uint16_t>,
+        std::vector<int32_t>, std::vector<uint32_t>, std::vector<int64_t>,
+        std::vector<uint64_t>, std::vector<float>, std::vector<double>,
+        std::vector<std::complex<float>>, std::vector<std::complex<double>>>
+        pmt_variant_t;
+
 
 template <class T>
 inline bool operator!=(const pmt& value, const T& other) {

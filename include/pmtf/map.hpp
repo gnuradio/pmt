@@ -129,13 +129,10 @@ private:
         _map._scalar = std::make_shared<base_buffer>(fbb.Release());
         _map._map = std::make_shared<std::map<std::string, pmtf::pmt>>();
     }
-
+};
     //virtual void serialize_setup();
 
-};
-
-template <> inline pmt::pmt<map>(const map& x) \
-    { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
 
 inline map get_map(const pmt& p) {
     if (p.data_type() == map::data_type())
