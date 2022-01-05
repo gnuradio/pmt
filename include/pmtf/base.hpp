@@ -8,6 +8,7 @@
 #pragma once
 
 #include <pmtf/pmtf_generated.h>
+#include <cstdlib>
 #include <complex>
 #include <iostream>
 #include <map>
@@ -37,6 +38,16 @@ public:
 private:
     flatbuffers::DetachedBuffer _buf;
 
+};
+
+class AlignedAllocator : public flatbuffers::Allocator {
+  public:
+    uint8_t* allocate(size_t size) FLATBUFFERS_OVERRIDE {
+        return reinterpret_cast<uint8_t*>(std::aligned_alloc(64, size));
+    }
+
+    void deallocate(uint8_t *p, size_t) FLATBUFFERS_OVERRIDE { free(p); }
+    static void dealloc(void *p, size_t) { free(p); }
 };
 
 /*!
@@ -88,10 +99,11 @@ public:
     static pmt deserialize(std::streambuf& sb) {
         uint32_t size;
         sb.sgetn(reinterpret_cast<char*>(&size), sizeof(size));
-        char* x = new char[size + sizeof(uint32_t)];
+        AlignedAllocator* aa = new AlignedAllocator;
+        char* x = reinterpret_cast<char*>(aa->allocate(size + sizeof(uint32_t)));
         *reinterpret_cast<uint32_t*>(x) = size;
         sb.sgetn(x + sizeof(uint32_t), size);
-        flatbuffers::DetachedBuffer buf(nullptr, false, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
+        flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
         pmt cur(std::make_shared<base_buffer>(std::move(buf)));
         if (cur.data_type() == Data::MapHeaderString) {
             cur._map = std::make_shared<std::map<std::string, pmt>>();
