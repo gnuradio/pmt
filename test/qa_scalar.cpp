@@ -134,8 +134,15 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     EXPECT_EQ(x.value(), scalar<TypeParam>(y).value());
 }
 
-TYPED_TEST(PmtScalarFixture, PmtScalarWrap)
+TYPED_TEST(PmtScalarFixture, PmtScalarAssignment)
 {
+    scalar<TypeParam> x(this->get_value());
+    EXPECT_EQ(x.value(),this->get_value());
+
+    scalar<TypeParam> y;
+    y = scalar<TypeParam>(this->get_value());
+    EXPECT_EQ(y.value(),this->get_value());
+
     //EXPECT_EQ(1 == 0, true);
     // Initialize a PMT Wrap from a std::vector object
     /*std::vector<TypeParam> vec(this->num_values_);
