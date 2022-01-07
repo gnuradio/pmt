@@ -28,6 +28,10 @@ public:
     using reference = char&;
     using const_reference = const char&;
     using size_type = size_t;
+    // Default constructor
+    string() {
+        _MakeString(nullptr,0);
+    }
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
@@ -69,6 +73,7 @@ public:
     
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
+    const pmt& get_pmt_buffer() const { return _buf; }
 private:
     pmt _buf;
     std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
@@ -119,5 +124,10 @@ inline string get_string(const pmt& p) {
     throw std::runtime_error("Can't convert pmt to this string");
 }
 
+template <> inline pmt& pmt::operator=<std::string>(const std::string& x)
+    { return operator=(string(x).get_pmt_buffer()); } 
+template <> inline pmt& pmt::operator=<string>(const string& x)
+    { return operator=(x.get_pmt_buffer()); } 
+template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
 
 } // namespace pmtf
