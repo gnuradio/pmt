@@ -44,6 +44,9 @@ public:
         auto buf = scalar->data_as<type>()->value();
         return std::string_view(buf->data(), buf->size());
     }
+    std::string native() const {
+        return std::string(data());
+    }
     string& operator=(const std::string& value) {
         _MakeString(value.data(), value.size());
         return *this;

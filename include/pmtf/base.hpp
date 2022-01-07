@@ -80,7 +80,7 @@ public:
     //template <class T> pmt(const T& x);
     std::shared_ptr<base_buffer> _scalar;
     std::shared_ptr<std::map<std::string, pmt>> _map;
-
+    bool empty() { return !(_scalar || _map); }
     size_t serialize(std::streambuf& sb) const {
         size_t length = 0;
         length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());

@@ -118,6 +118,9 @@ public:
             return gsl::span<const T>(buf->data(), buf->size());
         }
     }
+    std::vector<T> native() const {
+        return std::vector<T>(data(), data()+size());
+    }
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     vector& operator=(const T& value) {
         _MakeVector(value.begin(), value.size()); 

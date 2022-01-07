@@ -24,6 +24,7 @@ template <class T>
 inline flatbuffers::Offset<void> CreateScalar(flatbuffers::FlatBufferBuilder& fbb, const T& value);
 
 template <class T> struct scalar_traits;
+template <> struct scalar_traits<bool> { using traits = ScalarBool::Traits; };
 template <> struct scalar_traits<uint8_t> { using traits = ScalarUInt8::Traits; };
 template <> struct scalar_traits<uint16_t> { using traits = ScalarUInt16::Traits; };
 template <> struct scalar_traits<uint32_t> { using traits = ScalarUInt32::Traits; };
@@ -53,6 +54,9 @@ public:
             return *reinterpret_cast<const T*>(scalar->data_as<type>()->value());
         else
             return scalar->data_as<type>()->value();
+    }
+    T native() const {
+        return value();
     }
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     scalar& operator=(const T& value) {
@@ -117,6 +121,7 @@ template <> inline pmt::pmt<type>(const type& x) \
 template <> inline pmt::pmt<scalar<type>>(const scalar<type>& x) \
     { operator=(x.get_pmt_buffer()); }
 
+IMPLEMENT_SCALAR_PMT(bool)
 IMPLEMENT_SCALAR_PMT(uint8_t)
 IMPLEMENT_SCALAR_PMT(uint16_t)
 IMPLEMENT_SCALAR_PMT(uint32_t)
@@ -179,6 +184,7 @@ using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::
 template <class T, typename = IsScalarBase<T>>
 bool operator==(const pmt& x, const T& y) {
     switch(x.data_type()) {
+        case Data::ScalarBool: return scalar<bool>(x) == y;
         case Data::ScalarFloat32: return scalar<float>(x) == y;
         case Data::ScalarFloat64: return scalar<double>(x) == y;
         case Data::ScalarComplex64: return scalar<std::complex<float>>(x) == y;
