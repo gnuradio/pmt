@@ -323,7 +323,8 @@ func(std::complex<double>)
 
 #define VectorPmt(T) \
 template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
-    { *this = vector<T>(x).get_pmt_buffer(); }
+    { *this = vector<T>(x).get_pmt_buffer(); } \
+template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); }
 Apply(VectorPmt)
 #undef VectorPmt
 #undef Apply

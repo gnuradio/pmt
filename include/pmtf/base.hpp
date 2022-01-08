@@ -127,6 +127,10 @@ public:
         }
         throw std::runtime_error("Cannot get data type for unitialized pmt");
     }
+
+    std::string type_string() const {
+        return std::string(EnumNameData(data_type()));
+    }
 };
 
 // Define some SFINAE templates.  Since we can create pmts from the various classes,
@@ -152,5 +156,18 @@ template <> struct scalar_type<std::complex<double>> { using type = Complex128; 
 template <Data T>
 struct cpp_type;
 
+template <class T> inline std::string ctype_string();
+template <> inline std::string ctype_string<uint8_t>() { return "uint8_t"; }
+template <> inline std::string ctype_string<uint16_t>() { return "uint16_t"; }
+template <> inline std::string ctype_string<uint32_t>() { return "uint32_t"; }
+template <> inline std::string ctype_string<uint64_t>() { return "uint64_t"; }
+template <> inline std::string ctype_string<int8_t>() { return "int8_t"; }
+template <> inline std::string ctype_string<int16_t>() { return "int16_t"; }
+template <> inline std::string ctype_string<int32_t>() { return "int32_t"; }
+template <> inline std::string ctype_string<int64_t>() { return "int64_t"; }
+template <> inline std::string ctype_string<float>() { return "float"; }
+template <> inline std::string ctype_string<double>() { return "double"; }
+template <> inline std::string ctype_string<std::complex<float>>() { return "complex<float>"; }
+template <> inline std::string ctype_string<std::complex<double>>() { return "complex<double>"; }
 
 } // namespace pmtf
