@@ -112,8 +112,7 @@ inline std::ostream& operator<<(std::ostream& os, const string& value) {
 inline string get_string(const pmt& p) {
     if (p.data_type() == string::data_type())
         return string(p);
-    // This error message stinks.  Fix it.
-    throw std::runtime_error("Can't convert pmt to this string");
+    throw ConversionError(p, "string");
 }
 
 
