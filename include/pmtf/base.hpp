@@ -128,9 +128,27 @@ public:
         throw std::runtime_error("Cannot get data type for unitialized pmt");
     }
 
-    std::string type_string() const {
-        return std::string(EnumNameData(data_type()));
+    std::string type_string() const noexcept {
+        if (_scalar != nullptr)
+            return std::string(EnumNameData(data_type()));
+        else return "Uninitialized";
     }
+};
+
+class ConversionError: public std::exception {
+public:
+    ConversionError(const pmt& pmt, const std::string& base_type, const std::string& c_type) {
+        _msg = "Can't convert pmt of type " + pmt.type_string() + " to " + base_type + "<" + c_type + ">";
+    }
+    ConversionError(const pmt& pmt, const std::string& base_type) {
+        _msg = "Can't convert pmt of type " + pmt.type_string() + " to " + base_type;
+    }
+
+    const char* what() const noexcept {
+        return _msg.c_str();
+    }
+private:
+    std::string _msg;
 };
 
 // Define some SFINAE templates.  Since we can create pmts from the various classes,
