@@ -297,8 +297,7 @@ template <class T>
 vector<T> get_vector(const pmt& p) {
     if (p.data_type() == vector<T>::data_type())
         return vector<T>(p);
-    // This error message stinks.  Fix it.
-    throw std::runtime_error("Can't convert pmt to this type");
+    throw ConversionError(p, "vector", ctype_string<T>());
 }
 
 template <class T>

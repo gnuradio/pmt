@@ -214,8 +214,7 @@ template <class T>
 scalar<T> get_scalar(const pmt& p) {
     if (p.data_type() == scalar<T>::data_type())
         return scalar<T>(p);
-    // This error message stinks.  Fix it.
-    throw std::runtime_error("Can't convert pmt of type " + p.type_string() + " to " + ctype_string<T>());
+    throw ConversionError(p, "scalar", ctype_string<T>());
 }
 
 // These structures allow us to write template functions that depend on the

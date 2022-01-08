@@ -137,8 +137,7 @@ template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
 inline map get_map(const pmt& p) {
     if (p.data_type() == map::data_type())
         return map(p);
-    // This error message stinks.  Fix it.
-    throw std::runtime_error("Can't convert pmt to map");
+    throw ConversionError(p, "map");
 }
 
 }
