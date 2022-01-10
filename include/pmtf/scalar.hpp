@@ -86,6 +86,7 @@ public:
 private:
     void _Create(const T& value) {
         flatbuffers::FlatBufferBuilder fbb(128);
+        fbb.ForceDefaults(true);
         flatbuffers::Offset<void> offset;
         //auto offset = traits::Create(fbb, value).Union();
         if constexpr(is_complex<T>::value) {
