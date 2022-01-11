@@ -120,7 +120,9 @@ template <> inline pmt& pmt::operator=<scalar<type>>(const scalar<type>& x) \
 template <> inline pmt::pmt<type>(const type& x) \
     { operator=(scalar(x).get_pmt_buffer()); } \
 template <> inline pmt::pmt<scalar<type>>(const scalar<type>& x) \
-    { operator=(x.get_pmt_buffer()); }
+    { operator=(x.get_pmt_buffer()); } \
+template <> inline type get_as(const pmtf::pmt& x) \
+    { return type(scalar<type>(x)); }
 
 IMPLEMENT_SCALAR_PMT(bool)
 IMPLEMENT_SCALAR_PMT(uint8_t)

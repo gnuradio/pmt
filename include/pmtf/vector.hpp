@@ -327,7 +327,8 @@ func(std::complex<double>)
 #define VectorPmt(T) \
 template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
     { *this = vector<T>(x).get_pmt_buffer(); } \
-template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); } \
+template <> inline std::vector<T> get_as(const pmtf::pmt& x) { return std::vector<T>(vector<T>(x).data(), vector<T>(x).data() + vector<T>(x).size()); }
 Apply(VectorPmt)
 #undef VectorPmt
 #undef Apply

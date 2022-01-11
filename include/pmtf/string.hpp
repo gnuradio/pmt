@@ -129,5 +129,6 @@ template <> inline pmt& pmt::operator=<std::string>(const std::string& x)
 template <> inline pmt& pmt::operator=<string>(const string& x)
     { return operator=(x.get_pmt_buffer()); } 
 template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
+template <> inline std::string get_as(const pmtf::pmt& x) { return std::string(string(x).data()); }
 
 } // namespace pmtf

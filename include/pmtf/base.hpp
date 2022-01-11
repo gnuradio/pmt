@@ -152,5 +152,7 @@ template <> struct scalar_type<std::complex<double>> { using type = Complex128; 
 template <Data T>
 struct cpp_type;
 
+template <typename T>
+inline T get_as(const pmtf::pmt&);
 
 } // namespace pmtf
