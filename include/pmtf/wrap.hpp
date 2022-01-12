@@ -111,6 +111,118 @@ inline std::ostream& operator<<(std::ostream& os, const map& value) {
     os << " }";
     return os;
 }
+
+template <typename Container>
+using begin_func_t = decltype(*std::begin(std::declval<Container>()));
+
+template<typename T, typename _ = void>
+struct is_container : std::false_type {};
+
+template<typename T>
+struct is_container<
+        T,
+        std::void_t<
+                typename T::value_type,
+                typename T::size_type,
+                typename T::allocator_type,
+                typename T::iterator,
+                typename T::const_iterator,
+                decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end())
+            >
+        > : public std::true_type {};
+
+template <typename Container, typename _ = void>
+struct is_map_like_container: std::false_type {};
+
+template <typename T>
+struct is_map_like_container<
+        T,
+        std::void_t<
+                typename T::value_type,
+                typename T::mapped_type,
+                typename T::size_type,
+                typename T::allocator_type,
+                typename T::iterator,
+                typename T::const_iterator,
+                decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end())
+            >
+        > : public std::true_type {};
+
+template <class T, class type>
+inline T _ConstructVectorLike(const pmt& value) {
+    // This doesn't work because I have to be able to run every line of code instantiated.
+    // Can't do _ConstructVectorLike<std::vector<int>, float>
+    if constexpr(std::is_same_v<typename T::value_type, type>) {
+        return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
+    } else {
+        throw std::logic_error("Attempt to construct an invalid vector");
+    }
+}
+
+template <class T>
+inline T get_as(const pmt& value) {
+    if constexpr(is_map_like_container<T>::value) {
+        if (value.data_type() == Data::MapHeaderString) {
+            return T(get_map(value).begin(), get_map(value).end());
+        } else
+            throw ConversionError(value, "map", "map-like container");
+    } else if constexpr(is_container<T>::value) {
+        switch (value.data_type()) {
+            case Data::VectorFloat32: return _ConstructVectorLike<T, float>(value);
+            case Data::VectorFloat64: return _ConstructVectorLike<T, double>(value);
+            case Data::VectorComplex64: return _ConstructVectorLike<T, std::complex<float>>(value);
+            case Data::VectorComplex128: return _ConstructVectorLike<T, std::complex<double>>(value);
+            case Data::VectorInt8: return _ConstructVectorLike<T, int8_t>(value);
+            case Data::VectorInt16: return _ConstructVectorLike<T, int16_t>(value);
+            case Data::VectorInt32: return _ConstructVectorLike<T, int32_t>(value);
+            case Data::VectorInt64: return _ConstructVectorLike<T, int64_t>(value);
+            case Data::VectorUInt8: return _ConstructVectorLike<T, uint8_t>(value);
+            case Data::VectorUInt16: return _ConstructVectorLike<T, uint16_t>(value);
+            case Data::VectorUInt32: return _ConstructVectorLike<T, uint32_t>(value);
+            case Data::VectorUInt64: return _ConstructVectorLike<T, uint64_t>(value);
+            case Data::PmtString: return {get_string(value).begin(), get_string(value).end()};
+            default: throw ConversionError(value, "vector", "vector-like container");
+        }
+    } else if constexpr(is_complex<T>::value) {
+        // We can convert scalars to complex, but not the other way around.
+        switch (value.data_type()) {
+            case Data::ScalarFloat32: return static_cast<T>(get_scalar<float>(value));
+            case Data::ScalarFloat64: return static_cast<T>(get_scalar<double>(value));
+            case Data::ScalarInt8: return static_cast<T>(get_scalar<int8_t>(value));
+            case Data::ScalarInt16: return static_cast<T>(get_scalar<int16_t>(value));
+            case Data::ScalarInt32: return static_cast<T>(get_scalar<int32_t>(value));
+            case Data::ScalarInt64: return static_cast<T>(get_scalar<int64_t>(value));
+            case Data::ScalarUInt8: return static_cast<T>(get_scalar<uint8_t>(value));
+            case Data::ScalarUInt16: return static_cast<T>(get_scalar<uint16_t>(value));
+            case Data::ScalarUInt32: return static_cast<T>(get_scalar<uint32_t>(value));
+            case Data::ScalarUInt64: return static_cast<T>(get_scalar<uint64_t>(value));
+            case Data::ScalarComplex64: return static_cast<T>(get_scalar<std::complex<float>>(value));
+            case Data::ScalarComplex128: return static_cast<T>(get_scalar<std::complex<double>>(value));
+            default: throw ConversionError(value, "scalar", "complex");
+        }
+    } else {
+        switch (value.data_type()) {
+            case Data::ScalarFloat32: return static_cast<T>(get_scalar<float>(value));
+            case Data::ScalarFloat64: return static_cast<T>(get_scalar<double>(value));
+            case Data::ScalarInt8: return static_cast<T>(get_scalar<int8_t>(value));
+            case Data::ScalarInt16: return static_cast<T>(get_scalar<int16_t>(value));
+            case Data::ScalarInt32: return static_cast<T>(get_scalar<int32_t>(value));
+            case Data::ScalarInt64: return static_cast<T>(get_scalar<int64_t>(value));
+            case Data::ScalarUInt8: return static_cast<T>(get_scalar<uint8_t>(value));
+            case Data::ScalarUInt16: return static_cast<T>(get_scalar<uint16_t>(value));
+            case Data::ScalarUInt32: return static_cast<T>(get_scalar<uint32_t>(value));
+            case Data::ScalarUInt64: return static_cast<T>(get_scalar<uint64_t>(value));
+            //case Data::ScalarBool: return operator==(scalar<bool>(value), other);
+            default:
+                throw ConversionError(value, "scalar", "type T");
+        }
+    }
+
+}
  
 
 
