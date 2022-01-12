@@ -17,6 +17,13 @@
 
 using namespace pmtf;
 
+TEST(Pmt, get_as) {
+    pmt x = 4.0f;
+    auto y = get_as<std::complex<float>>(x);
+
+    pmt z = vector<float>{1.2, 3.6};
+    auto zz = get_as<std::vector<float>>(z);
+}
 // // TEST(Pmt, BasicPmtTests)
 // // {
 // //     std::complex<float> cplx_val = std::complex<float>(1.2, -3.4);

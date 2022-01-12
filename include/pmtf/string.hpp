@@ -9,7 +9,6 @@
 
 #include <pmtf/pmtf_generated.h>
 #include <pmtf/base.hpp>
-#include <pmtf/wrap.hpp>
 #include <complex>
 #include <iostream>
 #include <map>
@@ -24,6 +23,7 @@ class string {
 public:
     using traits = PmtString::Traits;
     using type = typename traits::type;
+    using span = typename gsl::span<char>;
     using value_type = char;
     using reference = char&;
     using const_reference = const char&;
@@ -64,6 +64,8 @@ public:
         return data()[n];
     }
     
+    typename span::iterator begin() { return value().begin(); }
+    typename span::iterator end() { return value().end(); }
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
 private:
