@@ -134,6 +134,10 @@ private:
 
 template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
 
+template <> inline pmt::pmt<std::map<std::string, pmt>>(const std::map<std::string, pmt>& x) {
+    *this = map(x).get_pmt_buffer();
+}
+
 inline map get_map(const pmt& p) {
     if (p.data_type() == map::data_type())
         return map(p);

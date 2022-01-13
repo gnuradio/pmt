@@ -19,10 +19,12 @@ using namespace pmtf;
 
 TEST(Pmt, get_as) {
     pmt x = 4.0f;
-    auto y = get_as<std::complex<float>>(x);
+    auto y = get_as<float>(x);
+    EXPECT_EQ(y, x);
 
     pmt z = vector<float>{1.2, 3.6};
     auto zz = get_as<std::vector<float>>(z);
+    EXPECT_EQ(zz, z);
 }
 // // TEST(Pmt, BasicPmtTests)
 // // {
