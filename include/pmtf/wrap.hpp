@@ -124,7 +124,6 @@ struct is_container<
         std::void_t<
                 typename T::value_type,
                 typename T::size_type,
-                typename T::allocator_type,
                 typename T::iterator,
                 typename T::const_iterator,
                 decltype(std::declval<T>().size()),
@@ -157,9 +156,15 @@ inline T _ConstructVectorLike(const pmt& value) {
     // This doesn't work because I have to be able to run every line of code instantiated.
     // Can't do _ConstructVectorLike<std::vector<int>, float>
     if constexpr(std::is_same_v<typename T::value_type, type>) {
-        return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
+        using iter = decltype(get_vector<type>(value).begin());
+        // Vector like containers like this
+        if constexpr(std::is_constructible_v<T, iter, iter>) 
+            return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
+        else
+            // String like containers like this
+            return T(get_string(value).data(), get_vector<type>(value).size());
     } else {
-        throw std::logic_error("Attempt to construct an invalid vector");
+        throw ConversionError(value, "vector", ctype_string<type>());
     }
 }
 
@@ -184,7 +189,8 @@ inline T get_as(const pmt& value) {
             case Data::VectorUInt16: return _ConstructVectorLike<T, uint16_t>(value);
             case Data::VectorUInt32: return _ConstructVectorLike<T, uint32_t>(value);
             case Data::VectorUInt64: return _ConstructVectorLike<T, uint64_t>(value);
-            case Data::PmtString: return {get_string(value).begin(), get_string(value).end()};
+            // Need to detect if this is string like or not.
+            case Data::PmtString: return _ConstructVectorLike<T, int8_t>(value);
             default: throw ConversionError(value, "vector", "vector-like container");
         }
     } else if constexpr(is_complex<T>::value) {

@@ -11,6 +11,10 @@
 #include <pmtf/base.hpp>
 #include <pmtf/vector.hpp>
 #include <pmtf/scalar.hpp>
+#include <pmtf/wrap.hpp>
+
+#include <list>
+#include <map>
 
 using namespace pmtf;
 
@@ -240,3 +244,33 @@ TYPED_TEST(PmtVectorFixture, OtherConstructors) {
     EXPECT_EQ(vec3.value(), vec4.value());
 }
 
+TYPED_TEST(PmtVectorFixture, get_as)
+{
+    std::vector<TypeParam> vec(this->num_values_);
+    for (auto i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(i);
+    }
+    pmt x = vec;
+    // Make sure that we can get the value back out
+    auto y = get_as<std::vector<TypeParam>>(x);
+    EXPECT_EQ(x, y);
+
+    // Should also work as a span
+    auto z = get_as<gsl::span<TypeParam>>(x);
+    EXPECT_EQ(x, std::vector<TypeParam>(z.begin(), z.end()));
+    
+    // Should also work as a list
+    auto q = get_as<std::list<TypeParam>>(x);
+    EXPECT_EQ(x, std::vector<TypeParam>(q.begin(), q.end()));
+
+    // Fail if wrong type of vector or non vector type
+    EXPECT_THROW(get_as<int>(x), ConversionError);
+    if constexpr(std::is_same_v<TypeParam, int>)
+        EXPECT_THROW(get_as<std::vector<double>>(x), ConversionError);
+    else
+        EXPECT_THROW(get_as<std::vector<int>>(x), ConversionError);
+
+    using mtype = std::map<std::string, pmt>;
+    EXPECT_THROW(get_as<mtype>(x), ConversionError);
+    
+}

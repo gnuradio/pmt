@@ -10,6 +10,7 @@
 
 #include <pmtf/base.hpp>
 #include <pmtf/scalar.hpp>
+#include <pmtf/wrap.hpp>
 #include <sstream>
 
 using namespace pmtf;
@@ -149,5 +150,26 @@ TYPED_TEST(PmtScalarFixture, PmtScalarWrap)
 
     // Try to cast as a scalar type
     EXPECT_THROW(get_scalar<int8_t>(generic_pmt_obj), std::runtime_error);*/
+}
+
+TYPED_TEST(PmtScalarFixture, get_as)
+{
+    pmt x = this->get_value();
+    // Make sure that we can get the value back out
+    auto y = get_as<TypeParam>(x);
+    EXPECT_EQ(x, y);
+
+    // Cast up to complex<double>
+    auto z = get_as<std::complex<double>>(x);
+    EXPECT_EQ(std::complex<double>(this->get_value()), z);
+
+    // Cast up to double if possible
+    if constexpr(!is_complex<TypeParam>::value) {
+        auto z = get_as<double>(x);
+        EXPECT_EQ(this->get_value(), z);
+    }
+
+    // Fail if we try to get a container type
+    EXPECT_THROW(get_as<std::vector<int>>(x), ConversionError);
 }
 
