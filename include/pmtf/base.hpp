@@ -70,6 +70,9 @@ public:
     }
     template <class T>
     pmt(const T& other);
+    // Probably only useful for strings
+    template <class T>
+    pmt(const T* other);
     pmt& operator=(const pmt& other) {
         _scalar = other._scalar;
         _map = other._map;
@@ -175,6 +178,7 @@ template <Data T>
 struct cpp_type;
 
 template <class T> inline std::string ctype_string();
+template <> inline std::string ctype_string<char>() { return "char"; }
 template <> inline std::string ctype_string<uint8_t>() { return "uint8_t"; }
 template <> inline std::string ctype_string<uint16_t>() { return "uint16_t"; }
 template <> inline std::string ctype_string<uint32_t>() { return "uint32_t"; }

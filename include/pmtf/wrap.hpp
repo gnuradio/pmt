@@ -158,16 +158,28 @@ inline T _ConstructVectorLike(const pmt& value) {
     if constexpr(std::is_same_v<typename T::value_type, type>) {
         using iter = decltype(get_vector<type>(value).begin());
         // Vector like containers like this
-        if constexpr(std::is_constructible_v<T, iter, iter>) 
+        if constexpr(std::is_constructible_v<T, iter, iter>) {
             return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
-        else
-            // String like containers like this
-            return T(get_string(value).data(), get_vector<type>(value).size());
+        } else {
+            throw ConversionError(value, "vector", ctype_string<type>());
+        }
     } else {
         throw ConversionError(value, "vector", ctype_string<type>());
     }
 }
 
+template <class T, class type>
+inline T _ConstructStringLike(const pmt& value) {
+    if constexpr(std::is_same_v<typename T::value_type, type>) {
+        if constexpr(std::is_constructible_v<T, const type*, size_t>) {
+            return T(get_string(value).data(), get_string(value).size());
+        } else {
+            throw ConversionError(value, "string", ctype_string<type>());
+        }
+    } else {
+        throw ConversionError(value, "string", ctype_string<type>());
+    }
+}
 template <class T>
 inline T get_as(const pmt& value) {
     if constexpr(is_map_like_container<T>::value) {
@@ -190,7 +202,7 @@ inline T get_as(const pmt& value) {
             case Data::VectorUInt32: return _ConstructVectorLike<T, uint32_t>(value);
             case Data::VectorUInt64: return _ConstructVectorLike<T, uint64_t>(value);
             // Need to detect if this is string like or not.
-            case Data::PmtString: return _ConstructVectorLike<T, int8_t>(value);
+            case Data::PmtString: return _ConstructStringLike<T, char>(value);
             default: throw ConversionError(value, "vector", "vector-like container");
         }
     } else if constexpr(is_complex<T>::value) {

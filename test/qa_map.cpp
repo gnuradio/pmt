@@ -80,23 +80,8 @@ TEST(PmtMap, get_as)
     auto y = get_as<std::map<std::string, pmt>>(x);
     EXPECT_EQ(x, y);
 
-    // Should also work as a span
-    //auto z = get_as<gsl::span<TypeParam>>(x);
-    //EXPECT_EQ(x, z);
-    
-    // Should also work as a list
-    //auto q = get_as<std::list<TypeParam>>(x);
-    //EXPECT_EQ(x, q);
-
-    // Fail if wrong type of vector or non vector type
-    //EXPECT_THROW(get_as<int>(x), ConversionError);
-    //if constexpr(std::is_same_v<TypeParam, int>)
-    //    EXPECT_THROW(get_as<std::vector<double>>(x), ConversionError);
-    //else
-    //    EXPECT_THROW(get_as<std::vector<int>>(x), ConversionError);
-
-    //using mtype = std::map<std::string, int>;
-    //EXPECT_THROW(get_as<mtype>(x), ConversionError);
+    // Throw an error for other types.
+    EXPECT_THROW(get_as<float>(x), ConversionError);
     
 }
 

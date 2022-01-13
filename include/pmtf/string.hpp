@@ -31,6 +31,9 @@ public:
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
+    string(const char* value) {
+        _MakeString(value, strlen(value));
+    }
     template <class T, typename = IsPmt<T>>
     string(const T& other): _buf(other) {} 
     ~string() {}
@@ -68,6 +71,7 @@ public:
     typename span::iterator end() { return value().end(); }
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
+    const pmt& get_pmt_buffer() const { return _buf; }
 private:
     pmt _buf;
     std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
@@ -116,6 +120,10 @@ inline string get_string(const pmt& p) {
         return string(p);
     throw ConversionError(p, "string");
 }
+
+template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
+template <> inline pmt::pmt<char>(const char* x) { }//*this = string(x).get_pmt_buffer(); }
 
 
 } // namespace pmtf

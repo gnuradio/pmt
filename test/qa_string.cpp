@@ -2,6 +2,7 @@
 
 #include <pmtf/base.hpp>
 #include <pmtf/string.hpp>
+#include <pmtf/wrap.hpp>
 
 #include <iostream>
 
@@ -50,4 +51,15 @@ TEST(Pmt, PmtWrap)
     x = std::string("hello");
     
     EXPECT_EQ(get_string(x), "hello");*/
+}
+
+TEST(PmtString, get_as)
+{
+    pmt x = std::string("hello");
+    // Make sure that we can get the value back out
+    auto y = get_as<std::string>(x);
+    EXPECT_EQ("hello", y);
+
+    // Throw an error for other types.
+    EXPECT_THROW(get_as<float>(x), ConversionError);
 }
