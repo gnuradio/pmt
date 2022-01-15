@@ -43,6 +43,7 @@ template <> struct vector_traits<float> { using traits = VectorFloat32::Traits; 
 template <> struct vector_traits<double> { using traits = VectorFloat64::Traits; };
 template <> struct vector_traits<std::complex<float>> { using traits = VectorComplex64::Traits; };
 template <> struct vector_traits<std::complex<double>> { using traits = VectorComplex128::Traits; };
+template <> struct vector_traits<pmt> { using traits = VectorPmtHeader::Traits; };
 
 
 // There are two vector constructors that take two arguments.
@@ -183,6 +184,98 @@ private:
     pmt _buf;
 };
 
+template <>
+class vector<pmt> {
+public:
+    using traits = typename vector_traits<pmt>::traits;
+    using type = typename traits::type;
+    using span_type = typename gsl::span<pmt>;
+    using const_span_type = typename gsl::span<const pmt>;
+    using value_type = pmt;
+    using reference = pmt&;
+    using const_reference = const pmt&;
+    using size_type = size_t;
+
+    // Default constructor
+    vector() {
+        _MakeVector(0);
+    }
+    // Constuct with unitialized memory
+    vector(size_t size) {
+        _MakeVector(size);
+    }
+    // Fill Constructor
+    explicit vector(size_t size, const pmt& set_value) {
+        _MakeVector(size);
+        std::fill(value().begin(), value().end(), set_value);
+    }
+    // Range Constuctor
+    // Need the IsNotInteger to not conflict with the fill constructor
+    template <class InputIterator, typename = IsNotInteger<InputIterator>>
+    vector(InputIterator first, InputIterator last) {
+        _MakeVector(&(*first), std::distance(first, last));
+    }
+    // Copy from vector Constructor
+    vector(const std::vector<pmt>& value) {
+        _MakeVector(value.data(), value.size());
+    }
+    // Copy Constructor
+    vector(const vector<pmt>& value) {
+        _MakeVector(value.data(), value.size());
+    }
+    // Initializer list Constructor
+    vector(std::initializer_list<value_type> il) {
+        _MakeVector(il.begin(), il.size());
+    }
+
+    // From a pmt buffer
+    vector(const pmt& other): _buf(other) {}
+        
+    ~vector() {}
+    span_type value() {
+        return span_type(_get_buf()->data(), _get_buf()->size());
+    }
+    const_span_type value() const {
+        return const_span_type(_get_buf()->data(), _get_buf()->size());
+    }
+    static constexpr Data data_type() { return DataTraits<type>::enum_value; }
+    pmt* data() { return value().data(); }
+    const pmt* data() const { return value().data(); }
+    size_t size() const { return value().size(); }
+    const pmt& get_pmt_buffer() const { return _buf; }
+    typename span_type::iterator begin() { return value().begin(); }
+    typename span_type::iterator end() { return value().end(); }
+    typename span_type::const_iterator begin() const { return value().begin(); }
+    typename span_type::const_iterator end() const { return value().end(); }
+    reference operator[] (size_type n) {
+        // operator[] doesn't do bounds checking, use at for that
+        // TODO: implement at
+        return data()[n];
+    }
+    const_reference operator[] (size_type n) const {
+        return data()[n];
+    }
+private:
+    void _MakeVector(const pmt* data, size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = traits::Create(fbb, size).Union();
+        auto pmt = CreatePmt(fbb, data_type(), offset);
+        fbb.FinishSizePrefixed(pmt);
+        _buf._scalar = std::make_shared<base_buffer>(fbb.Release());
+        _buf._vector = std::make_shared<std::vector<pmtf::pmt>>(data, data + size);
+    }
+    void _MakeVector(size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = traits::Create(fbb, size).Union();
+        auto pmt = CreatePmt(fbb, data_type(), offset);
+        fbb.FinishSizePrefixed(pmt);
+        _buf._scalar = std::make_shared<base_buffer>(fbb.Release());
+        _buf._vector = std::make_shared<std::vector<pmtf::pmt>>(size);
+    }
+    std::shared_ptr<std::vector<pmt>>& _get_buf() { return _buf._vector; }
+    const std::shared_ptr<std::vector<pmt>> _get_buf() const { return _buf._vector; }
+    pmt _buf;
+};
 template <class T>
 std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     os << "[ ";
