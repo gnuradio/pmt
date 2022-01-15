@@ -128,6 +128,10 @@ table VectorBool {
 table VectorPmt {
     value:[Pmt];
 }
+table VectorPmtHeader {
+    count:uint32;
+}
+
 table MapEntryString {
     key:string (key);
     value:Pmt;
@@ -147,7 +151,7 @@ ScalarBool,
 VectorFloat32, VectorFloat64, VectorComplex64, VectorComplex128, 
 VectorInt8, VectorInt16, VectorInt32, VectorInt64, 
 VectorUInt8, VectorUInt16, VectorUInt32, VectorUInt64,
-VectorBool, VectorPmt,
+VectorBool, VectorPmtHeader,
 MapHeaderString, MapEntryString
 }
 
