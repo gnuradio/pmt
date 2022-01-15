@@ -82,7 +82,7 @@ public:
     pmt& operator=(const T& other);
     //template <class T> pmt(const T& x);
     std::shared_ptr<base_buffer> _scalar;
-    std::shared_ptr<std::vector<pmt> _vector;
+    std::shared_ptr<std::vector<pmt>> _vector;
     std::shared_ptr<std::map<std::string, pmt>> _map;
 
     size_t serialize(std::streambuf& sb) const {
@@ -114,8 +114,8 @@ public:
         sb.sgetn(x + sizeof(uint32_t), size);
         flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
         pmt cur(std::make_shared<base_buffer>(std::move(buf)));
-        if (cur.data_type() == Data::VectorHeader) {
-            uint32_t count = cur._scalar->data_as<VectorHeader>()->count();
+        if (cur.data_type() == Data::VectorPmtHeader) {
+            uint32_t count = cur._scalar->data_as<VectorPmtHeader>()->count();
             cur._vector = std::make_shared<std::vector<pmt>>(count);
             for (size_t i = 0; i < count; i++) {
                 (*cur._vector)[i] = deserialize(sb);
