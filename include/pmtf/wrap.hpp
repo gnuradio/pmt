@@ -20,10 +20,15 @@ namespace pmtf {
 inline std::ostream& operator<<(std::ostream& os, const map& value);
 bool operator==(const pmt& x, const map& y);
 inline bool operator==(const map& y, const pmt& x) { return operator==(x,y); }
-std::ostream& operator<<(std::ostream& os, const pmt& value);
+template <class T, typename = IsPmt<T>>
+std::ostream& operator<<(std::ostream& os, const T& value);
 
-inline bool operator==(const pmt& value, const pmt& other) {
+
+template <typename T, IsPmt<T> = true>
+inline bool operator==(const T& value, const T& other) {
+    //std::cout << "Yo==: " << (uint32_t)value.data_type() << " " << (uint32_t)other.data_type() << std::endl;
     switch (value.data_type()) {
+        case Data::PmtString: return operator==(string(value), other);
         case Data::ScalarFloat32: return operator==(scalar<float>(value), other);
         case Data::ScalarFloat64: return operator==(scalar<double>(value), other);
         case Data::ScalarComplex64: return operator==(scalar<std::complex<float>>(value), other);
@@ -113,44 +118,46 @@ inline std::ostream& operator<<(std::ostream& os, const map& value) {
     return os;
 }
 
+template <class T, typename = IsPmt<T>>
+std::ostream& operator<<(std::ostream& os, const T& value) {
+    //std::cout << "Yo<<: " << (uint32_t)value.data_type() << std::endl;
+    switch(value.data_type()) {
+        case Data::PmtString: return operator<<(os, string(value));
+        case Data::ScalarFloat32: return operator<<(os, scalar<float>(value));
+        case Data::ScalarFloat64: return operator<<(os, scalar<double>(value));
+        case Data::ScalarComplex64: return operator<<(os, scalar<std::complex<float>>(value));
+        case Data::ScalarComplex128: return operator<<(os, scalar<std::complex<double>>(value));
+        case Data::ScalarInt8: return operator<<(os, scalar<int8_t>(value));
+        case Data::ScalarInt16: return operator<<(os, scalar<int16_t>(value));
+        case Data::ScalarInt32: return operator<<(os, scalar<int32_t>(value));
+        case Data::ScalarInt64: return operator<<(os, scalar<int64_t>(value));
+        case Data::ScalarUInt8: return operator<<(os, scalar<uint8_t>(value));
+        case Data::ScalarUInt16: return operator<<(os, scalar<uint16_t>(value));
+        case Data::ScalarUInt32: return operator<<(os, scalar<uint32_t>(value));
+        case Data::ScalarUInt64: return operator<<(os, scalar<uint64_t>(value));
+        //case Data::ScalarBool: return operator<<(os, scalar<bool>(value));
+        case Data::VectorFloat32: return operator<<(os, vector<float>(value));
+        case Data::VectorFloat64: return operator<<(os, vector<double>(value));
+        case Data::VectorComplex64: return operator<<(os, vector<std::complex<float>>(value));
+        case Data::VectorComplex128: return operator<<(os, vector<std::complex<double>>(value));
+        case Data::VectorInt8: return operator<<(os, vector<int8_t>(value));
+        case Data::VectorInt16: return operator<<(os, vector<int16_t>(value));
+        case Data::VectorInt32: return operator<<(os, vector<int32_t>(value));
+        case Data::VectorInt64: return operator<<(os, vector<int64_t>(value));
+        case Data::VectorUInt8: return operator<<(os, vector<uint8_t>(value));
+        case Data::VectorUInt16: return operator<<(os, vector<uint16_t>(value));
+        case Data::VectorUInt32: return operator<<(os, vector<uint32_t>(value));
+        case Data::VectorUInt64: return operator<<(os, vector<uint64_t>(value));
+        case Data::VectorPmtHeader: return operator<<(os, vector<pmt>(value));
+        case Data::MapHeaderString: return operator<<(os, map(value));
+        default:
+            throw std::runtime_error("Unknown pmt type passed to operator<<");
+    }
+}
+
 template <typename Container>
 using begin_func_t = decltype(*std::begin(std::declval<Container>()));
 
-template<typename T, typename _ = void>
-struct is_container : std::false_type {};
-
-template<typename T>
-struct is_container<
-        T,
-        std::void_t<
-                typename T::value_type,
-                typename T::size_type,
-                typename T::iterator,
-                typename T::const_iterator,
-                decltype(std::declval<T>().size()),
-                decltype(std::declval<T>().begin()),
-                decltype(std::declval<T>().end())
-            >
-        > : public std::true_type {};
-
-template <typename Container, typename _ = void>
-struct is_map_like_container: std::false_type {};
-
-template <typename T>
-struct is_map_like_container<
-        T,
-        std::void_t<
-                typename T::value_type,
-                typename T::mapped_type,
-                typename T::size_type,
-                typename T::allocator_type,
-                typename T::iterator,
-                typename T::const_iterator,
-                decltype(std::declval<T>().size()),
-                decltype(std::declval<T>().begin()),
-                decltype(std::declval<T>().end())
-            >
-        > : public std::true_type {};
 
 template <class T, class type>
 inline T _ConstructVectorLike(const pmt& value) {
