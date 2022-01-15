@@ -82,11 +82,17 @@ public:
     pmt& operator=(const T& other);
     //template <class T> pmt(const T& x);
     std::shared_ptr<base_buffer> _scalar;
+    std::shared_ptr<std::vector<pmt> _vector;
     std::shared_ptr<std::map<std::string, pmt>> _map;
 
     size_t serialize(std::streambuf& sb) const {
         size_t length = 0;
         length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
+        if (_vector) {
+            for (const auto& v: *_vector) {
+                length += v.serialize(sb);
+            }
+        }
         if (_map) {
             uint32_t size;
             for (const auto& [k, v]: *_map) {
@@ -108,7 +114,13 @@ public:
         sb.sgetn(x + sizeof(uint32_t), size);
         flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
         pmt cur(std::make_shared<base_buffer>(std::move(buf)));
-        if (cur.data_type() == Data::MapHeaderString) {
+        if (cur.data_type() == Data::VectorHeader) {
+            uint32_t count = cur._scalar->data_as<VectorHeader>()->count();
+            cur._vector = std::make_shared<std::vector<pmt>>(count);
+            for (size_t i = 0; i < count; i++) {
+                (*cur._vector)[i] = deserialize(sb);
+            }
+        } else if (cur.data_type() == Data::MapHeaderString) {
             cur._map = std::make_shared<std::map<std::string, pmt>>();
             uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
             std::vector<char> data;
