@@ -203,5 +203,6 @@ template <> inline std::string ctype_string<float>() { return "float"; }
 template <> inline std::string ctype_string<double>() { return "double"; }
 template <> inline std::string ctype_string<std::complex<float>>() { return "complex<float>"; }
 template <> inline std::string ctype_string<std::complex<double>>() { return "complex<double>"; }
+template <> inline std::string ctype_string<pmt>() { return "pmt"; }
 
 } // namespace pmtf

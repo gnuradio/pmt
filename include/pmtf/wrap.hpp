@@ -49,6 +49,7 @@ inline bool operator==(const pmt& value, const pmt& other) {
         case Data::VectorUInt16: return operator==(vector<uint16_t>(value), other);
         case Data::VectorUInt32: return operator==(vector<uint32_t>(value), other);
         case Data::VectorUInt64: return operator==(vector<uint64_t>(value), other);
+        case Data::VectorPmtHeader: return operator==(vector<pmt>(value), other);
         case Data::MapHeaderString: return operator==(map(value), other);
         default:
             throw std::runtime_error("Unknown pmt type passed to operator==");
@@ -201,6 +202,7 @@ inline T get_as(const pmt& value) {
             case Data::VectorUInt16: return _ConstructVectorLike<T, uint16_t>(value);
             case Data::VectorUInt32: return _ConstructVectorLike<T, uint32_t>(value);
             case Data::VectorUInt64: return _ConstructVectorLike<T, uint64_t>(value);
+            case Data::VectorPmtHeader: return _ConstructVectorLike<T, pmt>(value);
             // Need to detect if this is string like or not.
             case Data::PmtString: return _ConstructStringLike<T, char>(value);
             default: throw ConversionError(value, "vector", "vector-like container");
@@ -242,7 +244,6 @@ inline T get_as(const pmt& value) {
 
 }
  
-
 
 }
 
