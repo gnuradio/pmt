@@ -174,9 +174,9 @@ template <typename T>
 using IsArithmetic = std::enable_if_t<std::is_arithmetic_v<T>>;
 
 template <typename T>
-using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value>;
+using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value, bool>;
 
-template <class T, typename = IsScalarBase<T>>
+template <class T, IsScalarBase<T> = true>
 bool operator==(const pmt& x, const T& y) {
     switch(x.data_type()) {
         case Data::ScalarFloat32: return scalar<float>(x) == y;
@@ -193,6 +193,11 @@ bool operator==(const pmt& x, const T& y) {
         case Data::ScalarUInt64: return scalar<uint64_t>(x) == y;
         default: return false;
     }
+}
+
+template <class T, IsScalarBase<T> = true>
+bool operator==(const T& y, const pmt& x) {
+    return operator==(x, y);
 }
 
 template <class T>

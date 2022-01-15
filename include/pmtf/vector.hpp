@@ -255,6 +255,10 @@ public:
     const_reference operator[] (size_type n) const {
         return data()[n];
     }
+
+    void resize(size_type n) {
+        _get_buf()->resize(n);
+    }
 private:
     void _MakeVector(const pmt* data, size_t size) {
         flatbuffers::FlatBufferBuilder fbb;

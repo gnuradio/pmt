@@ -68,7 +68,9 @@ public:
     }
     
     typename span::iterator begin() { return value().begin(); }
+    typename span::const_iterator begin() const { return value().begin(); }
     typename span::iterator end() { return value().end(); }
+    typename span::const_iterator end() const { return value().end(); }
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
     const pmt& get_pmt_buffer() const { return _buf; }
@@ -86,19 +88,42 @@ private:
     
 };
 
+template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
+template <> inline pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buffer(); }
+
+template <typename T>
+using IsPmtString = std::enable_if_t<std::is_same_v<T, string>, bool>;
+
 // When we switch to c++20, make this a concept.
-/*template <class U>
+template <class U, typename = IsContainer<U>>
 bool operator==(const string& x, const U& other) {
     if (other.size() != x.size()) return false;
-    auto my_val = x.begin();
-    for (auto&& val : other) {
-        if (*my_val != val) return false;
-        my_val++;
-    }
-    return true;
-}*/
+    return std::equal(std::begin(x), std::end(x), other.begin());
+}
 
-inline bool operator==(const string& x, const char other[]) {
+template <class T, IsPmtString<T> = true>
+bool operator==(const T& x, const T& other) {
+    if (other.size() != x.size()) return false;
+    return std::equal(std::begin(x), std::end(x), other.begin());
+}
+
+
+template <typename T, IsPmtString<T> = true, typename U, IsPmt<U> = true>
+bool operator==(const U& x, const T& other) {
+    if (x.data_type() == Data::PmtString) {
+        return string(x) == other;
+    } else {
+        return false;
+    }
+}
+
+template <typename T, IsPmtString<T> = true, typename U, IsPmt<U> = true>
+inline bool operator==(const T& x, const U& other) {
+    return operator==(other, x);
+}
+
+inline bool operator==(const string& x, const char* other) {
     size_t index = 0;
     while (other[index] != 0 && index < x.size()) {
         if (other[index] != x[index]) return false;
@@ -121,9 +146,6 @@ inline string get_string(const pmt& p) {
     throw ConversionError(p, "string");
 }
 
-template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
-template <> inline pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
-template <> inline pmt::pmt<char>(const char* x) { }//*this = string(x).get_pmt_buffer(); }
 
 
 } // namespace pmtf

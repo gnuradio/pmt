@@ -173,7 +173,44 @@ using IsPmt = std::enable_if_t<std::is_same_v<T, pmt>, bool>;
 template <typename T>
 using IsNotPmt = std::enable_if_t<!std::is_same_v<T, pmt>, bool>;
 
+template<typename T, typename _ = void>
+struct is_container : std::false_type {};
 
+template<typename T>
+struct is_container<
+        T,
+        std::void_t<
+                typename T::value_type,
+                typename T::size_type,
+                typename T::iterator,
+                typename T::const_iterator,
+                decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end())
+            >
+        > : public std::true_type {};
+
+template <typename Container, typename _ = void>
+struct is_map_like_container: std::false_type {};
+
+template <typename T>
+struct is_map_like_container<
+        T,
+        std::void_t<
+                typename T::value_type,
+                typename T::mapped_type,
+                typename T::size_type,
+                typename T::allocator_type,
+                typename T::iterator,
+                typename T::const_iterator,
+                decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end())
+            >
+        > : public std::true_type {};
+
+template <typename T>
+using IsContainer = std::enable_if_t<is_container<T>::value, bool>;
 
 template <class T>
 struct is_complex : std::false_type {};
