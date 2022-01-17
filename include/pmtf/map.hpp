@@ -123,7 +123,8 @@ private:
     pmt _map;
     void _MakeEmptyMap() {
         flatbuffers::FlatBufferBuilder fbb;
-        auto offset = traits::Create(fbb, 1).Union();
+        fbb.ForceDefaults(true);
+        auto offset = traits::Create(fbb, 0).Union();
         auto pmt = CreatePmt(fbb, data_type(), offset);
         fbb.FinishSizePrefixed(pmt);
         _map._scalar = std::make_shared<base_buffer>(fbb.Release());
