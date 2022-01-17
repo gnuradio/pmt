@@ -258,10 +258,13 @@ public:
 
     void resize(size_type n) {
         _get_buf()->resize(n);
+        std::shared_ptr<base_buffer> scalar = _buf._scalar;
+        scalar->data_as<type>()->mutate_count(_get_buf()->size());
     }
 private:
     void _MakeVector(const pmt* data, size_t size) {
         flatbuffers::FlatBufferBuilder fbb;
+        fbb.ForceDefaults(true);
         auto offset = traits::Create(fbb, size).Union();
         auto pmt = CreatePmt(fbb, data_type(), offset);
         fbb.FinishSizePrefixed(pmt);
@@ -270,6 +273,7 @@ private:
     }
     void _MakeVector(size_t size) {
         flatbuffers::FlatBufferBuilder fbb;
+        fbb.ForceDefaults(true);
         auto offset = traits::Create(fbb, size).Union();
         auto pmt = CreatePmt(fbb, data_type(), offset);
         fbb.FinishSizePrefixed(pmt);
@@ -277,7 +281,7 @@ private:
         _buf._vector = std::make_shared<std::vector<pmtf::pmt>>(size);
     }
     std::shared_ptr<std::vector<pmt>>& _get_buf() { return _buf._vector; }
-    const std::shared_ptr<std::vector<pmt>> _get_buf() const { return _buf._vector; }
+    const std::shared_ptr<std::vector<pmt>>& _get_buf() const { return _buf._vector; }
     pmt _buf;
 };
 template <class T>
@@ -352,6 +356,7 @@ bool operator==(const pmt& x, const gsl::span<const T>& y) {
         case Data::VectorUInt16: return vector<uint16_t>(x) == y;
         case Data::VectorUInt32: return vector<uint32_t>(x) == y;
         case Data::VectorUInt64: return vector<uint64_t>(x) == y;
+        case Data::VectorPmtHeader: return vector<pmt>(x) == y;
         default: return false;
     }
 }
@@ -415,7 +420,8 @@ func(int64_t) \
 func(float) \
 func(double) \
 func(std::complex<float>)\
-func(std::complex<double>)
+func(std::complex<double>)\
+func(pmtf::pmt)
 
 #define VectorPmt(T) \
 template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
@@ -425,4 +431,5 @@ template <> inline pmt::pmt<gsl::span<T>>(const gsl::span<T>& x) { *this = vecto
 Apply(VectorPmt)
 #undef VectorPmt
 #undef Apply
+
 } // namespace pmtf

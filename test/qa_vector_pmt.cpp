@@ -60,46 +60,31 @@ TEST(PmtVectorPmt, Constructors) {
     EXPECT_EQ(il[4], pmt("z"));
 }
 
-/*TEST(PmtMap, PmtMapTests)
-{
+TEST(PmtVectorPmt, Serialize) {
     std::complex<float> val1(1.2, -3.4);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-    // Create the PMT map
-    std::map<std::string, pmt> input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
-    map map_pmt(input_map);
-
-    // Lookup values in the PMT map and compare with what was put in there
-    auto vv1 = map_pmt["key1"];
-    std::cout << vv1 << std::endl;
-    EXPECT_EQ(get_scalar<std::complex<float>>(vv1), val1);
-
-    auto vv2 = map_pmt["key2"];
-    EXPECT_EQ(vv2 == val2, true);
-    std::cout << map_pmt << std::endl;
+    // Create the PMT vector
+    vector<pmt> vec{val1, val2};
+    std::stringbuf sb;
+    vec.get_pmt_buffer().serialize(sb);
+    auto y = pmt::deserialize(sb);
+    EXPECT_EQ(y, vec);
 }
 
-
-TEST(PmtMap, get_as)
+TEST(PmtVectorPmt, get_as)
 {
     std::complex<float> val1(1.2, -3.4);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-    // Create the PMT map
-    std::map<std::string, pmt> input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
-    pmt x = input_map;
+    // Create the PMT vector
+    vector<pmt> x{val1, val2};
     // Make sure that we can get the value back out
-    auto y = get_as<std::map<std::string, pmt>>(x);
+    auto y = get_as<std::vector<pmt>>(x);
     EXPECT_EQ(x, y);
 
     // Throw an error for other types.
     EXPECT_THROW(get_as<float>(x), ConversionError);
     
-}*/
+}
 

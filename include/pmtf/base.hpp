@@ -66,6 +66,7 @@ public:
     }
     pmt(const pmt& other) {
         _scalar = other._scalar;
+        _vector = other._vector;
         _map = other._map;
     }
     template <class T>
@@ -75,6 +76,7 @@ public:
     pmt(const T* other);
     pmt& operator=(const pmt& other) {
         _scalar = other._scalar;
+        _vector = other._vector;
         _map = other._map;
         return *this;
     }
@@ -112,7 +114,7 @@ public:
         char* x = reinterpret_cast<char*>(aa->allocate(size + sizeof(uint32_t)));
         *reinterpret_cast<uint32_t*>(x) = size;
         sb.sgetn(x + sizeof(uint32_t), size);
-        flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size, reinterpret_cast<uint8_t*>(x), size);
+        flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size + sizeof(uint32_t), reinterpret_cast<uint8_t*>(x), size+sizeof(uint32_t));
         pmt cur(std::make_shared<base_buffer>(std::move(buf)));
         if (cur.data_type() == Data::VectorPmtHeader) {
             uint32_t count = cur._scalar->data_as<VectorPmtHeader>()->count();
