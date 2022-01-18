@@ -87,6 +87,8 @@ public:
     std::shared_ptr<std::vector<pmt>> _vector;
     std::shared_ptr<std::map<std::string, pmt>> _map;
 
+    bool empty() { return !(_scalar || _vector || _map); }
+
     size_t serialize(std::streambuf& sb) const {
         size_t length = 0;
         length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
