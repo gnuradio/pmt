@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
 
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
@@ -11,7 +12,7 @@ namespace po = boost::program_options;
 
 using namespace pmtf;
 
-/*bool run_test(const int times, map& d, int32_t index)
+bool run_test(const int times, map& d, int32_t index)
 {
     std::stringbuf sb; // fake channel
 
@@ -31,39 +32,27 @@ using namespace pmtf;
         }
     }
     return valid;
-}*/
+}
 
 int main(int argc, char* argv[])
 {
-    /*uint64_t samples;
-    uint32_t items;
-    uint32_t index;
-
-    po::options_description desc("Basic Test Flow Graph");
-    desc.add_options()("help,h", "display help")(
-        "samples",
-        po::value<uint64_t>(&samples)->default_value(10000),
-        "Number of times to perform lookup")(
-        "items",
-        po::value<uint32_t>(&items)->default_value(100),
-        "Number of items in dict")(
-        "index",
-        po::value<uint32_t>(&index)->default_value(0),
-        "Index for lookup");
+    uint64_t samples = 10000;
+    uint64_t items = 100;
+    uint64_t index = 0;
 
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    CLI::App app{"Benchmarking Script for Dictionary Packing and Unpacking"};
 
-    if (vm.count("help")) {
-        std::cout << desc << std::endl;
-        return 0;
-    }
+    // app.add_option("-h,--help", "display help");
+    app.add_option("--samples", samples, "Number of times to perform lookup");
+    app.add_option("--items", items, "Number of items in dict");
+    app.add_option("--index", index, "Index for lookup");
+
+    CLI11_PARSE(app, argc, argv);
 
     {
         // Create the dictionary
-        std::map<std::string,wrap> starting_map;
+        std::map<std::string,pmt> starting_map;
         for (uint32_t k = 0; k < items; k++)
         {
             // auto key = std::string("key" + std::to_string(k));
@@ -84,5 +73,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }*/
+    }
 }
