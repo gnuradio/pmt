@@ -2,8 +2,9 @@
 #include <iostream>
 #include <string>
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
 
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
@@ -11,13 +12,13 @@ namespace po = boost::program_options;
 
 using namespace pmtf;
 
-/*bool run_test(const int times, uint64_t nitems)
+bool run_test(const int times, uint64_t nitems)
 {
 
     bool valid = true;
     for (int i = 0; i < times; i++) {
         // Create the dictionary
-        std::map<std::string, wrap> starting_map;
+        std::map<std::string, pmt> starting_map;
 
         #if 1
         for (uint64_t k = 0; k < nitems; k++) {
@@ -51,33 +52,21 @@ using namespace pmtf;
         #endif
     }
     return valid;
-}*/
+}
 
 int main(int argc, char* argv[])
 {
-    /*uint64_t samples;
-    uint64_t items;
-    uint64_t index;
-
-    po::options_description desc("Basic Test Flow Graph");
-    desc.add_options()("help,h", "display help")(
-        "samples",
-        po::value<uint64_t>(&samples)->default_value(10000),
-        "Number of times to perform lookup")(
-        "items",
-        po::value<uint64_t>(&items)->default_value(100),
-        "Number of items in dict")(
-        "index", po::value<uint64_t>(&index)->default_value(0), "Index for lookup");
+    uint64_t samples = 10000;
+    uint64_t items = 100;
 
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    CLI::App app{"Benchmarking Script for Dictionary Packing and Unpacking"};
 
-    if (vm.count("help")) {
-        std::cout << desc << std::endl;
-        return 0;
-    }
+    // app.add_option("-h,--help", "display help");
+    app.add_option("--samples", samples, "Number of times to perform lookup");
+    app.add_option("--items", items, "Number of items in dict");
+
+    CLI11_PARSE(app, argc, argv);
 
     {
 
@@ -91,5 +80,5 @@ int main(int argc, char* argv[])
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;
-    }*/
+    }
 }

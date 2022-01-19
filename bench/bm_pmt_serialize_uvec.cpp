@@ -1,8 +1,9 @@
 #include <chrono>
 #include <iostream>
 
-#include <boost/program_options.hpp>
-namespace po = boost::program_options;
+#include "CLI/App.hpp"
+#include "CLI/Formatter.hpp"
+#include "CLI/Config.hpp"
 
 #include <pmtf/vector.hpp>
 #include <pmtf/wrap.hpp>
@@ -30,24 +31,16 @@ bool run_test(const int times, const std::vector<int32_t>& data)
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples;
-    size_t veclen;
+    uint64_t samples = 1000000;
+    size_t veclen = 1024;
 
-    po::options_description desc("Basic Test Flow Graph");
-    desc.add_options()("help,h", "display help")(
-        "samples",
-        po::value<uint64_t>(&samples)->default_value(1000000),
-        "Number of samples")(
-        "veclen", po::value<size_t>(&veclen)->default_value(1024), "Vector Length");
+    CLI::App app{"Benchmarking Script for Uniform Vector Serialization"};
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
+    // app.add_option("-h,--help", "display help");
+    app.add_option("--samples", samples, "Number of Samples");
+    app.add_option("--veclen", veclen, "Vector Length");
 
-    if (vm.count("help")) {
-        std::cout << desc << std::endl;
-        return 0;
-    }
+    CLI11_PARSE(app, argc, argv);
 
     {
 
