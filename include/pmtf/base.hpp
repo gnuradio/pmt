@@ -59,27 +59,16 @@ A map needs to have shared pointers to its values.
 */
 struct pmt {
 public:
-    pmt(): _scalar(nullptr), _map(nullptr) {}
-    pmt(const std::shared_ptr<base_buffer>& other) {
-        _scalar = other;
-        _map = nullptr;
-    }
-    pmt(const pmt& other) {
-        _scalar = other._scalar;
-        _vector = other._vector;
-        _map = other._map;
-    }
+    pmt(): _scalar(nullptr), _vector(nullptr), _map(nullptr) {}
+    pmt(const std::shared_ptr<base_buffer>& other);
+    pmt(const pmt& other);
+    
     template <class T>
     pmt(const T& other);
     // Probably only useful for strings
     template <class T>
     pmt(const T* other);
-    pmt& operator=(const pmt& other) {
-        _scalar = other._scalar;
-        _vector = other._vector;
-        _map = other._map;
-        return *this;
-    }
+    pmt& operator=(const pmt& other);
     template <class T>
     pmt& operator=(const T& other);
     //template <class T> pmt(const T& x);
@@ -87,69 +76,11 @@ public:
     std::shared_ptr<std::vector<pmt>> _vector;
     std::shared_ptr<std::map<std::string, pmt>> _map;
 
-    size_t serialize(std::streambuf& sb) const {
-        size_t length = 0;
-        length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
-        if (_vector) {
-            for (const auto& v: *_vector) {
-                length += v.serialize(sb);
-            }
-        }
-        if (_map) {
-            uint32_t size;
-            for (const auto& [k, v]: *_map) {
-                // For right now just prefix the size to the key and send it
-                size = k.size();
-                length += sb.sputn(reinterpret_cast<const char*>(&size), sizeof(uint32_t));
-                length += sb.sputn(k.c_str(), size);
-                length += v.serialize(sb);
-            }
-        }
-        return length;
-    }
-    static pmt deserialize(std::streambuf& sb) {
-        uint32_t size;
-        sb.sgetn(reinterpret_cast<char*>(&size), sizeof(size));
-        AlignedAllocator* aa = new AlignedAllocator;
-        char* x = reinterpret_cast<char*>(aa->allocate(size + sizeof(uint32_t)));
-        *reinterpret_cast<uint32_t*>(x) = size;
-        sb.sgetn(x + sizeof(uint32_t), size);
-        flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size + sizeof(uint32_t), reinterpret_cast<uint8_t*>(x), size+sizeof(uint32_t));
-        pmt cur(std::make_shared<base_buffer>(std::move(buf)));
-        if (cur.data_type() == Data::VectorPmtHeader) {
-            uint32_t count = cur._scalar->data_as<VectorPmtHeader>()->count();
-            cur._vector = std::make_shared<std::vector<pmt>>(count);
-            for (size_t i = 0; i < count; i++) {
-                (*cur._vector)[i] = deserialize(sb);
-            }
-        } else if (cur.data_type() == Data::MapHeaderString) {
-            cur._map = std::make_shared<std::map<std::string, pmt>>();
-            uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
-            std::vector<char> data;
-            for (size_t i = 0; i < count; i++) {
-                // Read length then string
-                sb.sgetn(reinterpret_cast<char*>(&size), sizeof(uint32_t));
-                data.resize(size);
-                sb.sgetn(data.data(), size);
-                // Deserialize the pmt map value
-                (*cur._map)[std::string(data.begin(), data.end())] = deserialize(sb);
-            }
-        }
-        return cur;
-    }
+    size_t serialize(std::streambuf& sb) const;
+    static pmt deserialize(std::streambuf& sb);
 
-    Data data_type() const {
-        if (_scalar != nullptr) {
-            return _scalar->data_type();
-        }
-        throw std::runtime_error("Cannot get data type for unitialized pmt");
-    }
-
-    std::string type_string() const noexcept {
-        if (_scalar != nullptr)
-            return std::string(EnumNameData(data_type()));
-        else return "Uninitialized";
-    }
+    Data data_type() const;
+    std::string type_string() const noexcept;
 };
 
 class ConversionError: public std::exception {
