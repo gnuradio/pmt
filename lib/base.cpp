@@ -26,77 +26,89 @@ const std::complex<float> UnPack(const pmtf::Complex64& obj)
 
 namespace pmtf {
 
+pmt::pmt(const std::shared_ptr<base_buffer>& other) {
+    _scalar = other;
+    _map = nullptr;
+}
 
-///////////////////////////////////////////////////////////////////////////////////
-// Static PMT Base functions
-///////////////////////////////////////////////////////////////////////////////////
+pmt::pmt(const pmt& other) {
+    _scalar = other._scalar;
+    _vector = other._vector;
+    _map = other._map;
+}
 
-/*base::sptr base::from_pmt(const pmtf::Pmt* fb_pmt)
-{
-    switch (fb_pmt->data_type()) {
-    case Data::PmtString:
-        return std::static_pointer_cast<base>(string_value::from_pmt(fb_pmt));
-    case Data::ScalarComplex64:
-        return std::static_pointer_cast<base>(
-            scalar_value<std::complex<float>>::from_pmt(fb_pmt));
-    case Data::ScalarComplex128:
-        return std::static_pointer_cast<base>(
-            scalar_value<std::complex<double>>::from_pmt(fb_pmt));
-    case Data::ScalarInt8:
-        return std::static_pointer_cast<base>(scalar_value<int8_t>::from_pmt(fb_pmt));
-    case Data::ScalarUInt8:
-        return std::static_pointer_cast<base>(scalar_value<uint8_t>::from_pmt(fb_pmt));
-    case Data::ScalarInt16:
-        return std::static_pointer_cast<base>(scalar_value<int16_t>::from_pmt(fb_pmt));
-    case Data::ScalarUInt16:
-        return std::static_pointer_cast<base>(scalar_value<uint16_t>::from_pmt(fb_pmt));
-    case Data::ScalarInt32:
-        return std::static_pointer_cast<base>(scalar_value<int32_t>::from_pmt(fb_pmt));
-    case Data::ScalarUInt32:
-        return std::static_pointer_cast<base>(scalar_value<uint32_t>::from_pmt(fb_pmt));
-    case Data::ScalarInt64:
-        return std::static_pointer_cast<base>(scalar_value<int64_t>::from_pmt(fb_pmt));
-    case Data::ScalarUInt64:
-        return std::static_pointer_cast<base>(scalar_value<uint64_t>::from_pmt(fb_pmt));
-    case Data::VectorInt8:
-        return std::static_pointer_cast<base>(pmt_vector_value<int8_t>::from_pmt(fb_pmt));
-    case Data::VectorUInt8:
-        return std::static_pointer_cast<base>(pmt_vector_value<uint8_t>::from_pmt(fb_pmt));
-    case Data::VectorInt16:
-        return std::static_pointer_cast<base>(pmt_vector_value<int16_t>::from_pmt(fb_pmt));
-    case Data::VectorUInt16:
-        return std::static_pointer_cast<base>(pmt_vector_value<uint16_t>::from_pmt(fb_pmt));
-    case Data::VectorInt32:
-        return std::static_pointer_cast<base>(pmt_vector_value<int32_t>::from_pmt(fb_pmt));
-    case Data::VectorUInt32:
-        return std::static_pointer_cast<base>(pmt_vector_value<uint32_t>::from_pmt(fb_pmt));
-    case Data::VectorInt64:
-        return std::static_pointer_cast<base>(pmt_vector_value<int64_t>::from_pmt(fb_pmt));
-    case Data::VectorUInt64:
-        return std::static_pointer_cast<base>(pmt_vector_value<uint64_t>::from_pmt(fb_pmt));
-    case Data::VectorFloat32:
-        return std::static_pointer_cast<base>(pmt_vector_value<float>::from_pmt(fb_pmt));
-    case Data::VectorFloat64:
-        return std::static_pointer_cast<base>(pmt_vector_value<double>::from_pmt(fb_pmt));
-    case Data::VectorComplex64:
-        return std::static_pointer_cast<base>(pmt_vector_value<std::complex<float>>::from_pmt(fb_pmt));
-    // case Data::VectorComplex128:
-    //     return std::static_pointer_cast<base>(pmt_vector_value<std::complex<double>>::from_pmt(fb_pmt));
+pmt& pmt::operator=(const pmt& other) {
+    _scalar = other._scalar;
+    _vector = other._vector;
+    _map = other._map;
+    return *this;
+}
 
-    default:
-        throw std::runtime_error("Unsupported PMT Type");
+size_t pmt::serialize(std::streambuf& sb) const {
+    size_t length = 0;
+    length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
+    if (_vector) {
+        for (const auto& v: *_vector) {
+            length += v.serialize(sb);
+        }
     }
+    if (_map) {
+        uint32_t size;
+        for (const auto& [k, v]: *_map) {
+            // For right now just prefix the size to the key and send it
+            size = k.size();
+            length += sb.sputn(reinterpret_cast<const char*>(&size), sizeof(uint32_t));
+            length += sb.sputn(k.c_str(), size);
+            length += v.serialize(sb);
+        }
+    }
+    return length;
 }
 
-base::sptr base::from_buffer(const uint8_t* buf, size_t size)
-{
-    auto PMT = GetPmt(buf);
-    return from_pmt(PMT);
+pmt pmt::deserialize(std::streambuf& sb) {
+    uint32_t size;
+    sb.sgetn(reinterpret_cast<char*>(&size), sizeof(size));
+    AlignedAllocator* aa = new AlignedAllocator;
+    char* x = reinterpret_cast<char*>(aa->allocate(size + sizeof(uint32_t)));
+    *reinterpret_cast<uint32_t*>(x) = size;
+    sb.sgetn(x + sizeof(uint32_t), size);
+    flatbuffers::DetachedBuffer buf(aa, true, reinterpret_cast<uint8_t*>(x), size + sizeof(uint32_t), reinterpret_cast<uint8_t*>(x), size+sizeof(uint32_t));
+    pmt cur(std::make_shared<base_buffer>(std::move(buf)));
+    if (cur.data_type() == Data::VectorPmtHeader) {
+        uint32_t count = cur._scalar->data_as<VectorPmtHeader>()->count();
+        cur._vector = std::make_shared<std::vector<pmt>>(count);
+        for (size_t i = 0; i < count; i++) {
+            (*cur._vector)[i] = deserialize(sb);
+        }
+    } else if (cur.data_type() == Data::MapHeaderString) {
+        cur._map = std::make_shared<std::map<std::string, pmt>>();
+        uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
+        std::vector<char> data;
+        for (size_t i = 0; i < count; i++) {
+            // Read length then string
+            sb.sgetn(reinterpret_cast<char*>(&size), sizeof(uint32_t));
+            data.resize(size);
+            sb.sgetn(data.data(), size);
+            // Deserialize the pmt map value
+            (*cur._map)[std::string(data.begin(), data.end())] = deserialize(sb);
+        }
+    }
+    return cur;
 }
 
-template class scalar_value<std::complex<float>>;
-template class pmt_vector_value<std::int32_t>;
-// template class pmt_vector_value<std::complex<float>>;*/
+Data pmt::data_type() const {
+    if (_scalar != nullptr) {
+        return _scalar->data_type();
+    }
+    throw std::runtime_error("Cannot get data type for unitialized pmt");
+}
+
+std::string pmt::type_string() const noexcept {
+    if (_scalar != nullptr)
+        return std::string(EnumNameData(data_type()));
+    else return "Uninitialized";
+}
+
 
 
 std::string pmt::to_base64()
