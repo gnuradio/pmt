@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: LGPL-3.0
  *
  */
+#include <pmtf/alloc.hpp>
 #include <pmtf/base.hpp>
 #include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
