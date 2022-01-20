@@ -10,11 +10,13 @@ pmt_gen_h = custom_target('flatc-output',
 pmt_gen_h_dep = declare_dependency(sources : [pmt_gen_h])
 
 files = [
+    'alloc.hpp',
     'base.hpp',
     'scalar.hpp',
     'vector.hpp',
     'string.hpp',
     'map.hpp',
-    'wrap.hpp'
+    'wrap.hpp',
+    'type_helpers.hpp'
 ]
 install_headers(files, subdir : 'pmtf')
