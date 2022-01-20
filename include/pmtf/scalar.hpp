@@ -226,21 +226,5 @@ scalar<T> get_scalar(const pmt& p) {
     throw ConversionError(p, "scalar", ctype_string<T>());
 }
 
-// These structures allow us to write template functions that depend on the
-// flatbuffer data type.  This allows us to do things like verify that the
-// datatype is correct when we want to interpret a pmt as another type.
-template <> struct cpp_type<Data::ScalarInt8> { using type=int8_t; };
-template <> struct cpp_type<Data::ScalarInt16> { using type=int16_t; };
-template <> struct cpp_type<Data::ScalarInt32> { using type=int32_t; };
-template <> struct cpp_type<Data::ScalarInt64> { using type=int64_t; };
-template <> struct cpp_type<Data::ScalarUInt8> { using type=uint8_t; };
-template <> struct cpp_type<Data::ScalarUInt16> { using type=uint16_t; };
-template <> struct cpp_type<Data::ScalarUInt32> { using type=uint32_t; };
-template <> struct cpp_type<Data::ScalarUInt64> { using type=uint64_t; };
-template <> struct cpp_type<Data::ScalarFloat32> { using type=float; };
-template <> struct cpp_type<Data::ScalarFloat64> { using type=double; };
-template <> struct cpp_type<Data::ScalarComplex64> { using type=std::complex<float>; };
-template <> struct cpp_type<Data::ScalarComplex128> { using type=std::complex<double>; };
-template <> struct cpp_type<Data::ScalarBool> { using type=bool; };
 }
 
