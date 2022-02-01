@@ -16,7 +16,7 @@
 namespace py = pybind11;
 
 void bind_string(py::module&);
-void bind_wrap(py::module&);
+void bind_pmt(py::module&);
 
 // We need this hack because import_array() returns NULL
 // for newer Python versions.
@@ -35,5 +35,5 @@ PYBIND11_MODULE(pmtf_python, m)
     init_numpy();
 
     bind_string(m);
-    bind_wrap(m);
+    bind_pmt(m);
 }
