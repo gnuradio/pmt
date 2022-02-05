@@ -43,6 +43,7 @@ class scalar {
 public:
     using traits = typename scalar_traits<T>::traits;
     using type = typename traits::type;
+    using value_type = T;
     scalar() { _Create(T(0)); }
     scalar(const T& value) { _Create(value); }
     scalar(const scalar<T>& other) { _Create(other.value()); }
@@ -80,6 +81,13 @@ public:
     //! Will cause a compilation failure if we can't do the cast.
     template <class U>
     explicit operator U() const { return U(value()); }
+
+    //! Equality Comparisons
+    // Declared as class members so that we don't do implicit conversions.
+    template <class U>
+    bool operator==(const U& x) const;
+    template <class U>
+    bool operator!=(const U& x) const { return !(operator==(x));}
 private:
     void _Create(const T& value) {
         flatbuffers::FlatBufferBuilder fbb(128);
@@ -108,6 +116,9 @@ struct is_scalar : std::false_type {};
 template <class T>
 struct is_scalar<scalar<T>> : std::true_type {};
 
+template <class T, class U>
+using IsNotScalarT = std::enable_if_t<!std::is_same_v<scalar<T>, U>, bool>;
+
 // In C++20 we can replace this with a concept.
 #define IMPLEMENT_SCALAR_PMT(type) \
 template <> inline pmt& pmt::operator=<type>(const type& x) \
@@ -134,84 +145,49 @@ IMPLEMENT_SCALAR_PMT(std::complex<float>)
 IMPLEMENT_SCALAR_PMT(std::complex<double>)
 
 
+template <class T, class U>
+struct promote_type { using type = decltype(std::declval<T>() + std::declval<U>());};
+//template <class T, class U, IsComplex<T> = true, IsNotComplex<U> = true>
+template <class T, class U>
+struct promote_type<std::complex<T>, U> { using type = T; };
+//template <class T, class U, IsNotComplex<T> = true, IsComplex<U> = true>
+template <class T, class U>
+struct promote_type<T, std::complex<U>> { using type = U; };
+template <class T, class U>
+struct promote_type<std::complex<T>, std::complex<U>> { using type = decltype(std::declval<T>() + std::declval<U>()); };
+
 // The catch all case.
 // Primarily works against arithmetic types
-template <class T, class U>
-bool operator==(const scalar<T>& x, const U& y) {
+template <class T>
+template <class U>
+bool scalar<T>::operator==(const U& y) const {
     // U is a plain old data type (scalar<float> == float)
     if constexpr(std::is_same_v<T, U>)
-        return x.value() == y;
+        return value() == y;
+    else if constexpr(is_scalar<U>::value) {
+        if constexpr(std::is_convertible_v<typename U::value_type, T>)
+            return value() == T(y.value());
+        else return false;
+    } else if constexpr(std::is_same_v<U, pmt>)
+        return y == value();
     // Can U be converted to T?
     else if constexpr(std::is_convertible_v<U, T>)
-        return x.value() == T(y);
+        return value() == T(y);
     return false;
 }
 
-// Need to break out the scalar case.  Later I define a reversed template so
-// that we can have x == y and y == x.  That causes a compiler ambiguity if
-// I don't have this function.
-template <class T>
-bool operator==(const scalar<T>& x, const scalar<T>& y) {
-    return x.value() == y.value();
-}
-
 // Reversed case.  This allows for x == y and y == x
-template <class T, class U>
+template <class T, class U, IsNotScalarT<T,U> = true>
 bool operator==(const U& y, const scalar<T>& x) {
-    return operator==(x,y);
-}
-
-// Not equal operator
-template <class T, class U>
-bool operator!=(const scalar<T>& x, const U& y) {
-    return !(x == y);
+    return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class T, class U>
+template <class T, class U, IsNotScalarT<T,U> = true>
 bool operator!=(const U& y, const scalar<T>& x) {
     return operator!=(x,y);
 }
 
-template <typename T>
-using IsArithmetic = std::enable_if_t<std::is_arithmetic_v<T>>;
-
-template <typename T>
-using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value, bool>;
-
-template <class T, IsScalarBase<T> = true>
-bool operator==(const pmt& x, const T& y) {
-    switch(x.data_type()) {
-        case Data::ScalarBool: return scalar<bool>(x) == y;
-        case Data::ScalarFloat32: return scalar<float>(x) == y;
-        case Data::ScalarFloat64: return scalar<double>(x) == y;
-        case Data::ScalarComplex64: return scalar<std::complex<float>>(x) == y;
-        case Data::ScalarComplex128: return scalar<std::complex<double>>(x) == y;
-        case Data::ScalarInt8: return scalar<int8_t>(x) == y;
-        case Data::ScalarInt16: return scalar<int16_t>(x) == y;
-        case Data::ScalarInt32: return scalar<int32_t>(x) == y;
-        case Data::ScalarInt64: return scalar<int64_t>(x) == y;
-        case Data::ScalarUInt8: return scalar<uint8_t>(x) == y;
-        case Data::ScalarUInt16: return scalar<uint16_t>(x) == y;
-        case Data::ScalarUInt32: return scalar<uint32_t>(x) == y;
-        case Data::ScalarUInt64: return scalar<uint64_t>(x) == y;
-        default: return false;
-    }
-}
-
-template <class T, IsScalarBase<T> = true>
-bool operator==(const T& y, const pmt& x) {
-    return operator==(x, y);
-}
-
-template <class T>
-bool operator==(const pmt& x, const scalar<T>& y) {
-    return x == y.value();
-}
-template <class T>
-bool operator==(const scalar<T>& y, const pmt& x) {
-    return operator==(x, y);
-}
 
 template <class T>
 std::ostream& operator<<(std::ostream& os, const scalar<T>& x) {
