@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <pmtf/base.hpp>
+#include <pmtf/type_helpers.hpp>
 #include <pmtf/gsl-lite.hpp>
 
 // Need to define packing functions for complex<double>
@@ -63,6 +64,9 @@ public:
     using reference = T&;
     using const_reference = const T&;
     using size_type = size_t;
+
+    using iterator = typename span_type::iterator;
+    using const_iterator = typename span_type::const_iterator;
 
     // Default constructor
     vector() {
@@ -154,6 +158,12 @@ public:
             scalar->data_as<type>()->mutate_count(_get_buf()->size());
         } else throw std::runtime_error("Not implemented");
     }
+    //! Equality Comparisons
+    // Declared as class members so that we don't do implicit conversions.
+    template <class U>
+    bool operator==(const U& x) const;
+    template <class U>
+    bool operator!=(const U& x) const { return !(operator==(x));}
 private:
     void _MakeVector(const T* data, size_t size) {
         flatbuffers::FlatBufferBuilder fbb;
@@ -213,6 +223,15 @@ private:
 };
 
 template <class T>
+struct is_vector : std::false_type {};
+
+template <class T>
+struct is_vector<vector<T>> : std::true_type {};
+
+template <class T, class U>
+using IsNotVectorT = std::enable_if_t<!std::is_same_v<vector<T>, U>, bool>;
+
+template <class T>
 std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     os << "[ ";
     bool first = true;
@@ -225,103 +244,35 @@ std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     return os;
 }
 
-// Compare against a span
 template <class T>
-bool operator==(const vector<T>& x, const gsl::span<const T>& other) {
-    if (other.size() != x.size()) return false;
-    return std::equal(x.begin(), x.end(), other.begin());
-}
-
-template <class T>
-bool operator==(const gsl::span<const T>& other, const vector<T>& x) {
-    return operator==(x, other);
-}
-
-// Compare against another vector (std or pmt)
-template <class T>
-bool operator==(const vector<T>& x, const std::vector<T>& other) {
-    return x == gsl::span(other);
-}
-template <class T>
-bool operator==(const std::vector<T>& other, const vector<T>& x) {
-    return x == gsl::span(other);
-}
-
-template <class T>
-bool operator==(const vector<T>& x, const vector<T>& other) {
-    return x == gsl::span(other);
-}
-
-// Blanket other case.
-template <class T, class U>
-bool operator==(const vector<T>& x, const U& other) {
-    return false;
-}
-
-template <class T, class U>
-bool operator!=(const vector<T>& x, const U& other) {
-    return !(x == other);
-}
-
-template <class T, class U>
-bool operator!=(const U& other, const vector<T>& x) {
-    return !(x == other);
-}
-
-// Pmt == cases
-template <class T>
-bool operator==(const pmt& x, const gsl::span<const T>& y) {
-    switch(x.data_type()) {
-        case Data::VectorFloat32: return vector<float>(x) == y;
-        case Data::VectorFloat64: return vector<double>(x) == y;
-        case Data::VectorComplex64: return vector<std::complex<float>>(x) == y;
-        case Data::VectorComplex128: return vector<std::complex<double>>(x) == y;
-        case Data::VectorInt8: return vector<int8_t>(x) == y;
-        case Data::VectorInt16: return vector<int16_t>(x) == y;
-        case Data::VectorInt32: return vector<int32_t>(x) == y;
-        case Data::VectorInt64: return vector<int64_t>(x) == y;
-        case Data::VectorUInt8: return vector<uint8_t>(x) == y;
-        case Data::VectorUInt16: return vector<uint16_t>(x) == y;
-        case Data::VectorUInt32: return vector<uint32_t>(x) == y;
-        case Data::VectorUInt64: return vector<uint64_t>(x) == y;
-        case Data::VectorPmtHeader: return vector<pmt>(x) == y;
-        default: return false;
+template <class U>
+bool vector<T>::operator==(const U& other) const {
+    // We can only compare true against containers
+    if constexpr(is_vector_like_container<U>::value) {
+        if constexpr(std::is_same_v<typename U::value_type, T>) {
+            if (size() != other.size()) return false;
+            return std::equal(begin(), end(), other.begin());
+        }
+        return false;
+    } else if constexpr(std::is_same_v<U, pmt>) {
+        return other.operator==(*this);
+    } else {
+        return false;
     }
 }
 
-template <class T>
-bool operator==(const gsl::span<const T>& y, const pmt& x) {
-    return operator==(x, y);
-}
-template <class T>
-bool operator==(const pmt& x, const std::vector<T>& other) {
-    return x == gsl::span(other);
-}
-template <class T>
-bool operator==(const std::vector<T>& other, const pmt& x) {
-    return x == gsl::span(other);
+// Reversed case.  This allows for x == y and y == x
+template <class T, class U, IsNotVectorT<T, U> = true>
+bool operator==(const U& y, const vector<T>& x) {
+    return x.operator==(y);
 }
 
-template <class T>
-bool operator==(const pmt& x, const vector<T>& other) {
-    return x == gsl::span(other);
-}
-template <class T>
-bool operator==(const vector<T>& other, const pmt& x) {
-    return x == gsl::span(other);
+// Reversed Not equal operator
+template <class T, class U, IsNotVectorT<T, U> = true>
+bool operator!=(const U& y, const vector<T>& x) {
+    return operator!=(x,y);
 }
 
-// When we switch to c++20, make this a concept.
-/*template <class T, class U>
-bool operator==(const vector<T>& x, const U& other) {
-    if (other.size() != x.size()) return false;
-    auto my_val = x.begin();
-    for (auto&& val : other) {
-        if (*my_val != val) return false;
-        my_val++;
-    }
-    return true;
-}*/
 
 template <class T>
 vector<T> get_vector(const pmt& p) {

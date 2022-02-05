@@ -61,6 +61,10 @@ public:
     using reference = value_type&;
     using const_reference = const value_type&;
     using map_type = std::map<key_type, mapped_type>;
+    using size_type = size_t;
+
+    using iterator = map_type::iterator;
+    using const_iterator = map_type::const_iterator;
 
     // Construct empty map
     map() {
@@ -105,15 +109,12 @@ public:
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     const pmt& get_pmt_buffer() const { return _map; }
 
-    void print(std::ostream& os) const {
-        os << "{";
-        for (const auto& [k, v]: *this) {
-            os << k << ": ";
-            //v->print(os);
-            os << ", ";
-        }
-        os << "}";
-    } 
+    //! Equality Comparisons
+    // Declared as class members so that we don't do implicit conversions.
+    template <class U>
+    bool operator==(const U& x) const;
+    template <class U>
+    bool operator!=(const U& x) const { return !(operator==(x));}
 private:
     std::shared_ptr<map_type> _get_map() { return _map._map; }
     const std::shared_ptr<map_type> _get_map() const { return _map._map; }
@@ -132,6 +133,8 @@ private:
     }
 };
     //virtual void serialize_setup();
+template <class T>
+using IsNotMap = std::enable_if_t<!std::is_same_v<map, T>, bool>;
 
 template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
 

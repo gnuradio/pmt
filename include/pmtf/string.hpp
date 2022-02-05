@@ -28,10 +28,10 @@ public:
     using reference = char&;
     using const_reference = const char&;
     using size_type = size_t;
-    // Default constructor
-    string() {
-        _MakeString(nullptr,0);
-    }
+
+    using iterator = typename span::iterator;
+    using const_iterator = typename span::const_iterator;
+
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
@@ -78,6 +78,12 @@ public:
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
     void print(std::ostream& os) const { os << value(); }
     const pmt& get_pmt_buffer() const { return _buf; }
+    //! Equality Comparisons
+    // Declared as class members so that we don't do implicit conversions.
+    template <class U>
+    bool operator==(const U& x) const;
+    template <class U>
+    bool operator!=(const U& x) const { return !(operator==(x));}
 private:
     pmt _buf;
     std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
@@ -104,52 +110,48 @@ template <> inline pmt& pmt::operator=<string>(const string& x)
 
 template <typename T>
 using IsPmtString = std::enable_if_t<std::is_same_v<T, string>, bool>;
+template <class T>
+using IsNotString = std::enable_if_t<!std::is_same_v<string, T>, bool>;
 
-// When we switch to c++20, make this a concept.
-template <class U, typename = IsContainer<U>>
-bool operator==(const string& x, const U& other) {
-    if (other.size() != x.size()) return false;
-    return std::equal(std::begin(x), std::end(x), other.begin());
-}
-
-template <class T, IsPmtString<T> = true>
-bool operator==(const T& x, const T& other) {
-    if (other.size() != x.size()) return false;
-    return std::equal(std::begin(x), std::end(x), other.begin());
-}
-
-
-template <typename T, IsPmtString<T> = true, typename U, IsPmt<U> = true>
-bool operator==(const U& x, const T& other) {
-    if (x.data_type() == Data::PmtString) {
-        return string(x) == other;
-    } else {
+template <class T>
+bool string::operator==(const T& other) const {
+    if constexpr(std::is_same_v<std::decay_t<T>, char*>) {
+        size_t index = 0;
+        while (other[index] != 0 && index < size()) {
+            if (other[index] != (*this)[index]) return false;
+            index++;
+        }
+        return index == size() || (*this)[index] == 0;
+    } else if constexpr(is_container<T>::value) {
+        if constexpr( std::is_same_v<typename T::value_type, char>) {
+            if (other.size() != size()) return false;
+            return std::equal(std::begin(*this), std::end(*this), other.begin());
+        } else {
+            return false;
+        }
+    } else if constexpr(std::is_same_v<T, pmt>) {
+        return other.operator==(*this);
+    } else
         return false;
-    }
 }
 
-template <typename T, IsPmtString<T> = true, typename U, IsPmt<U> = true>
-inline bool operator==(const T& x, const U& other) {
-    return operator==(other, x);
+// Reversed case.  This allows for x == y and y == x
+template <class T, class U, IsNotString<U> = true>
+bool operator==(const U& y, const string& x) {
+    return x.operator==(y);
 }
 
-inline bool operator==(const string& x, const char* other) {
-    size_t index = 0;
-    while (other[index] != 0 && index < x.size()) {
-        if (other[index] != x[index]) return false;
-        index++;
-    }
-    return index == x.size() || x[index] == 0;
+// Reversed Not equal operator
+template <class T, class U, IsNotString<U> = true>
+bool operator!=(const U& y, const string& x) {
+    return operator!=(x,y);
 }
-
-
 
 inline std::ostream& operator<<(std::ostream& os, const string& value) {
     os << value.value();
     return os;
 }
 
-/*string get_string(const wrap& x);*/
 inline string get_string(const pmt& p) {
     if (p.data_type() == string::data_type())
         return string(p);
