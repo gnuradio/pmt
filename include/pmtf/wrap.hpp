@@ -18,48 +18,9 @@ namespace pmtf {
 
 // Forward declare so that we can use it in the function.
 inline std::ostream& operator<<(std::ostream& os, const map& value);
-bool operator==(const pmt& x, const map& y);
-inline bool operator==(const map& y, const pmt& x) { return operator==(x,y); }
 template <class T, typename = IsPmt<T>>
 std::ostream& operator<<(std::ostream& os, const T& value);
 
-
-template <typename T, IsPmt<T> = true>
-inline bool operator==(const T& value, const T& other) {
-    //std::cout << "Yo==: " << (uint32_t)value.data_type() << " " << (uint32_t)other.data_type() << std::endl;
-    switch (value.data_type()) {
-        case Data::PmtString: return operator==(string(value), other);
-        case Data::ScalarFloat32: return operator==(scalar<float>(value), other);
-        case Data::ScalarFloat64: return operator==(scalar<double>(value), other);
-        case Data::ScalarComplex64: return operator==(scalar<std::complex<float>>(value), other);
-        case Data::ScalarComplex128: return operator==(scalar<std::complex<double>>(value), other);
-        case Data::ScalarInt8: return operator==(scalar<int8_t>(value), other);
-        case Data::ScalarInt16: return operator==(scalar<int16_t>(value), other);
-        case Data::ScalarInt32: return operator==(scalar<int32_t>(value), other);
-        case Data::ScalarInt64: return operator==(scalar<int64_t>(value), other);
-        case Data::ScalarUInt8: return operator==(scalar<uint8_t>(value), other);
-        case Data::ScalarUInt16: return operator==(scalar<uint16_t>(value), other);
-        case Data::ScalarUInt32: return operator==(scalar<uint32_t>(value), other);
-        case Data::ScalarUInt64: return operator==(scalar<uint64_t>(value), other);
-        //case Data::ScalarBool: return operator==(scalar<bool>(value), other);
-        case Data::VectorFloat32: return operator==(vector<float>(value), other);
-        case Data::VectorFloat64: return operator==(vector<double>(value), other);
-        case Data::VectorComplex64: return operator==(vector<std::complex<float>>(value), other);
-        case Data::VectorComplex128: return operator==(vector<std::complex<double>>(value), other);
-        case Data::VectorInt8: return operator==(vector<int8_t>(value), other);
-        case Data::VectorInt16: return operator==(vector<int16_t>(value), other);
-        case Data::VectorInt32: return operator==(vector<int32_t>(value), other);
-        case Data::VectorInt64: return operator==(vector<int64_t>(value), other);
-        case Data::VectorUInt8: return operator==(vector<uint8_t>(value), other);
-        case Data::VectorUInt16: return operator==(vector<uint16_t>(value), other);
-        case Data::VectorUInt32: return operator==(vector<uint32_t>(value), other);
-        case Data::VectorUInt64: return operator==(vector<uint64_t>(value), other);
-        case Data::VectorPmtHeader: return operator==(vector<pmt>(value), other);
-        case Data::MapHeaderString: return operator==(map(value), other);
-        default:
-            throw std::runtime_error("Unknown pmt type passed to operator==");
-    }
-}
 
 typedef std::variant<
         std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t,
@@ -73,38 +34,82 @@ typedef std::variant<
 
 
 template <class T>
-inline bool operator!=(const pmt& value, const T& other) {
-    return !(value == other);
+bool map::operator==(const T& other) const {
+    if constexpr(is_map_like_container<T>::value) {
+        if (size() != other.size()) return false;
+        for (const auto& [k, v]: *this) {
+            if (other.count(k) == 0) return false;
+            else if (!(other.at(k) == v)) return false;
+        }
+        return true;
+    } else if constexpr(std::is_same_v<T, pmt>) {
+        return other == *this;
+    } else
+        return false;
 }
 
-inline bool operator==(const map& x, const std::map<std::string, pmt>& y) {
-    if (x.size() != y.size()) return false;
-    for (const auto& [k, v]: x) {
-        if (y.count(k) == 0) return false;
-        else if (!(y.at(k) == v)) return false;
-    }
-    return true;
+// Reversed case.  This allows for x == y and y == x
+template <class T, class U, IsNotMap<U> = true>
+bool operator==(const U& y, const map& x) {
+    return x.operator==(y);
 }
 
-inline bool operator==(const map& x, const map& y) {
-    if (x.size() != y.size()) return false;
-    for (const auto& [k, v]: x) {
-        if (y.count(k) == 0) return false;
-        else if (!(y.at(k) == v)) return false;
-    }
-    return true;
+// Reversed Not equal operator
+template <class T, class U, IsNotMap<U> = true>
+bool operator!=(const U& y, const map& x) {
+    return operator!=(x,y);
 }
 
-inline bool operator==(const pmt& x, const std::map<std::string, pmt>& y) {
-    if (x.data_type() == Data::MapHeaderString)
-        return map(x) == y;
-    return false;
+// Reversed case.  This allows for x == y and y == x
+template <class U, IsNotPmt<U> = true>
+bool operator==(const U& y, const pmt& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class U, IsNotPmt<U> = true>
+bool operator!=(const U& y, const map& x) {
+    return operator!=(x,y);
 }
 
 template <class T>
-inline bool operator!=(const map& x, const T& y) {
-    return !(x == y);
+bool pmt::operator==(const T& other) const {
+    // If other is a pmt, then we will convert the first arg to its type
+    // Then we will call this again to convert the second arg.
+    switch (data_type()) {
+        case Data::PmtString: return string(*this).operator==(other);
+        case Data::ScalarFloat32: return scalar<float>(*this).operator==(other);
+        case Data::ScalarFloat64: return scalar<double>(*this).operator==(other);
+        case Data::ScalarComplex64: return scalar<std::complex<float>>(*this).operator==(other);
+        case Data::ScalarComplex128: return scalar<std::complex<double>>(*this).operator==(other);
+        case Data::ScalarInt8: return scalar<int8_t>(*this).operator==(other);
+        case Data::ScalarInt16: return scalar<int16_t>(*this).operator==(other);
+        case Data::ScalarInt32: return scalar<int32_t>(*this).operator==(other);
+        case Data::ScalarInt64: return scalar<int64_t>(*this).operator==(other);
+        case Data::ScalarUInt8: return scalar<uint8_t>(*this).operator==(other);
+        case Data::ScalarUInt16: return scalar<uint16_t>(*this).operator==(other);
+        case Data::ScalarUInt32: return scalar<uint32_t>(*this).operator==(other);
+        case Data::ScalarUInt64: return scalar<uint64_t>(*this).operator==(other);
+        //case Data::ScalarBool: return scalar<bool>(*this).operator==(other);
+        case Data::VectorFloat32: return vector<float>(*this).operator==(other);
+        case Data::VectorFloat64: return vector<double>(*this).operator==(other);
+        case Data::VectorComplex64: return vector<std::complex<float>>(*this).operator==(other);
+        case Data::VectorComplex128: return vector<std::complex<double>>(*this).operator==(other);
+        case Data::VectorInt8: return vector<int8_t>(*this).operator==(other);
+        case Data::VectorInt16: return vector<int16_t>(*this).operator==(other);
+        case Data::VectorInt32: return vector<int32_t>(*this).operator==(other);
+        case Data::VectorInt64: return vector<int64_t>(*this).operator==(other);
+        case Data::VectorUInt8: return vector<uint8_t>(*this).operator==(other);
+        case Data::VectorUInt16: return vector<uint16_t>(*this).operator==(other);
+        case Data::VectorUInt32: return vector<uint32_t>(*this).operator==(other);
+        case Data::VectorUInt64: return vector<uint64_t>(*this).operator==(other);
+        case Data::VectorPmtHeader: return vector<pmt>(*this).operator==(other);
+        case Data::MapHeaderString: return map(*this).operator==(other);
+        default:
+            throw std::runtime_error("Unknown pmt type passed to operator==");
+    }
 }
+
 // Need to have map operator here because it has pmts in it.
 inline std::ostream& operator<<(std::ostream& os, const map& value) {
     os << "{ ";
@@ -120,7 +125,6 @@ inline std::ostream& operator<<(std::ostream& os, const map& value) {
 
 template <class T, typename = IsPmt<T>>
 std::ostream& operator<<(std::ostream& os, const T& value) {
-    //std::cout << "Yo<<: " << (uint32_t)value.data_type() << std::endl;
     switch(value.data_type()) {
         case Data::PmtString: return operator<<(os, string(value));
         case Data::ScalarFloat32: return operator<<(os, scalar<float>(value));

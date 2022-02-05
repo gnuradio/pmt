@@ -63,6 +63,7 @@ TEST(PmtMap, MapSerialize)
     std::cout << map_pmt.size() << " " << map_pmt.size2() << std::endl;
     std::cout << y << std::endl;
     std::cout << "Before Test\n";
+    std::cout << (map_pmt == y) << std::endl;
     EXPECT_EQ(map_pmt, y);
 
 }

@@ -1,4 +1,13 @@
+#pragma once
+
 #include <string>
+#include <complex>
+#include <pmtf/pmtf_generated.h>
+
+namespace pmtf {
+
+// Forward declare pmt
+class pmt;
 
 
 // Define some SFINAE templates.  Since we can create pmts from the various classes,
@@ -7,6 +16,27 @@ template <typename T>
 using IsPmt = std::enable_if_t<std::is_same_v<T, pmt>, bool>;
 template <typename T>
 using IsNotPmt = std::enable_if_t<!std::is_same_v<T, pmt>, bool>;
+
+template <class T>
+struct is_complex : std::false_type {};
+
+template <class T>
+struct is_complex<std::complex<T>> : std::true_type {};
+
+template <typename T>
+using IsComplex = std::enable_if_t<is_complex<T>::value, bool>;
+
+template <typename T>
+using IsNotComplex = std::enable_if_t<!is_complex<T>::value, bool>;
+
+template <typename T>
+using IsArithmetic = std::enable_if_t<std::is_arithmetic_v<T>>;
+
+template <typename T>
+using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value, bool>;
+
+template <typename T>
+using IsVectorBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value || std::is_same_v<T,pmt>, bool>;
 
 template<typename T, typename _ = void>
 struct is_container : std::false_type {};
@@ -26,6 +56,24 @@ struct is_container<
         > : public std::true_type {};
 
 template <typename Container, typename _ = void>
+struct is_vector_like_container: std::false_type {};
+
+template <typename T>
+struct is_vector_like_container<
+        T,
+        std::void_t<
+                typename T::value_type,
+                typename T::size_type,
+                typename T::iterator,
+                typename T::const_iterator,
+                decltype(std::declval<T>().data()),
+                decltype(std::declval<T>().size()),
+                decltype(std::declval<T>().begin()),
+                decltype(std::declval<T>().end())
+            >
+        > : public std::true_type {};
+
+template <typename Container, typename _ = void>
 struct is_map_like_container: std::false_type {};
 
 template <typename T>
@@ -35,7 +83,6 @@ struct is_map_like_container<
                 typename T::value_type,
                 typename T::mapped_type,
                 typename T::size_type,
-                typename T::allocator_type,
                 typename T::iterator,
                 typename T::const_iterator,
                 decltype(std::declval<T>().size()),
@@ -47,11 +94,11 @@ struct is_map_like_container<
 template <typename T>
 using IsContainer = std::enable_if_t<is_container<T>::value, bool>;
 
-template <class T>
-struct is_complex : std::false_type {};
+template <typename T>
+using IsVectorLikeContainer = std::enable_if_t<is_vector_like_container<T>::value, bool>;
 
-template <class T>
-struct is_complex<std::complex<T>> : std::true_type {};
+template <typename T>
+using IsMapLikeContainer = std::enable_if_t<is_map_like_container<T>::value, bool>;
 
 // We need to know the struct type for complex values
 template <class T> struct scalar_type;
@@ -73,3 +120,11 @@ template <> inline std::string ctype_string<double>() { return "double"; }
 template <> inline std::string ctype_string<std::complex<float>>() { return "complex<float>"; }
 template <> inline std::string ctype_string<std::complex<double>>() { return "complex<double>"; }
 template <> inline std::string ctype_string<pmt>() { return "pmt"; }
+
+template< class T >
+struct remove_cvref {
+    typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+};
+template< class T >
+using remove_cvref_t = typename remove_cvref<T>::type;
+}

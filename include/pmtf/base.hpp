@@ -68,6 +68,14 @@ public:
 
     Data data_type() const;
     std::string type_string() const noexcept;
+
+    //! Equality Comparisons
+    // Declared as class members so that we don't do implicit conversions.
+    template <class T>
+    bool operator==(const T& other) const;
+    template <class T>
+    bool operator!=(const T& x) const { return !(operator==(x));}
+
 private:
     /*!
     * Initialize from a shared_ptr to a base_buffer
