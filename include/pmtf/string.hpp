@@ -105,6 +105,8 @@ template <> inline pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buf
 template <typename T>
 using IsPmtString = std::enable_if_t<std::is_same_v<T, string>, bool>;
 template <class T>
+using IsString = std::enable_if_t<std::is_same_v<string, T>, bool>;
+template <class T>
 using IsNotString = std::enable_if_t<!std::is_same_v<string, T>, bool>;
 
 template <class T>
@@ -130,18 +132,19 @@ bool string::operator==(const T& other) const {
 }
 
 // Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsNotString<U> = true>
-bool operator==(const U& y, const string& x) {
+template <class T, class U, IsString<T> = true, IsNotString<U> = true>
+bool operator==(const U& y, const T& x) {
     return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class T, class U, IsNotString<U> = true>
-bool operator!=(const U& y, const string& x) {
+template <class T, class U, IsString<T> = true, IsNotString<U> = true>
+bool operator!=(const U& y, const T& x) {
     return operator!=(x,y);
 }
 
-inline std::ostream& operator<<(std::ostream& os, const string& value) {
+template <class T, IsString<T> = true>
+inline std::ostream& operator<<(std::ostream& os, const T& value) {
     os << value.value();
     return os;
 }

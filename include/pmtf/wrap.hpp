@@ -17,7 +17,8 @@
 namespace pmtf {
 
 // Forward declare so that we can use it in the function.
-inline std::ostream& operator<<(std::ostream& os, const map& value);
+template <class T, IsMap<T> = true>
+std::ostream& operator<<(std::ostream& os, const T& value);
 template <class T, typename = IsPmt<T>>
 std::ostream& operator<<(std::ostream& os, const T& value);
 
@@ -33,42 +34,15 @@ typedef std::variant<
         pmt_variant_t;
 
 
-template <class T>
-bool map::operator==(const T& other) const {
-    if constexpr(is_map_like_container<T>::value) {
-        if (size() != other.size()) return false;
-        for (const auto& [k, v]: *this) {
-            if (other.count(k) == 0) return false;
-            else if (!(other.at(k) == v)) return false;
-        }
-        return true;
-    } else if constexpr(std::is_same_v<T, pmt>) {
-        return other == *this;
-    } else
-        return false;
-}
-
 // Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsNotMap<U> = true>
-bool operator==(const U& y, const map& x) {
+template <class T, class U, IsPmt<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
+bool operator==(const U& y, const T& x) {
     return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class T, class U, IsNotMap<U> = true>
-bool operator!=(const U& y, const map& x) {
-    return operator!=(x,y);
-}
-
-// Reversed case.  This allows for x == y and y == x
-template <class U, IsNotPmt<U> = true>
-bool operator==(const U& y, const pmt& x) {
-    return x.operator==(y);
-}
-
-// Reversed Not equal operator
-template <class U, IsNotPmt<U> = true>
-bool operator!=(const U& y, const map& x) {
+template <class T, class U, IsMap<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
+bool operator!=(const U& y, const T& x) {
     return operator!=(x,y);
 }
 
@@ -111,7 +85,8 @@ bool pmt::operator==(const T& other) const {
 }
 
 // Need to have map operator here because it has pmts in it.
-inline std::ostream& operator<<(std::ostream& os, const map& value) {
+template <class T, IsMap<T> = true>
+std::ostream& operator<<(std::ostream& os, const T& value) {
     os << "{ ";
     bool first = true;
     for (const auto& [k, v]: value) {
