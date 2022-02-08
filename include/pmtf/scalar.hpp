@@ -145,19 +145,8 @@ IMPLEMENT_SCALAR_PMT(std::complex<float>)
 IMPLEMENT_SCALAR_PMT(std::complex<double>)
 
 
-template <class T, class U>
-struct promote_type { using type = decltype(std::declval<T>() + std::declval<U>());};
-//template <class T, class U, IsComplex<T> = true, IsNotComplex<U> = true>
-template <class T, class U>
-struct promote_type<std::complex<T>, U> { using type = T; };
-//template <class T, class U, IsNotComplex<T> = true, IsComplex<U> = true>
-template <class T, class U>
-struct promote_type<T, std::complex<U>> { using type = U; };
-template <class T, class U>
-struct promote_type<std::complex<T>, std::complex<U>> { using type = decltype(std::declval<T>() + std::declval<U>()); };
 
 // The catch all case.
-// Primarily works against arithmetic types
 template <class T>
 template <class U>
 bool scalar<T>::operator==(const U& y) const {

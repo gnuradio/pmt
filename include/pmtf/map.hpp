@@ -134,12 +134,41 @@ private:
 };
     //virtual void serialize_setup();
 template <class T>
+using IsMap = std::enable_if_t<std::is_same_v<map, T>, bool>;
+template <class T>
 using IsNotMap = std::enable_if_t<!std::is_same_v<map, T>, bool>;
 
 template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
 
 template <> inline pmt::pmt<std::map<std::string, pmt>>(const std::map<std::string, pmt>& x) {
     *this = map(x).get_pmt_buffer();
+}
+
+template <class T>
+bool map::operator==(const T& other) const {
+    if constexpr(is_map_like_container<T>::value) {
+        if (size() != other.size()) return false;
+        for (const auto& [k, v]: *this) {
+            if (other.count(k) == 0) return false;
+            else if (!(other.at(k) == v)) return false;
+        }
+        return true;
+    } else if constexpr(std::is_same_v<T, pmt>) {
+        return other.operator==(*this);
+    } else
+        return false;
+}
+
+// Reversed case.  This allows for x == y and y == x
+template <class T, class U, IsMap<T> = true, IsNotMap<U> = true>
+bool operator==(const U& y, const T& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class T, class U, IsMap<T> = true, IsNotMap<U> = true>
+bool operator!=(const U& y, const map& x) {
+    return operator!=(x,y);
 }
 
 inline map get_map(const pmt& p) {
