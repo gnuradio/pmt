@@ -17,6 +17,18 @@ using IsPmt = std::enable_if_t<std::is_same_v<T, pmt>, bool>;
 template <typename T>
 using IsNotPmt = std::enable_if_t<!std::is_same_v<T, pmt>, bool>;
 
+template<typename T, typename _ = void>
+struct is_pmt_derived : std::false_type {};
+
+template<typename T>
+struct is_pmt_derived<
+        T,
+        std::void_t<decltype(std::declval<T>().get_pmt_buffer())>
+        > : public std::true_type {};
+
+template <typename T>
+using IsNotPmtDerived = std::enable_if_t<!is_pmt_derived<T>::value, bool>;
+
 template <class T>
 struct is_complex : std::false_type {};
 
