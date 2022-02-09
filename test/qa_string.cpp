@@ -63,3 +63,14 @@ TEST(PmtString, get_as)
     // Throw an error for other types.
     EXPECT_THROW(get_as<float>(x), ConversionError);
 }
+
+TEST(PmtString, base64)
+{
+    pmt x = std::string("hello");
+    
+    // Make sure that we can get the value back out
+    auto encoded_str = pmt(x).to_base64();
+    auto y = pmt::from_base64(encoded_str);
+
+    EXPECT_EQ(x, y);
+}

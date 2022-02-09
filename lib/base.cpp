@@ -9,6 +9,7 @@
 #include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
 #include <pmtf/vector.hpp>
+#include "base64/base64.h"
 #include <map>
 
 namespace flatbuffers {
@@ -96,5 +97,27 @@ base::sptr base::from_buffer(const uint8_t* buf, size_t size)
 template class scalar_value<std::complex<float>>;
 template class pmt_vector_value<std::int32_t>;
 // template class pmt_vector_value<std::complex<float>>;*/
+
+
+std::string pmt::to_base64()
+{
+    std::stringbuf sb; 
+    auto nbytes = serialize(sb);
+    std::string pre_encoded_str(nbytes, '0');
+    sb.sgetn(pre_encoded_str.data(), nbytes);
+    auto nencoded_bytes = Base64encode_len(nbytes);
+    std::string encoded_str(nencoded_bytes, '0');
+    auto nencoded = Base64encode(encoded_str.data(), pre_encoded_str.data(), nbytes);
+    encoded_str.resize(nencoded - 1); // because it null terminates
+    return encoded_str;
+}
+
+pmtf::pmt pmt::from_base64(const std::string& encoded_str)
+{
+    std::string bufplain(encoded_str.size(), '0');
+    Base64decode(bufplain.data(), encoded_str.data());
+    std::stringbuf sb(bufplain);
+    return pmtf::pmt::deserialize(sb); 
+}
 
 } // namespace pmtf
