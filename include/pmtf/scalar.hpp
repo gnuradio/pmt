@@ -182,6 +182,7 @@ using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::
 template <class T, IsScalarBase<T> = true>
 bool operator==(const pmt& x, const T& y) {
     switch(x.data_type()) {
+        case Data::ScalarBool: return scalar<bool>(x) == y;
         case Data::ScalarFloat32: return scalar<float>(x) == y;
         case Data::ScalarFloat64: return scalar<double>(x) == y;
         case Data::ScalarComplex64: return scalar<std::complex<float>>(x) == y;
