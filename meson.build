@@ -5,6 +5,7 @@ project('pmt', 'cpp',
 
 cc = meson.get_compiler('cpp')
 rt_dep = cc.find_library('rt', required : false)
+c_available = add_languages('c', required : true)
 fmt_dep = dependency('fmt', method: 'cmake', modules: ['fmt::fmt'])
 spdlog_dep = dependency('spdlog', method: 'cmake', modules : ['spdlog::spdlog'])
 python3_dep = dependency('python3', required : get_option('enable_python'))

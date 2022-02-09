@@ -140,6 +140,9 @@ public:
         return cur;
     }
 
+    std::string to_base64();
+    static pmtf::pmt from_base64(const std::string& encoded_str);
+
     Data data_type() const {
         if (_scalar != nullptr) {
             return _scalar->data_type();

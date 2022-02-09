@@ -88,3 +88,16 @@ TEST(PmtVectorPmt, get_as)
     
 }
 
+TEST(PmtVectorPmt, base64)
+{
+    std::complex<float> val1(1.2, -3.4);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+
+    // Create the PMT vector
+    vector<pmt> x{val1, val2};
+    // Make sure that we can get the value back out
+    auto encoded_str = pmt(x).to_base64();
+    auto y = pmt::from_base64(encoded_str);
+
+    EXPECT_EQ(x, y);
+}
