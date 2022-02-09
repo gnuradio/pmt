@@ -233,6 +233,7 @@ inline T get_as(const pmt& value) {
         }
     } else {
         switch (value.data_type()) {
+            case Data::ScalarBool: return static_cast<T>(get_scalar<bool>(value));
             case Data::ScalarFloat32: return static_cast<T>(get_scalar<float>(value));
             case Data::ScalarFloat64: return static_cast<T>(get_scalar<double>(value));
             case Data::ScalarInt8: return static_cast<T>(get_scalar<int8_t>(value));
