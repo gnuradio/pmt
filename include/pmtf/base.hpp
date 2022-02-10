@@ -103,5 +103,20 @@ private:
     std::string _msg;
 };
 
+template <class T, IsPmt<T> = true>
+std::ostream& operator<<(std::ostream& os, const T& value);
+
+// Reversed case.  This allows for x == y and y == x
+template <class T, class U, IsPmt<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
+bool operator==(const U& y, const T& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class T, class U, IsPmt<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
+bool operator!=(const U& y, const T& x) {
+    return operator!=(x,y);
+}
+
 
 } // namespace pmtf
