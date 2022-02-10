@@ -171,9 +171,20 @@ bool operator!=(const U& y, const map& x) {
     return operator!=(x,y);
 }
 
-// Forward declare so that we can use it in the function.
+// Need to have map operator here because it has pmts in it.
 template <class T, IsMap<T> = true>
-std::ostream& operator<<(std::ostream& os, const T& value);
+std::ostream& operator<<(std::ostream& os, const T& value) {
+    os << "{ ";
+    bool first = true;
+    for (const auto& [k, v]: value) {
+        if (!first) os << ", ";
+        first = false;
+        os << k << ": " << v;
+    }
+    os << " }";
+    return os;
+}
+
 
 inline map get_map(const pmt& p) {
     if (p.data_type() == map::data_type())
