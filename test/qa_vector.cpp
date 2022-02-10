@@ -274,3 +274,15 @@ TYPED_TEST(PmtVectorFixture, get_as)
     EXPECT_THROW(get_as<mtype>(x), ConversionError);
     
 }
+
+TYPED_TEST(PmtVectorFixture, base64)
+{
+    std::vector<TypeParam> vec(this->num_values_);
+    pmt x = vec;
+    
+    // Make sure that we can get the value back out
+    auto encoded_str = pmt(x).to_base64();
+    auto y = pmt::from_base64(encoded_str);
+
+    EXPECT_EQ(x, y);
+}

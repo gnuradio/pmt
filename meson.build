@@ -5,6 +5,7 @@ project('pmt', 'cpp',
 
 cc = meson.get_compiler('cpp')
 rt_dep = cc.find_library('rt', required : false)
+c_available = add_languages('c', required : true)
 fmt_dep = dependency('fmt', method: 'cmake', modules: ['fmt::fmt'])
 spdlog_dep = dependency('spdlog', method: 'cmake', modules : ['spdlog::spdlog'])
 python3_dep = dependency('python3', required : get_option('enable_python'))
@@ -13,8 +14,9 @@ py3_inst = import('python').find_installation('python3')
 pybind11_dep = dependency('pybind11', required : get_option('enable_python'))
 flatc = find_program('flatc', version : '>=2.0')
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
-# Boost is only used for program_options: FIXME - use something else
-boost_dep = dependency('boost', modules : ['program_options'], version : '>=1.65')
+
+libCLI11 = subproject('CLI11')
+CLI11_dep = libCLI11.get_variable('CLI11_dep')
 
 subdir('include/pmtf')
 subdir('lib')

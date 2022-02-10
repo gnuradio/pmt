@@ -171,5 +171,13 @@ void bind_pmt(py::module &m) {
         }
 
         return ret;
-      });
+      })
+      .def("serialize",  [](pmtf::pmt obj) { 
+        std::stringbuf sb; // fake channel
+        auto nbytes = obj.serialize(sb);
+        std::vector<uint8_t> pre_encoded_str(nbytes, 0);
+        sb.sgetn((char *)pre_encoded_str.data(), nbytes);
+        return pre_encoded_str;
+      })
+      ;
 }

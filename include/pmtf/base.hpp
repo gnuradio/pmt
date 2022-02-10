@@ -68,6 +68,11 @@ public:
 
     Data data_type() const;
     std::string type_string() const noexcept;
+    bool empty() { return !(_scalar || _vector || _map); }
+
+    std::string to_base64();
+    static pmtf::pmt from_base64(const std::string& encoded_str);
+
 
     //! Equality Comparisons
     // Declared as class members so that we don't do implicit conversions.

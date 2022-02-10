@@ -118,6 +118,7 @@ template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
 template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
 
 template <class T> inline std::string ctype_string();
+template <> inline std::string ctype_string<bool>() { return "bool"; }
 template <> inline std::string ctype_string<char>() { return "char"; }
 template <> inline std::string ctype_string<uint8_t>() { return "uint8_t"; }
 template <> inline std::string ctype_string<uint16_t>() { return "uint16_t"; }

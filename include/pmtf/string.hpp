@@ -32,6 +32,10 @@ public:
     using iterator = typename span::iterator;
     using const_iterator = typename span::const_iterator;
 
+    // Default constructor
+    string() {
+        _MakeString(nullptr,0);
+    }
     string(const std::string& value) {
         _MakeString(value.data(), value.size());
     }
@@ -101,6 +105,12 @@ private:
 template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
 template <> inline pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
 template <> inline pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buffer(); }
+
+
+template <> inline pmt& pmt::operator=<std::string>(const std::string& x)
+    { return operator=(string(x).get_pmt_buffer()); } 
+template <> inline pmt& pmt::operator=<string>(const string& x)
+    { return operator=(x.get_pmt_buffer()); } 
 
 template <typename T>
 using IsPmtString = std::enable_if_t<std::is_same_v<T, string>, bool>;
