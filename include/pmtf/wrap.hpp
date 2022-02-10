@@ -46,7 +46,7 @@ bool pmt::operator==(const T& other) const {
         case Data::ScalarUInt16: return scalar<uint16_t>(*this).operator==(other);
         case Data::ScalarUInt32: return scalar<uint32_t>(*this).operator==(other);
         case Data::ScalarUInt64: return scalar<uint64_t>(*this).operator==(other);
-        //case Data::ScalarBool: return scalar<bool>(*this).operator==(other);
+        case Data::ScalarBool: return scalar<bool>(*this).operator==(other);
         case Data::VectorFloat32: return vector<float>(*this).operator==(other);
         case Data::VectorFloat64: return vector<double>(*this).operator==(other);
         case Data::VectorComplex64: return vector<std::complex<float>>(*this).operator==(other);
@@ -66,20 +66,6 @@ bool pmt::operator==(const T& other) const {
     }
 }
 
-// Need to have map operator here because it has pmts in it.
-template <class T, IsMap<T> = true>
-std::ostream& operator<<(std::ostream& os, const T& value) {
-    os << "{ ";
-    bool first = true;
-    for (const auto& [k, v]: value) {
-        if (!first) os << ", ";
-        first = false;
-        os << k << ": " << v;
-    }
-    os << " }";
-    return os;
-}
-
 template <class T, IsPmt<T> = true>
 std::ostream& operator<<(std::ostream& os, const T& value) {
     switch(value.data_type()) {
@@ -96,7 +82,7 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
         case Data::ScalarUInt16: return operator<<(os, scalar<uint16_t>(value));
         case Data::ScalarUInt32: return operator<<(os, scalar<uint32_t>(value));
         case Data::ScalarUInt64: return operator<<(os, scalar<uint64_t>(value));
-        //case Data::ScalarBool: return operator<<(os, scalar<bool>(value));
+        case Data::ScalarBool: return operator<<(os, scalar<bool>(value));
         case Data::VectorFloat32: return operator<<(os, vector<float>(value));
         case Data::VectorFloat64: return operator<<(os, vector<double>(value));
         case Data::VectorComplex64: return operator<<(os, vector<std::complex<float>>(value));
@@ -116,35 +102,6 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
     }
 }
 
-template <class T, class type>
-inline T _ConstructVectorLike(const pmt& value) {
-    // This doesn't work because I have to be able to run every line of code instantiated.
-    // Can't do _ConstructVectorLike<std::vector<int>, float>
-    if constexpr(std::is_same_v<typename T::value_type, type>) {
-        using iter = decltype(get_vector<type>(value).begin());
-        // Vector like containers like this
-        if constexpr(std::is_constructible_v<T, iter, iter>) {
-            return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
-        } else {
-            throw ConversionError(value, "vector", ctype_string<type>());
-        }
-    } else {
-        throw ConversionError(value, "vector", ctype_string<type>());
-    }
-}
-
-template <class T, class type>
-inline T _ConstructStringLike(const pmt& value) {
-    if constexpr(std::is_same_v<typename T::value_type, type>) {
-        if constexpr(std::is_constructible_v<T, const type*, size_t>) {
-            return T(get_string(value).data(), get_string(value).size());
-        } else {
-            throw ConversionError(value, "string", ctype_string<type>());
-        }
-    } else {
-        throw ConversionError(value, "string", ctype_string<type>());
-    }
-}
 template <class T>
 inline T get_as(const pmt& value) {
     if constexpr(is_map_like_container<T>::value) {

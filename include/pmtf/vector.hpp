@@ -314,4 +314,19 @@ Apply(VectorPmt)
 #undef VectorPmt
 #undef Apply
 
+template <class T, class type>
+inline T _ConstructVectorLike(const pmt& value) {
+    if constexpr(std::is_same_v<typename T::value_type, type>) {
+        using iter = decltype(get_vector<type>(value).begin());
+        // Vector like containers like this
+        if constexpr(std::is_constructible_v<T, iter, iter>) {
+            return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
+        } else {
+            throw ConversionError(value, "vector", ctype_string<type>());
+        }
+    } else {
+        throw ConversionError(value, "vector", ctype_string<type>());
+    }
+}
+
 } // namespace pmtf

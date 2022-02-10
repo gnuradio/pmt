@@ -165,6 +165,18 @@ inline string get_string(const pmt& p) {
     throw ConversionError(p, "string");
 }
 
+template <class T, class type>
+inline T _ConstructStringLike(const pmt& value) {
+    if constexpr(std::is_same_v<typename T::value_type, type>) {
+        if constexpr(std::is_constructible_v<T, const type*, size_t>) {
+            return T(get_string(value).data(), get_string(value).size());
+        } else {
+            throw ConversionError(value, "string", ctype_string<type>());
+        }
+    } else {
+        throw ConversionError(value, "string", ctype_string<type>());
+    }
+}
 
 
 } // namespace pmtf
