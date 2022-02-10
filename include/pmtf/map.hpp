@@ -171,6 +171,10 @@ bool operator!=(const U& y, const map& x) {
     return operator!=(x,y);
 }
 
+// Forward declare so that we can use it in the function.
+template <class T, IsMap<T> = true>
+std::ostream& operator<<(std::ostream& os, const T& value);
+
 inline map get_map(const pmt& p) {
     if (p.data_type() == map::data_type())
         return map(p);
