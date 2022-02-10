@@ -16,12 +16,6 @@
 
 namespace pmtf {
 
-// Forward declare so that we can use it in the function.
-template <class T, IsMap<T> = true>
-std::ostream& operator<<(std::ostream& os, const T& value);
-template <class T, typename = IsPmt<T>>
-std::ostream& operator<<(std::ostream& os, const T& value);
-
 
 typedef std::variant<
         std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t,
@@ -33,18 +27,6 @@ typedef std::variant<
         std::vector<std::complex<float>>, std::vector<std::complex<double>>>
         pmt_variant_t;
 
-
-// Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsPmt<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
-bool operator==(const U& y, const T& x) {
-    return x.operator==(y);
-}
-
-// Reversed Not equal operator
-template <class T, class U, IsMap<T> = true, IsNotPmt<U> = true, IsNotPmtDerived<U> = true>
-bool operator!=(const U& y, const T& x) {
-    return operator!=(x,y);
-}
 
 template <class T>
 bool pmt::operator==(const T& other) const {
@@ -98,7 +80,7 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
     return os;
 }
 
-template <class T, typename = IsPmt<T>>
+template <class T, IsPmt<T> = true>
 std::ostream& operator<<(std::ostream& os, const T& value) {
     switch(value.data_type()) {
         case Data::PmtString: return operator<<(os, string(value));
@@ -133,10 +115,6 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
             throw std::runtime_error("Unknown pmt type passed to operator<<");
     }
 }
-
-template <typename Container>
-using begin_func_t = decltype(*std::begin(std::declval<Container>()));
-
 
 template <class T, class type>
 inline T _ConstructVectorLike(const pmt& value) {
