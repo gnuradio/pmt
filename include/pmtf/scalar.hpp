@@ -159,6 +159,8 @@ bool scalar<T>::operator==(const U& y) const {
         else return false;
     } else if constexpr(std::is_same_v<U, pmt>)
         return y == value();
+    else if constexpr(std::is_pointer_v<std::decay_t<U>>)
+        return false;
     // Can U be converted to T?
     else if constexpr(std::is_convertible_v<U, T>)
         return value() == T(y);
