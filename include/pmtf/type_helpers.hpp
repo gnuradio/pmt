@@ -4,55 +4,64 @@
 #include <complex>
 #include <pmtf/pmtf_generated.h>
 
+/**********************************************************************
+ * This header is where we put most of the icky SFINAE stuff.  Most 
+ * people do not need to understand what is going on here.
+ *********************************************************************/
+
 namespace pmtf {
 
 // Forward declare pmt
 class pmt;
 
-
-// Define some SFINAE templates.  Since we can create pmts from the various classes,
-// We want to ensure that we really do or do not have one when we call a function.
+// Pmt is a very permissive type.  For example, a pmt can be constructed from an
+// std::vector<int>.  This means that functions that take a pmt as an input arg,
+// will accept an std::vector<int> and do an implicit conversion.  This is not
+// desirable behaviour.
+// These templates can be used to make a function only work if the type is (or 
+// is not) a pmt. No implicit conversions will be performed.
 template <typename T>
 using IsPmt = std::enable_if_t<std::is_same_v<T, pmt>, bool>;
 template <typename T>
 using IsNotPmt = std::enable_if_t<!std::is_same_v<T, pmt>, bool>;
 
+// These structs and types are used to decide if the class passed in is one of
+// our pmt wrapper classes like scalar, vector, etc.
 template<typename T, typename _ = void>
 struct is_pmt_derived : std::false_type {};
 
 template<typename T>
 struct is_pmt_derived<
         T,
+        // All of the classes define this function
         std::void_t<decltype(std::declval<T>().get_pmt_buffer())>
         > : public std::true_type {};
 
 template <typename T>
 using IsNotPmtDerived = std::enable_if_t<!is_pmt_derived<T>::value, bool>;
 
+// There are times where we need to do something different if the data is
+// complex.  These structs and types make is easy for us to distinguish them.
 template <class T>
 struct is_complex : std::false_type {};
-
 template <class T>
 struct is_complex<std::complex<T>> : std::true_type {};
 
 template <typename T>
 using IsComplex = std::enable_if_t<is_complex<T>::value, bool>;
-
 template <typename T>
 using IsNotComplex = std::enable_if_t<!is_complex<T>::value, bool>;
 
-template <typename T>
-using IsArithmetic = std::enable_if_t<std::is_arithmetic_v<T>>;
-
-template <typename T>
-using IsScalarBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value, bool>;
-
-template <typename T>
-using IsVectorBase = std::enable_if_t<std::is_arithmetic_v<T> || is_complex<T>::value || std::is_same_v<T,pmt>, bool>;
-
+// This set of structs and types exist to help us work with containers.
+// For example, maps should work with associative containers, but not vectors.
+// These types help us distinguish between them all.
 template<typename T, typename _ = void>
 struct is_container : std::false_type {};
 
+// This syntax may look tricky, but is fairly simple to understand.  Any type,
+// T, will "work" if it defines all of the things in the std::void_t.  If any
+// of them are missing, then the struct will fall back to the value defined
+// above.
 template<typename T>
 struct is_container<
         T,
@@ -67,6 +76,9 @@ struct is_container<
             >
         > : public std::true_type {};
 
+// Vector like containers are defined as containers that store data elements in
+// an "ordered" list like fashion.  This would include vectors, arrays, and
+// lists.
 template <typename Container, typename _ = void>
 struct is_vector_like_container: std::false_type {};
 
@@ -85,6 +97,8 @@ struct is_vector_like_container<
             >
         > : public std::true_type {};
 
+// Map like containers have a key and a value.  This would include maps and 
+// unordered maps (hash tables).
 template <typename Container, typename _ = void>
 struct is_map_like_container: std::false_type {};
 
@@ -112,11 +126,12 @@ using IsVectorLikeContainer = std::enable_if_t<is_vector_like_container<T>::valu
 template <typename T>
 using IsMapLikeContainer = std::enable_if_t<is_map_like_container<T>::value, bool>;
 
-// We need to know the struct type for complex values
+// For complex data, we need to be able to map the type to a pmt type.
 template <class T> struct scalar_type;
 template <> struct scalar_type<std::complex<float>> { using type = Complex64; };
 template <> struct scalar_type<std::complex<double>> { using type = Complex128; };
 
+// For error reporting we need to be able to map types to strings.
 template <class T> inline std::string ctype_string();
 template <> inline std::string ctype_string<bool>() { return "bool"; }
 template <> inline std::string ctype_string<char>() { return "char"; }
@@ -134,10 +149,4 @@ template <> inline std::string ctype_string<std::complex<float>>() { return "com
 template <> inline std::string ctype_string<std::complex<double>>() { return "complex<double>"; }
 template <> inline std::string ctype_string<pmt>() { return "pmt"; }
 
-template< class T >
-struct remove_cvref {
-    typedef std::remove_cv_t<std::remove_reference_t<T>> type;
-};
-template< class T >
-using remove_cvref_t = typename remove_cvref<T>::type;
 }
