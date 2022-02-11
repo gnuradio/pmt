@@ -9,81 +9,50 @@
 #include <map>
 
 namespace pmtf {
-
-/*flatbuffers::Offset<void> string_value::rebuild_data(flatbuffers::FlatBufferBuilder& fbb)
-{
-    // fbb.Reset();
-    return CreatePmtStringDirect(fbb, value().c_str()).Union();
-}
-
-
-void string_value::set_value(const char* val)
-{
-    _data = CreatePmtStringDirect(_fbb, val).Union();
-    build();
-}
-
-void string_value::set_value(const std::string& val)
-{
-    _data = CreatePmtStringDirect(_fbb, val.c_str()).Union();
-    build();
-}
-
-string_value::string_value(const std::string& val)
-    : base(Data::PmtString)
-{
-    set_value(val);
-}
-
-string_value::string_value(const uint8_t *buf)
-    : base(Data::PmtString)
-{
-    auto data = GetPmt(buf)->data_as_PmtString()->value();
-    set_value(*((const std::string*)data));
-}
-
-string_value::string_value(const pmtf::Pmt* fb_pmt)
-    : base(Data::PmtString)
-{
-    auto data = fb_pmt->data_as_PmtString()->value();
-    set_value(data->c_str());
-}
-
-std::string string_value::value() const
-{
-    auto pmt = GetSizePrefixedPmt(_fbb.GetBufferPointer());
-    return std::string(pmt->data_as_PmtString()->value()->str());
-}
-
-char* string_value::writable_elements()                                 
-{                                                                                   
-    auto pmt =                                                                      
-        GetMutablePmt(buffer_pointer() + 4);*/ /* assuming size prefix is 32 bit */   
-    /*auto mutable_obj = ((pmtf::VectorInt8*)pmt->mutable_data())                 
-                           ->mutable_value()
-                           ->Data();                                   
-    return (char*)(mutable_obj);*/ /* hacky cast */                               
-//}                                                                                   
-
-/*const char* string_value::elements() const                                
-{                                                                                 
-    auto pmt = GetSizePrefixedPmt(_buf);                                          
-    auto fb_vec = pmt->data_as_PmtString()->value();                         
-    return (const char*)(fb_vec->Data());                                           
-}         
-
-string get_string(const wrap& x) {
-    // Make sure that this is the right type.
-    switch(x.ptr()->data_type()) {
-        case Data::PmtString:
-             return string(std::dynamic_pointer_cast<string_value>(x.ptr()));
-        default:
-            throw std::runtime_error("Cannot convert non string pmt.");
+    gsl::span<char> string::value() {
+        std::shared_ptr<base_buffer> scalar = _get_buf();
+        auto buf = scalar->data_as<type>()->value();
+        return gsl::span<char>(const_cast<char*>(buf->data()), buf->size());
     }
-}
+    std::string_view string::value() const {
+        std::shared_ptr<base_buffer> scalar = _get_buf();
+        auto buf = scalar->data_as<type>()->value();
+        return std::string_view(buf->data(), buf->size());
+    }
+    string& string::operator=(const std::string& value) {
+        _MakeString(value.data(), value.size());
+        return *this;
+    }
+    string& string::operator=(const char value[]) {
+        _MakeString(&value[0], std::string(value).size());
+        return *this;
+    }
+    char& string::operator[] (size_type n) {
+        // operator[] doesn't do bounds checking, use at for that
+        // TODO: implement at
+        return data()[n];
+    }
+    const char& string::operator[] (size_type n) const {
+        return data()[n];
+    }
+    
+    void string::_MakeString(const char* data, size_t size) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto offset = traits::Create(fbb, fbb.CreateString(data, size)).Union();
+        auto pmt = CreatePmt(fbb, data_type(), offset);
+        fbb.FinishSizePrefixed(pmt);
+        _get_buf() = std::make_shared<base_buffer>(fbb.Release());
+    }
 
-template <> wrap::wrap<std::string>(const std::string& x) { d_ptr = string(x).ptr(); }
-template <> wrap::wrap<string>(const string& x) { d_ptr = x.ptr(); }
-// template <> wrap::wrap<char *>(const char *x) { d_ptr = string(x).ptr(); }*/
+
+    template <> pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
+    template <> pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
+    template <> pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buffer(); }
+
+
+    template <> pmt& pmt::operator=<std::string>(const std::string& x)
+        { return operator=(string(x).get_pmt_buffer()); } 
+    template <> pmt& pmt::operator=<string>(const string& x)
+        { return operator=(x.get_pmt_buffer()); } 
 
 } // namespace pmtf

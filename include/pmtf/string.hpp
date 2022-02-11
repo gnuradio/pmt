@@ -41,35 +41,15 @@ public:
     template <class T, typename = IsPmt<T>>
     string(const T& other): _buf(other) {} 
     ~string() {}
-    gsl::span<char> value() {
-        std::shared_ptr<base_buffer> scalar = _get_buf();
-        auto buf = scalar->data_as<type>()->value();
-        return gsl::span<char>(const_cast<char*>(buf->data()), buf->size());
-    }
-    std::string_view value() const {
-        std::shared_ptr<base_buffer> scalar = _get_buf();
-        auto buf = scalar->data_as<type>()->value();
-        return std::string_view(buf->data(), buf->size());
-    }
-    string& operator=(const std::string& value) {
-        _MakeString(value.data(), value.size());
-        return *this;
-    }
-    string& operator=(const char value[]) {
-        _MakeString(&value[0], std::string(value).size());
-        return *this;
-    }
+    gsl::span<char> value();
+    std::string_view value() const;
+    string& operator=(const std::string& value);
+    string& operator=(const char value[]);
     char* data() { return value().data(); }
     const char* data() const { return value().data(); }
     size_t size() const { return value().size(); }
-    char& operator[] (size_type n) {
-        // operator[] doesn't do bounds checking, use at for that
-        // TODO: implement at
-        return data()[n];
-    }
-    const char& operator[] (size_type n) const {
-        return data()[n];
-    }
+    char& operator[] (size_type n);
+    const char& operator[] (size_type n) const;
     
     typename span::iterator begin() { return value().begin(); }
     typename span::const_iterator begin() const { return value().begin(); }
@@ -88,32 +68,14 @@ private:
     pmt _buf;
     std::shared_ptr<base_buffer>& _get_buf() { return _buf._scalar; }
     const std::shared_ptr<base_buffer> _get_buf() const { return _buf._scalar; }
-    void _MakeString(const char* data, size_t size) {
-        flatbuffers::FlatBufferBuilder fbb;
-        auto offset = traits::Create(fbb, fbb.CreateString(data, size)).Union();
-        auto pmt = CreatePmt(fbb, data_type(), offset);
-        fbb.FinishSizePrefixed(pmt);
-        _get_buf() = std::make_shared<base_buffer>(fbb.Release());
-    }
+    void _MakeString(const char* data, size_t size);
     
 };
 
-template <> inline pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
-template <> inline pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
-template <> inline pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buffer(); }
-
-
-template <> inline pmt& pmt::operator=<std::string>(const std::string& x)
-    { return operator=(string(x).get_pmt_buffer()); } 
-template <> inline pmt& pmt::operator=<string>(const string& x)
-    { return operator=(x.get_pmt_buffer()); } 
-
-template <typename T>
+template <class T>
 using IsPmtString = std::enable_if_t<std::is_same_v<T, string>, bool>;
 template <class T>
-using IsString = std::enable_if_t<std::is_same_v<string, T>, bool>;
-template <class T>
-using IsNotString = std::enable_if_t<!std::is_same_v<string, T>, bool>;
+using IsNotPmtString = std::enable_if_t<!std::is_same_v<string, T>, bool>;
 
 template <class T>
 bool string::operator==(const T& other) const {
@@ -138,19 +100,19 @@ bool string::operator==(const T& other) const {
 }
 
 // Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsString<T> = true, IsNotString<U> = true>
+template <class T, class U, IsPmtString<T> = true, IsNotPmtString<U> = true>
 bool operator==(const U& y, const T& x) {
     return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class T, class U, IsString<T> = true, IsNotString<U> = true>
+template <class T, class U, IsPmtString<T> = true, IsNotPmtString<U> = true>
 bool operator!=(const U& y, const T& x) {
     return operator!=(x,y);
 }
 
-template <class T, IsString<T> = true>
-inline std::ostream& operator<<(std::ostream& os, const T& value) {
+template <class T, IsPmtString<T> = true>
+std::ostream& operator<<(std::ostream& os, const T& value) {
     os << value.value();
     return os;
 }
