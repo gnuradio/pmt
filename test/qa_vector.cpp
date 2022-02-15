@@ -177,23 +177,6 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     EXPECT_EQ(x.value(), vector<TypeParam>(y).value());
 }
 
-/*TYPED_TEST(PmtVectorFixture, PmtVectorWrap)
-{
-    // Initialize a PMT Wrap from a std::vector object
-    std::vector<TypeParam> vec(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
-    }
-
-    wrap generic_pmt_obj = std::vector<TypeParam>(vec);
-    auto y = get_vector<TypeParam>(generic_pmt_obj); 
-    EXPECT_EQ(y == vec, true);
-
-    // Try to cast as a scalar type
-    EXPECT_THROW(get_scalar<int8_t>(generic_pmt_obj), std::runtime_error);
-}*/
-
-
 /*TYPED_TEST(PmtVectorFixture, VectorWrites)
 {
     // Initialize a PMT Wrap from a std::vector object

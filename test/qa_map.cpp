@@ -38,7 +38,7 @@ TEST(PmtMap, PmtMapTests)
     std::cout << scalar<std::complex<float>>(vv1) << std::endl;
     std::cout << "Before" << std::endl;
     std::cout << vv1 << std::endl;
-    EXPECT_EQ(get_scalar<std::complex<float>>(vv1), val1);
+    EXPECT_EQ(scalar<std::complex<float>>(vv1), val1);
 
     auto vv2 = map_pmt["key2"];
     EXPECT_EQ(vv2 == val2, true);

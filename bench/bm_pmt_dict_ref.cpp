@@ -25,7 +25,7 @@ bool run_test(const int times, map& d, int32_t index)
 
         // if (ref == nullptr)
         //    valid = false;
-        auto s = get_scalar<int32_t>(ref);
+        auto s = scalar<int32_t>(ref);
         if (s.value() != index)
         {
             valid = false;

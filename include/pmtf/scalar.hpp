@@ -47,7 +47,12 @@ public:
     scalar() { _Create(T(0)); }
     scalar(const T& value) { _Create(value); }
     scalar(const scalar<T>& other) { _Create(other.value()); }
-    scalar(const pmt& other): _buf(other) {} 
+    template <class U, typename = IsPmt<U>>
+    scalar(const U& other) {
+        if (other.data_type() != data_type())
+            throw ConversionError(other, "scalar", ctype_string<T>());
+        _buf = other;
+    }
     ~scalar() {}
     T value() const {
         std::shared_ptr<base_buffer> scalar = _get_buf();
@@ -184,13 +189,6 @@ template <class T>
 std::ostream& operator<<(std::ostream& os, const scalar<T>& x) {
     os << x.value();
     return os;
-}
-
-template <class T>
-scalar<T> get_scalar(const pmt& p) {
-    if (p.data_type() == scalar<T>::data_type())
-        return scalar<T>(p);
-    throw ConversionError(p, "scalar", ctype_string<T>());
 }
 
 }

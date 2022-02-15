@@ -84,87 +84,87 @@ void bind_pmt(py::module &m) {
         switch (obj.data_type()) {
         case pmtf::Data::PmtString:
         {
-          auto str = pmtf::get_string(obj).value();
+          auto str = pmtf::string(obj).value();
           ret = std::string(str.begin(), str.end());
           break;
         }
           //   case pmtf::Data::VectorBool:
-          //     ret = pmtf::get_vector<bool>(obj).value();
+          //     ret = pmtf::vector<bool>(obj).value();
           //     break;
         case pmtf::Data::VectorFloat32:
-          ret = pmtf::get_std_vector<float>(obj);
+          ret = pmtf::get_as<std::vector<float>>(obj);
           break;
         case pmtf::Data::VectorFloat64:
-          ret = pmtf::get_std_vector<double>(obj);
+          ret = pmtf::get_as<std::vector<double>>(obj);
           break;
         case pmtf::Data::VectorComplex64:
-          ret = pmtf::get_std_vector<std::complex<float>>(obj);
+          ret = pmtf::get_as<std::vector<std::complex<float>>>(obj);
           break;
           //   case pmtf::Data::VectorComplex128:
-          //     ret = pmtf::get_vector<std::complex<double>>(obj).value();
+          //     ret = pmtf::vector<std::complex<double>>(obj).value();
           //     break;
         case pmtf::Data::VectorInt8:
-          ret = pmtf::get_std_vector<int8_t>(obj);
+          ret = pmtf::get_as<std::vector<int8_t>>(obj);
           break;
         case pmtf::Data::VectorInt16:
-          ret = pmtf::get_std_vector<int16_t>(obj);
+          ret = pmtf::get_as<std::vector<int16_t>>(obj);
           break;
         case pmtf::Data::VectorInt32:
-          ret = pmtf::get_std_vector<int32_t>(obj);
+          ret = pmtf::get_as<std::vector<int32_t>>(obj);
           break;
         case pmtf::Data::VectorInt64:
-          ret = pmtf::get_std_vector<int64_t>(obj);
+          ret = pmtf::get_as<std::vector<int64_t>>(obj);
           break;
         case pmtf::Data::VectorUInt8:
-          ret = pmtf::get_std_vector<uint8_t>(obj);
+          ret = pmtf::get_as<std::vector<uint8_t>>(obj);
           break;
         case pmtf::Data::VectorUInt16:
-          ret = pmtf::get_std_vector<uint16_t>(obj);
+          ret = pmtf::get_as<std::vector<uint16_t>>(obj);
           break;
         case pmtf::Data::VectorUInt32:
-          ret = pmtf::get_std_vector<uint32_t>(obj);
+          ret = pmtf::get_as<std::vector<uint32_t>>(obj);
           break;
         case pmtf::Data::VectorUInt64:
-          ret = pmtf::get_std_vector<uint64_t>(obj);
+          ret = pmtf::get_as<std::vector<uint64_t>>(obj);
           break;
           //   case pmtf::Data::ScalarBool:
-          //     ret = pmtf::get_scalar<bool>(obj).value();
+          //     ret = pmtf::scalar<bool>(obj).value();
           //     break;
         case pmtf::Data::ScalarFloat32:
-          ret = pmtf::get_scalar<float>(obj).value();
+          ret = pmtf::scalar<float>(obj).value();
           break;
         case pmtf::Data::ScalarFloat64:
-          ret = pmtf::get_scalar<double>(obj).value();
+          ret = pmtf::scalar<double>(obj).value();
           break;
         case pmtf::Data::ScalarComplex64:
-          ret = pmtf::get_scalar<std::complex<float>>(obj).value();
+          ret = pmtf::scalar<std::complex<float>>(obj).value();
           break;
           //   case pmtf::Data::ScalarComplex128:
-          //     ret = pmtf::get_scalar<std::complex<double>>(obj).value();
+          //     ret = pmtf::scalar<std::complex<double>>(obj).value();
           //     break;
         case pmtf::Data::ScalarInt8:
-          ret = pmtf::get_scalar<int8_t>(obj).value();
+          ret = pmtf::scalar<int8_t>(obj).value();
           break;
         case pmtf::Data::ScalarInt16:
-          ret = pmtf::get_scalar<int16_t>(obj).value();
+          ret = pmtf::scalar<int16_t>(obj).value();
           break;
         case pmtf::Data::ScalarInt32:
-          ret = pmtf::get_scalar<int32_t>(obj).value();
+          ret = pmtf::scalar<int32_t>(obj).value();
           break;
         case pmtf::Data::ScalarInt64:
-          ret = pmtf::get_scalar<int64_t>(obj).value();
+          ret = pmtf::scalar<int64_t>(obj).value();
           break;
         case pmtf::Data::ScalarUInt8:
-          ret = pmtf::get_scalar<uint8_t>(obj).value();
+          ret = pmtf::scalar<uint8_t>(obj).value();
           break;
         case pmtf::Data::ScalarUInt16:
-          ret = pmtf::get_scalar<uint16_t>(obj).value();
+          ret = pmtf::scalar<uint16_t>(obj).value();
           break;
         case pmtf::Data::ScalarUInt32:
-          ret = pmtf::get_scalar<uint32_t>(obj).value();
+          ret = pmtf::scalar<uint32_t>(obj).value();
           break;
         case pmtf::Data::ScalarUInt64:
-          ret = pmtf::get_scalar<uint64_t>(obj).value();
+          ret = pmtf::scalar<uint64_t>(obj).value();
           break;
         default:
           throw std::runtime_error("Invalid Scalar PMT type!");
