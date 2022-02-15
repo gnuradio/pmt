@@ -76,7 +76,12 @@ public:
         for (auto& [k, v]: other)
             this->operator[](k) = v;
     }
-    explicit map(const pmt& other): _map(other) {}
+    template <class T, typename = IsPmt<T>>
+    map(const T& other) {
+        if (other.data_type() != data_type())
+            throw ConversionError(other, "map");
+        _map = other;
+    }
     //template <class T>
     //map(std::map<string
     ~map() {}
@@ -183,13 +188,6 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
     }
     os << " }";
     return os;
-}
-
-
-inline map get_map(const pmt& p) {
-    if (p.data_type() == map::data_type())
-        return map(p);
-    throw ConversionError(p, "map");
 }
 
 }

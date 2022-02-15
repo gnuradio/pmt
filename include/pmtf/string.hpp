@@ -39,7 +39,11 @@ public:
         _MakeString(value, strlen(value));
     }
     template <class T, typename = IsPmt<T>>
-    string(const T& other): _buf(other) {} 
+    string(const T& other) {
+        if (other.data_type() != data_type())
+            throw ConversionError(other, "string");
+        _buf = other;
+    }
     ~string() {}
     gsl::span<char> value();
     std::string_view value() const;
@@ -117,17 +121,11 @@ std::ostream& operator<<(std::ostream& os, const T& value) {
     return os;
 }
 
-inline string get_string(const pmt& p) {
-    if (p.data_type() == string::data_type())
-        return string(p);
-    throw ConversionError(p, "string");
-}
-
 template <class T, class type>
 inline T _ConstructStringLike(const pmt& value) {
     if constexpr(std::is_same_v<typename T::value_type, type>) {
         if constexpr(std::is_constructible_v<T, const type*, size_t>) {
-            return T(get_string(value).data(), get_string(value).size());
+            return T(string(value).data(), string(value).size());
         } else {
             throw ConversionError(value, "string", ctype_string<type>());
         }

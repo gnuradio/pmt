@@ -70,7 +70,7 @@ template <class T>
 inline T get_as(const pmt& value) {
     if constexpr(is_map_like_container<T>::value) {
         if (value.data_type() == Data::MapHeaderString) {
-            return T(get_map(value).begin(), get_map(value).end());
+            return T(map(value).begin(), map(value).end());
         } else
             throw ConversionError(value, "map", "map-like container");
     } else if constexpr(is_container<T>::value) {
@@ -95,33 +95,33 @@ inline T get_as(const pmt& value) {
     } else if constexpr(is_complex<T>::value) {
         // We can convert scalars to complex, but not the other way around.
         switch (value.data_type()) {
-            case Data::ScalarFloat32: return static_cast<T>(get_scalar<float>(value));
-            case Data::ScalarFloat64: return static_cast<T>(get_scalar<double>(value));
-            case Data::ScalarInt8: return static_cast<T>(get_scalar<int8_t>(value));
-            case Data::ScalarInt16: return static_cast<T>(get_scalar<int16_t>(value));
-            case Data::ScalarInt32: return static_cast<T>(get_scalar<int32_t>(value));
-            case Data::ScalarInt64: return static_cast<T>(get_scalar<int64_t>(value));
-            case Data::ScalarUInt8: return static_cast<T>(get_scalar<uint8_t>(value));
-            case Data::ScalarUInt16: return static_cast<T>(get_scalar<uint16_t>(value));
-            case Data::ScalarUInt32: return static_cast<T>(get_scalar<uint32_t>(value));
-            case Data::ScalarUInt64: return static_cast<T>(get_scalar<uint64_t>(value));
-            case Data::ScalarComplex64: return static_cast<T>(get_scalar<std::complex<float>>(value));
-            case Data::ScalarComplex128: return static_cast<T>(get_scalar<std::complex<double>>(value));
+            case Data::ScalarFloat32: return static_cast<T>(scalar<float>(value));
+            case Data::ScalarFloat64: return static_cast<T>(scalar<double>(value));
+            case Data::ScalarInt8: return static_cast<T>(scalar<int8_t>(value));
+            case Data::ScalarInt16: return static_cast<T>(scalar<int16_t>(value));
+            case Data::ScalarInt32: return static_cast<T>(scalar<int32_t>(value));
+            case Data::ScalarInt64: return static_cast<T>(scalar<int64_t>(value));
+            case Data::ScalarUInt8: return static_cast<T>(scalar<uint8_t>(value));
+            case Data::ScalarUInt16: return static_cast<T>(scalar<uint16_t>(value));
+            case Data::ScalarUInt32: return static_cast<T>(scalar<uint32_t>(value));
+            case Data::ScalarUInt64: return static_cast<T>(scalar<uint64_t>(value));
+            case Data::ScalarComplex64: return static_cast<T>(scalar<std::complex<float>>(value));
+            case Data::ScalarComplex128: return static_cast<T>(scalar<std::complex<double>>(value));
             default: throw ConversionError(value, "scalar", "complex");
         }
     } else {
         switch (value.data_type()) {
-            case Data::ScalarBool: return static_cast<T>(get_scalar<bool>(value));
-            case Data::ScalarFloat32: return static_cast<T>(get_scalar<float>(value));
-            case Data::ScalarFloat64: return static_cast<T>(get_scalar<double>(value));
-            case Data::ScalarInt8: return static_cast<T>(get_scalar<int8_t>(value));
-            case Data::ScalarInt16: return static_cast<T>(get_scalar<int16_t>(value));
-            case Data::ScalarInt32: return static_cast<T>(get_scalar<int32_t>(value));
-            case Data::ScalarInt64: return static_cast<T>(get_scalar<int64_t>(value));
-            case Data::ScalarUInt8: return static_cast<T>(get_scalar<uint8_t>(value));
-            case Data::ScalarUInt16: return static_cast<T>(get_scalar<uint16_t>(value));
-            case Data::ScalarUInt32: return static_cast<T>(get_scalar<uint32_t>(value));
-            case Data::ScalarUInt64: return static_cast<T>(get_scalar<uint64_t>(value));
+            case Data::ScalarBool: return static_cast<T>(scalar<bool>(value));
+            case Data::ScalarFloat32: return static_cast<T>(scalar<float>(value));
+            case Data::ScalarFloat64: return static_cast<T>(scalar<double>(value));
+            case Data::ScalarInt8: return static_cast<T>(scalar<int8_t>(value));
+            case Data::ScalarInt16: return static_cast<T>(scalar<int16_t>(value));
+            case Data::ScalarInt32: return static_cast<T>(scalar<int32_t>(value));
+            case Data::ScalarInt64: return static_cast<T>(scalar<int64_t>(value));
+            case Data::ScalarUInt8: return static_cast<T>(scalar<uint8_t>(value));
+            case Data::ScalarUInt16: return static_cast<T>(scalar<uint16_t>(value));
+            case Data::ScalarUInt32: return static_cast<T>(scalar<uint32_t>(value));
+            case Data::ScalarUInt64: return static_cast<T>(scalar<uint64_t>(value));
             //case Data::ScalarBool: return operator==(scalar<bool>(value), other);
             default:
                 throw ConversionError(value, "scalar", "type T");
