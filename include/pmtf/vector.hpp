@@ -101,7 +101,12 @@ public:
     }
 
     // From a pmt buffer
-    vector(const pmt& other): _buf(other) {}
+    template <class U, typename = IsPmt<U>>
+    vector(const U& other) {
+        if (other.data_type() != data_type())
+            throw ConversionError(other, "vector", ctype_string<T>());
+        _buf = other;
+    }
         
     ~vector() {}
     span_type value() {
@@ -273,20 +278,6 @@ bool operator!=(const U& y, const vector<T>& x) {
     return operator!=(x,y);
 }
 
-
-template <class T>
-vector<T> get_vector(const pmt& p) {
-    if (p.data_type() == vector<T>::data_type())
-        return vector<T>(p);
-    throw ConversionError(p, "vector", ctype_string<T>());
-}
-
-template <class T>
-std::vector<T> get_std_vector(const pmt& p) {
-    auto vec = get_vector<T>(p);
-    return std::vector(vec.begin(), vec.end());
-}
-
 #define Apply(func) \
 func(uint8_t) \
 func(uint16_t) \
@@ -306,7 +297,7 @@ func(pmtf::pmt)
 template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
     { *this = vector<T>(x).get_pmt_buffer(); } \
 template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); } \
-template <> inline pmt::pmt<gsl::span<T>>(const gsl::span<T>& x) { *this = vector<T>(x).get_pmt_buffer(); } \
+template <> inline pmt::pmt<gsl::span<T>>(const gsl::span<T>& x) { *this = vector<T>(x.begin(), x.end()).get_pmt_buffer(); } \
 template <> inline pmt& pmt::operator=<std::vector<T>>(const std::vector<T>& x) \
     { return operator=(vector(x).get_pmt_buffer()); } 
 
@@ -317,10 +308,10 @@ Apply(VectorPmt)
 template <class T, class type>
 inline T _ConstructVectorLike(const pmt& value) {
     if constexpr(std::is_same_v<typename T::value_type, type>) {
-        using iter = decltype(get_vector<type>(value).begin());
+        using iter = decltype(vector<type>(value).begin());
         // Vector like containers like this
         if constexpr(std::is_constructible_v<T, iter, iter>) {
-            return T(get_vector<type>(value).begin(), get_vector<type>(value).end());
+            return T(vector<type>(value).begin(), vector<type>(value).end());
         } else {
             throw ConversionError(value, "vector", ctype_string<type>());
         }

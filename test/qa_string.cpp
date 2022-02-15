@@ -42,7 +42,7 @@ TEST(PmtString, Serdes)
     //auto base_ptr = base::deserialize(sb);
 
     
-    //EXPECT_EQ(get_string(base_ptr), "hello");
+    //EXPECT_EQ(string(base_ptr), "hello");
 }
 
 TEST(Pmt, PmtWrap)
@@ -50,7 +50,7 @@ TEST(Pmt, PmtWrap)
     /*wrap x;
     x = std::string("hello");
     
-    EXPECT_EQ(get_string(x), "hello");*/
+    EXPECT_EQ(string(x), "hello");*/
 }
 
 TEST(PmtString, get_as)
