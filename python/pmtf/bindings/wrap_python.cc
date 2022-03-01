@@ -179,5 +179,7 @@ void bind_pmt(py::module &m) {
         sb.sgetn((char *)pre_encoded_str.data(), nbytes);
         return pre_encoded_str;
       })
+      .def("to_base64", &pmtf::pmt::to_base64)
+      .def_static("from_base64", &pmtf::pmt::from_base64)
       ;
 }
