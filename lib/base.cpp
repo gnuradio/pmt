@@ -45,6 +45,21 @@ pmt& pmt::operator=(const pmt& other) {
     return *this;
 }
 
+template <> pmt::pmt<decltype(nullptr)>(decltype(nullptr) const& x) 
+{ 
+    _scalar = nullptr;
+    _vector = nullptr;
+    _map = nullptr;
+}
+
+template <>
+pmt& pmt::operator=<decltype(nullptr)>(const decltype(nullptr)& other) {
+    _scalar = nullptr;
+    _vector = nullptr;
+    _map = nullptr;
+    return *this;
+}
+
 size_t pmt::serialize(std::streambuf& sb) const {
     size_t length = 0;
     length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
@@ -109,8 +124,6 @@ std::string pmt::type_string() const noexcept {
         return std::string(EnumNameData(data_type()));
     else return "Uninitialized";
 }
-
-
 
 std::string pmt::to_base64()
 {
