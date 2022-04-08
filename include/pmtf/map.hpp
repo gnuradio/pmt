@@ -15,6 +15,7 @@
 #include <typeindex>
 #include <typeinfo>
 #include <vector>
+#include <initializer_list>
 
 #include <pmtf/base.hpp>
 
@@ -82,6 +83,11 @@ public:
             throw ConversionError(other, "map");
         _map = other;
     }
+    map(std::initializer_list<value_type> il) {
+        _MakeEmptyMap();
+        for (auto& [k, v]: il)
+            this->operator[](k) = v;
+    }
     //template <class T>
     //map(std::map<string
     ~map() {}
@@ -108,7 +114,6 @@ public:
     }
 
     size_t size() const { return _get_map()->size(); }
-    size_t size2() const { return _map._scalar->data_as<type>()->count(); }
     size_t count(const key_type& key) const { return _get_map()->count(key); }
 
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
@@ -120,7 +125,7 @@ public:
     bool operator==(const U& x) const;
     template <class U>
     bool operator!=(const U& x) const { return !(operator==(x));}
-private:
+protected:
     std::shared_ptr<map_type> _get_map() { return _map._map; }
     const std::shared_ptr<map_type> _get_map() const { return _map._map; }
     std::shared_ptr<base_buffer> _get_header() { return _map._scalar; }
@@ -172,7 +177,7 @@ bool operator==(const U& y, const T& x) {
 
 // Reversed Not equal operator
 template <class T, class U, IsMap<T> = true, IsNotMap<U> = true>
-bool operator!=(const U& y, const map& x) {
+bool operator!=(const U& y, const T& x) {
     return operator!=(x,y);
 }
 

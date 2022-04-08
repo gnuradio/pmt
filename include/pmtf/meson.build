@@ -16,6 +16,7 @@ files = [
     'vector.hpp',
     'string.hpp',
     'map.hpp',
+    'tag.hpp',
     'wrap.hpp',
     'type_helpers.hpp'
 ]
