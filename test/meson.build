@@ -64,4 +64,13 @@ if get_option('enable_testing')
                     gtest_dep], 
         install : true)
     test('PMT Map Tests', e)
+
+    srcs = ['qa_tag.cpp']
+    e = executable('qa_pmt_tag',
+        srcs,
+        include_directories : incdir,
+        dependencies: [pmtf_dep,
+                    gtest_dep],
+        install : true)
+    test('PMT Tag Tests', e)
 endif
