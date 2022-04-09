@@ -17,17 +17,29 @@ namespace pmtf {
 Class is a wrapper around a flatbuffers buffer that contains a Pmt.
 It offers several convenience functions.
 */
+
+template <class T>
+class BaseConversionError;
+
 class base_buffer {
 public:
     base_buffer() {}
     base_buffer(flatbuffers::DetachedBuffer&& buf): _buf(std::move(buf)) {}
-    Data data_type() { return data()->data_type(); }
+    Data data_type() const { return data()->data_type(); }
     const Pmt* data() const { return GetSizePrefixedPmt(_buf.data()); }
     Pmt* data() { return const_cast<Pmt*>(GetSizePrefixedPmt(_buf.data())); }
     template <class type>
-    const type* data_as() const { return data()->data_as<type>(); }
+    const type* data_as() const {
+        auto ptr = data()->data_as<type>();
+        if (ptr == nullptr) throw BaseConversionError<type>(*this);
+        return ptr;
+    }
     template <class type>
-    type* data_as() { return const_cast<type*>(data()->data_as<type>()); }
+    type* data_as() {
+        auto ptr = const_cast<type*>(data()->data_as<type>());
+        if (ptr == nullptr) throw BaseConversionError<type>(*this);
+        return ptr;
+    }
     size_t size() { return _buf.size(); }
     const uint8_t* raw() const { return _buf.data(); }
 private:
@@ -35,6 +47,19 @@ private:
 
 };
 
+template <class T>
+class BaseConversionError: public std::exception {
+public:
+    BaseConversionError(const base_buffer& buf) {
+        _msg = "Can't convert base_buffer of type " + std::string(EnumNameData(buf.data_type())) + " to " + std::string(EnumNameData(DataTraits<T>::enum_value));
+    }
+
+    const char* what() const noexcept {
+        return _msg.c_str();
+    }
+private:
+    std::string _msg;
+};
 /*!
 Pmt class is a collection of base_buffers.  This makes it easy for us to work
 with collections of pmts like maps and vectors.
@@ -80,6 +105,7 @@ public:
     bool operator!=(const T& x) const { return !(operator==(x));}
 
 private:
+    void pre_serial_update() const;
     /*!
     * Initialize from a shared_ptr to a base_buffer
     * Used in deserialize.  Shouldn't be used elsewhere.

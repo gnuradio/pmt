@@ -53,7 +53,7 @@ public:
     tag(const T& other) {
         if (other.data_type() != data_type())
             throw ConversionError(other, "tag");
-        _buffer = other;
+        _map = other;
     }
     tag(uint64_t start, uint64_t duration, std::initializer_list<value_type> il) {
         _MakeEmptyTag(start, duration);
@@ -61,6 +61,13 @@ public:
             this->operator[](k) = v;
     }
     ~tag() {}
+    tag& operator=(const tag& value) {
+        std::shared_ptr<base_buffer> scalar = _get_header();
+        _MakeEmptyTag(value.start(), value.duration());
+        for (auto& [k, v]: value)
+            this->operator[](k) = v;
+        return *this;
+    }
 
     // Accessor functions
     uint64_t start() const { return _get_header()->data_as<type>()->start(); }
@@ -69,7 +76,7 @@ public:
 
 
     static constexpr Data data_type() { return DataTraits<type>::enum_value; }
-    const pmt& get_pmt_buffer() const { return _buffer; }
+    const pmt& get_pmt_buffer() const { return _map; }
 
     //! Equality Comparisons
     // Declared as class members so that we don't do implicit conversions.
@@ -77,13 +84,18 @@ public:
     bool operator==(const U& x) const;
     template <class U>
     bool operator!=(const U& x) const { return !(operator==(x));}
+    void pre_serial_update() const {
+        // It may look odd to declare this function as const when it modifies
+        // count.  But count is part of the internal interface, so to the
+        // user, this is a const function.
+        std::shared_ptr<base_buffer> scalar = _map._scalar;
+        scalar->data_as<type>()->mutate_count(_get_map()->size());
+    }
 private:
-    std::shared_ptr<map_type> _get_map() { return _buffer._map; }
-    const std::shared_ptr<map_type> _get_map() const { return _buffer._map; }
-    std::shared_ptr<base_buffer> _get_header() { return _buffer._scalar; }
-    const std::shared_ptr<base_buffer> _get_header() const { return _buffer._scalar; }
-    // This stores the actual data.
-    pmt _buffer;
+    std::shared_ptr<map_type> _get_map() { return _map._map; }
+    const std::shared_ptr<map_type> _get_map() const { return _map._map; }
+    std::shared_ptr<base_buffer> _get_header() { return _map._scalar; }
+    const std::shared_ptr<base_buffer> _get_header() const { return _map._scalar; }
     //void _MakeTag(std::tuple<uint64_t, uint64_t> )
     void _MakeEmptyTag(uint64_t start, uint64_t duration) {
         flatbuffers::FlatBufferBuilder fbb;
