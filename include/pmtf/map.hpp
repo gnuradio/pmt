@@ -109,7 +109,6 @@ public:
         auto& x =_get_map()->operator[](key);
         // Need to make sure that the number of keys is up to date
         std::shared_ptr<base_buffer> scalar = _map._scalar;
-        scalar->data_as<type>()->mutate_count(_get_map()->size());
         return x;
     }
 
@@ -125,6 +124,13 @@ public:
     bool operator==(const U& x) const;
     template <class U>
     bool operator!=(const U& x) const { return !(operator==(x));}
+    void pre_serial_update() const {
+        // It may look odd to declare this function as const when it modifies
+        // count.  But count is part of the internal interface, so to the
+        // user, this is a const function.
+        std::shared_ptr<base_buffer> scalar = _map._scalar;
+        scalar->data_as<type>()->mutate_count(_get_map()->size());
+    }
 protected:
     std::shared_ptr<map_type> _get_map() { return _map._map; }
     const std::shared_ptr<map_type> _get_map() const { return _map._map; }
