@@ -21,13 +21,13 @@ TEST(PmtTag, EmptyTag) {
     empty["abc"] = scalar(4);
 }
 
-/*TEST(PmtTag, PmtTagConstruct)
+TEST(PmtTag, PmtTagConstruct)
 {
     tag ta(156, 0, "abc", 43);
     tag tb(156,100, {{"abc", 43}});
     tag tc = tb;
     EXPECT_EQ(tb, tc);
-}*/
+}
 
 /*TEST(PmtMap, MapSerialize)
 {

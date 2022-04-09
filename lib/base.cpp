@@ -46,6 +46,9 @@ pmt& pmt::operator=(const pmt& other) {
 }
 
 size_t pmt::serialize(std::streambuf& sb) const {
+    // Allow for object to do any pre-serialization updates.
+    // Namely, a map can update it's size.
+    pre_serial_update();
     size_t length = 0;
     length += sb.sputn(reinterpret_cast<const char*>(_scalar->raw()), _scalar->size());
     if (_vector) {

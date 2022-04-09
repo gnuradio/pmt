@@ -144,7 +144,7 @@ table MapHeaderString {
 table Tag {
   start:uint64;
   duration:uint64;
-  value: MapHeaderString;
+  count:uint32;
 }
 
 union Data { PmtString, ScalarFloat32, ScalarFloat64, ScalarComplex64, ScalarComplex128, 
