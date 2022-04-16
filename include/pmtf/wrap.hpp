@@ -62,6 +62,7 @@ bool pmt::operator==(const T& other) const {
         case Data::VectorUInt64: return vector<uint64_t>(*this).operator==(other);
         case Data::VectorPmtHeader: return vector<pmt>(*this).operator==(other);
         case Data::MapHeaderString: return map(*this).operator==(other);
+        case Data::Tag: return tag(*this).operator==(other);
         default:
             throw std::runtime_error("Unknown pmt type passed to operator==");
     }

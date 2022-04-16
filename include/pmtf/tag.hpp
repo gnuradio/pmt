@@ -127,6 +127,8 @@ bool tag::operator==(const T& other) const {
             else if (!(other.at(k) == v)) return false;
         }
         return true;
+    } else if constexpr(std::is_same_v<T, pmt>) {
+        return other.operator==(*this);
     } else return false;
 }
 
