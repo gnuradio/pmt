@@ -11,24 +11,6 @@
 #include <pmtf/base.hpp>
 #include <pmtf/map.hpp>
 
-/* How do we do this???
-  We have two cases that I think cover everything.
-1) Fixed length vector of pmts.  This is really easy.
-    I just remove the ability to resize a pmt vector after construction.
-    There is a problem.  How do conversions and equality work?
-    Is a fixed vector == to a resizable vector?
-    Are they convertible?? (Yes)
-2) A tuple.  The idea is that I want a combination of a set of scalar data, a vector, and a dict.
-    How do we specify it.
-    A tag is a start, duration, and dictionary.  Or it could be start, duration, key, pmt (vector len 1)
-    A pmt is a data vector and a dictionary.
-    I could specify it as scalar tuple, has vec, has dict
-      Or as tuple<start, dur, dict>.  How would I specify dict in there?
-      I could do it from an initializer list or a pmt map or a std map.  That doesn't make for a solid tuple.
-      Also a map or a vector isn't stored directly in there.
-      How about <start, dur, has_vector, has_map>.  Need to know if it is a fixed length pmt vector as well.
-      
-*/
 namespace pmtf {
 
 class tag : public map {
