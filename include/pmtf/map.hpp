@@ -106,10 +106,7 @@ public:
     mapped_type& at(const key_type& key) { return _get_map()->at(key); }
     const mapped_type& at(const key_type& key ) const { return _get_map()->at(key); }
     mapped_type& operator[]( const key_type& key) {
-        auto& x =_get_map()->operator[](key);
-        // Need to make sure that the number of keys is up to date
-        std::shared_ptr<base_buffer> scalar = _map._scalar;
-        return x;
+        return _get_map()->operator[](key);
     }
 
     size_t size() const { return _get_map()->size(); }
