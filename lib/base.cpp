@@ -84,9 +84,13 @@ pmt pmt::deserialize(std::streambuf& sb) {
         for (size_t i = 0; i < count; i++) {
             (*cur._vector)[i] = deserialize(sb);
         }
-    } else if (cur.data_type() == Data::MapHeaderString) {
+    } else if (cur.data_type() == Data::MapHeaderString || cur.data_type() == Data::Tag) {
         cur._map = std::make_shared<std::map<std::string, pmt>>();
-        uint32_t count = cur._scalar->data_as<MapHeaderString>()->count();
+        uint32_t count;
+        if (cur.data_type() == Data::MapHeaderString)
+            count = cur._scalar->data_as<MapHeaderString>()->count();
+        else
+            count = cur._scalar->data_as<Tag>()->count();
         std::vector<char> data;
         for (size_t i = 0; i < count; i++) {
             // Read length then string

@@ -40,6 +40,7 @@ std::ostream& operator<< <pmt, true>(std::ostream& os, const pmt& value) {
         case Data::VectorUInt64: return operator<<(os, vector<uint64_t>(value));
         case Data::VectorPmtHeader: return operator<<(os, vector<pmt>(value));
         case Data::MapHeaderString: return operator<<(os, map(value));
+        case Data::Tag: return operator<<(os, tag(value));
         default:
             throw std::runtime_error("Unknown pmt type passed to operator<<");
     }
