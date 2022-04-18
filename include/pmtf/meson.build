@@ -12,12 +12,13 @@ pmt_gen_h_dep = declare_dependency(sources : [pmt_gen_h])
 files = [
     'alloc.hpp',
     'base.hpp',
-    'scalar.hpp',
-    'vector.hpp',
-    'string.hpp',
+    'gsl-lite.hpp',
     'map.hpp',
+    'scalar.hpp',
+    'string.hpp',
     'tag.hpp',
+    'type_helpers.hpp',
+    'vector.hpp',
     'wrap.hpp',
-    'type_helpers.hpp'
 ]
 install_headers(files, subdir : 'pmtf')
