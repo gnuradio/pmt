@@ -46,5 +46,20 @@ std::ostream& operator<< <pmt, true>(std::ostream& os, const pmt& value) {
     }
 }
 
+void pmt::pre_serial_update() const {
+    // If other is a pmt, then we will convert the first arg to its type
+    // Then we will call this again to convert the second arg.
+    std::cout << (data_type() == Data::MapHeaderString) << " " <<  (data_type() == Data::Tag) << std::endl;
+    switch (data_type()) {
+        case Data::MapHeaderString:
+            map(*this).pre_serial_update();
+            break;
+        case Data::Tag:
+            tag(*this).pre_serial_update();
+            break;
+        default:
+            return;
+    }
+}
 
 }
