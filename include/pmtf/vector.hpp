@@ -298,6 +298,8 @@ template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
     { *this = vector<T>(x).get_pmt_buffer(); } \
 template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); } \
 template <> inline pmt::pmt<gsl::span<T>>(const gsl::span<T>& x) { *this = vector<T>(x.begin(), x.end()).get_pmt_buffer(); } \
+template <> inline pmt& pmt::operator=<vector<T>>(const vector<T>& x) \
+    { return operator=(x.get_pmt_buffer()); } \
 template <> inline pmt& pmt::operator=<std::vector<T>>(const std::vector<T>& x) \
     { return operator=(vector(x).get_pmt_buffer()); } 
 
