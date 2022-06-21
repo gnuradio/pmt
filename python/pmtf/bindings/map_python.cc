@@ -25,6 +25,7 @@ void bind_map(py::module &m) {
 
       .def(py::init<>())
       .def(py::init<const std::map<std::string, pmtf::pmt> &>())
+      .def(py::init<const pmtf::pmt &>())
       .def("__getitem__",
            [](pmtf::map obj, const std::string &key) { return obj[key]; })
       .def("__setitem__", [](pmtf::map obj, const std::string &key,
