@@ -1,4 +1,5 @@
 pmtf_pybind_sources = files([
+    'map_python.cc',
     'string_python.cc',
     'wrap_python.cc',
     'pmtf_python.cc'
