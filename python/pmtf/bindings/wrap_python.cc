@@ -21,11 +21,19 @@ namespace py = pybind11;
 #include <pmtf/wrap.hpp>
 // pydoc.h is automatically generated in the build directory
 // #include <pmt_pydoc.h>
+#include <pybind11/stl_bind.h>
+
+// PYBIND11_MAKE_OPAQUE(std::map<std::string, pmtf::pmt>)
 
 void bind_pmt(py::module &m) {
   using pmt = pmtf::pmt;
 
+  // py::bind_map<std::map<std::string, pmtf::pmt>>(m, "PmtMap");
+
   py::class_<pmt, std::shared_ptr<pmt>>(m, "pmt")
+
+      // Map Wrapper
+      .def(py::init([](const std::map<std::string, pmtf::pmt> &themap) { return pmtf::pmt(themap); }))
 
       // String Wrapper
       .def(py::init([](const std::string &str) { return pmtf::pmt(str); }))
@@ -182,4 +190,6 @@ void bind_pmt(py::module &m) {
       .def("to_base64", &pmtf::pmt::to_base64)
       .def_static("from_base64", &pmtf::pmt::from_base64)
       ;
+
+      // py::bind_map<std::map<std::string, pmtf::pmt>>(m, "PmtMap");
 }
