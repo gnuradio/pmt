@@ -269,3 +269,24 @@ TYPED_TEST(PmtVectorFixture, base64)
 
     EXPECT_EQ(x, y);
 }
+
+TYPED_TEST(PmtVectorFixture, vector_wrapper)
+{
+    std::vector<TypeParam> vec(this->num_values_);
+    pmt x = vec;
+    // This should not throw
+    pmtf::vector_wrap z(pmtf::vector<TypeParam>(vec));
+
+    // TODO: Define all of the functionality that we should have here.
+    // Size - return the number of elements
+    // Bytes - The length of the vector in bytes
+    // ==/!= Should be able to compare against everything
+    // Pointer to the beginning
+
+
+    // Make sure that we can get the value back out
+    auto encoded_str = pmt(x).to_base64();
+    auto y = pmt::from_base64(encoded_str);
+
+    EXPECT_EQ(x, y);
+}
