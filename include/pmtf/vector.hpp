@@ -322,4 +322,32 @@ inline T _ConstructVectorLike(const pmt& value) {
     }
 }
 
+/* Wrapper class that stores a vector of arithmetic data (not pmts)
+   This is a convenience class */
+class vector_wrap {
+  public:
+    // From a pmt buffer
+    template <class U, typename = IsPmt<U>>
+    vector_wrap(const U& other) {
+        switch(other.data_type()) {
+            case Data::VectorFloat32:
+            case Data::VectorFloat64:
+            case Data::VectorComplex64:
+            case Data::VectorComplex128:
+            case Data::VectorInt8:
+            case Data::VectorInt16:
+            case Data::VectorInt32:
+            case Data::VectorInt64:
+            case Data::VectorUInt8:
+            case Data::VectorUInt16:
+            case Data::VectorUInt32:
+            case Data::VectorUInt64:
+                _buf = other;
+            default:
+                throw ConversionError(other, "vector", ctype_string<T>());
+        }
+    }
+  private:
+};
+
 } // namespace pmtf
