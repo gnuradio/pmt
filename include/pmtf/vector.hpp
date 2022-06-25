@@ -344,10 +344,20 @@ class vector_wrap {
             case Data::VectorUInt64:
                 _buf = other;
             default:
-                throw ConversionError(other, "vector", ctype_string<T>());
+                throw ConversionError(other, "vector", ctype_string<U>());
         }
     }
+    template <class U, typename = IsNotPmt<U>>
+    vector_wrap(const pmtf::vector<U>& other) {
+        _buf = other;
+    }
+    const pmt& get_pmt_buffer() const { return _buf; }
+    const size_t size() const {
+        return _buf.elements();
+    }
   private:
+    pmt _buf;
 };
 
+template <> inline pmt::pmt<vector_wrap>(const vector_wrap& x) { *this = x.get_pmt_buffer(); }
 } // namespace pmtf
