@@ -15,7 +15,7 @@ pybind11_dep = dependency('pybind11', required : get_option('enable_python'))
 flatc = find_program('flatc', version : '>=2.0')
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 
-CLI11_dep = dependency('CLI11', fallback : [ 'CLI11' , 'CLI11_dep' ])
+CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 
 subdir('include/pmtf')
 subdir('lib')
