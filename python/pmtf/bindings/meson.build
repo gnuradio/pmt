@@ -4,9 +4,18 @@ pmtf_pybind_sources = files([
     'pmtf_python.cc'
  ] )
 
+
+numpy_include = include_directories(
+  run_command(
+    py3_inst, '-c', 'import numpy; print(numpy.get_include())',
+    check: true
+  ).stdout().strip()
+)
+
 pmtf_pybind_deps = [python3_dep, pybind11_dep, pmtf_dep]
 pmtf_pybind = py3_inst.extension_module('pmtf_python',
-    pmtf_pybind_sources, 
+    pmtf_pybind_sources,
+    include_directories: numpy_include,
     dependencies : pmtf_pybind_deps,
     link_language : 'cpp',
     install : true,
