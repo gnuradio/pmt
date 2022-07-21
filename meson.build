@@ -1,5 +1,6 @@
-project('pmt', 'cpp', 
+project('pmt', 'cpp',
   version : '0.0.2',
+  meson_version: '>=0.52.0',
   license : 'GPLv3',
   default_options : ['cpp_std=c++17'])
 
