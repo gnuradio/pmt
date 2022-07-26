@@ -343,21 +343,45 @@ class vector_wrap {
             case Data::VectorUInt32:
             case Data::VectorUInt64:
                 _buf = other;
+                break;
             default:
                 throw ConversionError(other, "vector", ctype_string<U>());
         }
     }
-    template <class U, typename = IsNotPmt<U>>
-    vector_wrap(const pmtf::vector<U>& other) {
+    template <class U, typename = IsVectorLikeContainer<U>, typename = IsNotPmt<U>>
+    vector_wrap(const U& other) {
         _buf = other;
     }
     const pmt& get_pmt_buffer() const { return _buf; }
-    const size_t size() const {
-        return _buf.elements();
-    }
+    size_t size() const { return _buf.elements(); }
+    const size_t bytes() const { return size() * _buf.bytes_per_element(); }
+    const size_t bytes_per_element() const { return _buf.bytes_per_element(); }
+    template <class U>
+    bool operator==(const U& other) const { return _buf ==  other; }
+    template <class U>
+    bool operator!=(const U& other) const { return !operator==(other); }
+
   private:
     pmt _buf;
 };
+
+std::ostream& operator<<(std::ostream& os, const vector_wrap& value);
+
+template <class U>
+using IsNotVectorWrap = std::enable_if_t<!std::is_same_v<vector_wrap, U>, bool>;
+
+
+// Reversed case.  This allows for x == y and y == x
+template <class U, IsNotVectorWrap<U> = true>
+bool operator==(const U& y, const vector_wrap& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class U, IsNotVectorWrap<U> = true>
+bool operator!=(const U& y, const vector_wrap& x) {
+    return x.operator!=(y);
+}
 
 template <> inline pmt::pmt<vector_wrap>(const vector_wrap& x) { *this = x.get_pmt_buffer(); }
 } // namespace pmtf
