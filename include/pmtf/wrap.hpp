@@ -8,6 +8,7 @@
 #pragma once
 
 #include <pmtf/base.hpp>
+#include <pmtf/null.hpp>
 #include <pmtf/map.hpp>
 #include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
@@ -18,7 +19,7 @@
 namespace pmtf {
 
 typedef std::variant<
-    std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
+    nullptr_t, std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
     int64_t, uint64_t, float, double, std::complex<float>, std::complex<double>,
     std::vector<bool>, std::vector<int8_t>, std::vector<uint8_t>,
     std::vector<int16_t>, std::vector<uint16_t>, std::vector<int32_t>,
@@ -32,6 +33,8 @@ template <class T> bool pmt::operator==(const T &other) const {
   // If other is a pmt, then we will convert the first arg to its type
   // Then we will call this again to convert the second arg.
   switch (data_type()) {
+  case Data::PmtNull:
+      return null(*this).operator==(other);
   case Data::PmtString:
     return string(*this).operator==(other);
   case Data::ScalarFloat32:
