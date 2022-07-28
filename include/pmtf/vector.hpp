@@ -322,4 +322,66 @@ inline T _ConstructVectorLike(const pmt& value) {
     }
 }
 
+/* Wrapper class that stores a vector of arithmetic data (not pmts)
+   This is a convenience class */
+class vector_wrap {
+  public:
+    // From a pmt buffer
+    template <class U, typename = IsPmt<U>>
+    vector_wrap(const U& other) {
+        switch(other.data_type()) {
+            case Data::VectorFloat32:
+            case Data::VectorFloat64:
+            case Data::VectorComplex64:
+            case Data::VectorComplex128:
+            case Data::VectorInt8:
+            case Data::VectorInt16:
+            case Data::VectorInt32:
+            case Data::VectorInt64:
+            case Data::VectorUInt8:
+            case Data::VectorUInt16:
+            case Data::VectorUInt32:
+            case Data::VectorUInt64:
+                _buf = other;
+                break;
+            default:
+                throw ConversionError(other, "vector", ctype_string<U>());
+        }
+    }
+    template <class U, typename = IsVectorLikeContainer<U>, typename = IsNotPmt<U>>
+    vector_wrap(const U& other) {
+        _buf = other;
+    }
+    const pmt& get_pmt_buffer() const { return _buf; }
+    size_t size() const { return _buf.elements(); }
+    const size_t bytes() const { return size() * _buf.bytes_per_element(); }
+    const size_t bytes_per_element() const { return _buf.bytes_per_element(); }
+    template <class U>
+    bool operator==(const U& other) const { return _buf ==  other; }
+    template <class U>
+    bool operator!=(const U& other) const { return !operator==(other); }
+
+  private:
+    pmt _buf;
+};
+
+std::ostream& operator<<(std::ostream& os, const vector_wrap& value);
+
+template <class U>
+using IsNotVectorWrap = std::enable_if_t<!std::is_same_v<vector_wrap, U>, bool>;
+
+
+// Reversed case.  This allows for x == y and y == x
+template <class U, IsNotVectorWrap<U> = true>
+bool operator==(const U& y, const vector_wrap& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class U, IsNotVectorWrap<U> = true>
+bool operator!=(const U& y, const vector_wrap& x) {
+    return x.operator!=(y);
+}
+
+template <> inline pmt::pmt<vector_wrap>(const vector_wrap& x) { *this = x.get_pmt_buffer(); }
 } // namespace pmtf

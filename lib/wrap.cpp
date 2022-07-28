@@ -47,6 +47,87 @@ std::ostream& operator<< <pmt, true>(std::ostream& os, const pmt& value) {
     }
 }
 
+size_t pmt::elements() const {
+    switch(data_type()) {
+        case Data::PmtString:
+            return string(*this).size();
+        case Data::ScalarFloat32:
+        case Data::ScalarFloat64:
+        case Data::ScalarComplex64:
+        case Data::ScalarComplex128:
+        case Data::ScalarInt8:
+        case Data::ScalarInt16:
+        case Data::ScalarInt32:
+        case Data::ScalarInt64:
+        case Data::ScalarUInt8:
+        case Data::ScalarUInt16:
+        case Data::ScalarUInt32:
+        case Data::ScalarUInt64:
+        case Data::ScalarBool:
+            return 1;
+	case Data::VectorFloat32: return vector<float>(*this).size();
+        case Data::VectorFloat64: return vector<double>(*this).size();
+        case Data::VectorComplex64: return vector<std::complex<float>>(*this).size();
+        case Data::VectorComplex128: return vector<std::complex<double>>(*this).size();
+        case Data::VectorInt8: return vector<int8_t>(*this).size();
+        case Data::VectorInt16: return vector<int16_t>(*this).size();
+        case Data::VectorInt32: return vector<int32_t>(*this).size();
+        case Data::VectorInt64: return vector<int64_t>(*this).size();
+        case Data::VectorUInt8: return vector<uint8_t>(*this).size();
+        case Data::VectorUInt16: return vector<uint16_t>(*this).size();
+        case Data::VectorUInt32: return vector<uint32_t>(*this).size();
+        case Data::VectorUInt64: return vector<uint64_t>(*this).size();
+        case Data::VectorPmtHeader: return vector<pmt>(*this).size();
+        case Data::MapHeaderString: return map(*this).size();
+        case Data::Tag: return 1;
+        default:
+            throw std::runtime_error("Unknown pmt type passed to operator<<");
+    }
+
+}
+
+size_t pmt::bytes_per_element() const {
+    switch(data_type()) {
+        case Data::PmtString:
+        case Data::ScalarBool:
+        case Data::ScalarInt8:
+        case Data::ScalarUInt8:
+        case Data::VectorBool:
+        case Data::VectorInt8:
+        case Data::VectorUInt8:
+            return 1;
+        case Data::ScalarInt16:
+        case Data::ScalarUInt16:
+        case Data::VectorInt16:
+        case Data::VectorUInt16:
+	    return 2;
+        case Data::ScalarFloat32:
+        case Data::ScalarInt32:
+        case Data::ScalarUInt32:
+        case Data::VectorFloat32:
+        case Data::VectorInt32:
+        case Data::VectorUInt32:
+	    return 4;
+        case Data::ScalarFloat64:
+        case Data::ScalarComplex64:
+        case Data::ScalarInt64:
+        case Data::ScalarUInt64:
+        case Data::VectorFloat64:
+        case Data::VectorComplex64:
+        case Data::VectorInt64:
+        case Data::VectorUInt64:
+	    return 8;
+        case Data::ScalarComplex128:
+        case Data::VectorComplex128:
+	    return 16;
+	//case Data::VectorPmtHeader: return vector<pmt>(*this).size();
+        //case Data::MapHeaderString: return map(*this).size();
+        //case Data::Tag: return 1;
+        default:
+            throw std::runtime_error("Unknown pmt type passed to operator<<");
+    }
+}
+
 void pmt::pre_serial_update() const {
     // If other is a pmt, then we will convert the first arg to its type
     // Then we will call this again to convert the second arg.

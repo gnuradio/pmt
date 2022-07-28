@@ -96,6 +96,8 @@ public:
     bool empty() { return !(_scalar || _vector || _map); }
     Data data_type() const;
     std::string type_string() const noexcept;
+    size_t elements() const;
+    size_t bytes_per_element() const;
 
     //! Equality Comparisons
     // Declared as class members so that we don't do implicit conversions.

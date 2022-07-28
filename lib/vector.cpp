@@ -18,5 +18,8 @@ namespace flatbuffers {
 }
 namespace pmtf {
 
+std::ostream& operator<<(std::ostream& os, const vector_wrap& value) {
+    return operator<<(os, value.get_pmt_buffer());
+}
 
 } // namespace pmtf
