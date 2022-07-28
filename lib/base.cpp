@@ -7,6 +7,7 @@
  */
 #include <pmtf/alloc.hpp>
 #include <pmtf/base.hpp>
+#include <pmtf/null.hpp>
 #include <pmtf/scalar.hpp>
 #include <pmtf/string.hpp>
 #include <pmtf/vector.hpp>
@@ -26,6 +27,8 @@ const std::complex<float> UnPack(const pmtf::Complex64& obj)
 } // namespace flatbuffers
 
 namespace pmtf {
+
+pmt::pmt(): _scalar(null_pmt.get_pmt_buffer()._scalar), _vector(nullptr), _map(nullptr) {}
 
 pmt::pmt(const std::shared_ptr<base_buffer>& other) {
     _scalar = other;

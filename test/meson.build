@@ -73,4 +73,13 @@ if get_option('enable_testing')
                     gtest_dep],
         install : true)
     test('PMT Tag Tests', e)
+    
+    srcs = ['qa_null.cpp']
+    e = executable('qa_pmt_null', 
+        srcs, 
+        include_directories : incdir, 
+        dependencies: [pmtf_dep,
+                    gtest_dep], 
+        install : true)
+    test('PMT NULL Tests', e)
 endif
