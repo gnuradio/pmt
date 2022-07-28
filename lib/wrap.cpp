@@ -12,6 +12,7 @@ namespace pmtf {
 template <>
 std::ostream& operator<< <pmt, true>(std::ostream& os, const pmt& value) {
     switch(value.data_type()) {
+	case Data::PmtNull: return operator<<(os, null(value));
         case Data::PmtString: return operator<<(os, string(value));
         case Data::ScalarFloat32: return operator<<(os, scalar<float>(value));
         case Data::ScalarFloat64: return operator<<(os, scalar<double>(value));

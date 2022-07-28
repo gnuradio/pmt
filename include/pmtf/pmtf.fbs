@@ -30,17 +30,15 @@ struct Complex64 (native_type:"std::complex<float>") {
     im:float32;
 }
 
-// struct Complex64 {
-//     re:float32;
-//     im:float32;
-// }
-
 struct Complex128 (native_type:"std::complex<double>") {
     re:float64;
     im:float64;
 }
 
 // enum ContainerType : int8 { NONE = 0, VECTOR, MAP, DICT, PAIR, TUPLE }
+
+table PmtNull {
+}
 
 table PmtString {
     value:string;
@@ -147,7 +145,7 @@ table Tag {
   count:uint32;
 }
 
-union Data { PmtString, ScalarFloat32, ScalarFloat64, ScalarComplex64, ScalarComplex128, 
+union Data { PmtNull, PmtString, ScalarFloat32, ScalarFloat64, ScalarComplex64, ScalarComplex128, 
 ScalarInt8, ScalarInt16, ScalarInt32, ScalarInt64, 
 ScalarUInt8, ScalarUInt16, ScalarUInt32, ScalarUInt64,
 ScalarBool,

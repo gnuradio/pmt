@@ -72,7 +72,7 @@ public:
     *
     * Initialize everything to nullptrs (not null pmt)
     */
-    pmt(): _scalar(nullptr), _vector(nullptr), _map(nullptr) {}
+    pmt();
     pmt(const pmt& other);
     
     template <class T>

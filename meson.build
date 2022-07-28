@@ -1,14 +1,12 @@
 project('pmt', 'cpp',
   version : '0.0.2',
-  meson_version: '>=0.52.0',
+  meson_version: '>=0.63.0',
   license : 'GPLv3',
   default_options : ['cpp_std=c++17'])
 
 cc = meson.get_compiler('cpp')
 rt_dep = cc.find_library('rt', required : false)
 c_available = add_languages('c', required : true)
-fmt_dep = dependency('fmt')
-spdlog_dep = dependency('spdlog')
 python3_dep = dependency('python3', required : get_option('enable_python'))
 # Import python3 meson module which is used to find the Python dependencies.
 py3_inst = import('python').find_installation('python3')
