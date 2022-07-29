@@ -1,85 +1,37 @@
 
 
-# test_pmtf_sources = ['test_pmtf.cpp']
-# executable('test_pmtf', test_pmtf_sources, include_directories : incdir, dependencies: [pmtf_dep], install : false)
+TEST_ENV = environment()
+TEST_ENV.prepend('LD_LIBRARY_PATH', 
+    join_paths( meson.build_root(),'lib'),
+)
+TEST_ENV.prepend('PYTHONPATH', join_paths(meson.build_root(),'python') )
+
 
 test_pmtf_sources = ['test_pmtf.cpp']
 executable('test_pmtf', test_pmtf_sources, include_directories : incdir, dependencies: [pmtf_dep], install : false)
 
-# executable('test_pmt', test_pmt_sources, include_directories : incdir, install : true)
 
+# GR namespace tests
+qa_srcs = ['qa_pmt',
+           'qa_scalar',
+           'qa_map',
+           'qa_null',
+           'qa_string',
+           'qa_tag',
+           'qa_vector_pmt',
+           'qa_vector'
+          ]
+deps = [pmtf_dep,
+                gtest_dep]
 
-
-if get_option('enable_testing')
-    srcs = ['qa_pmt.cpp']
-    e = executable('qa_pmt', 
-        srcs, 
+foreach qa : qa_srcs
+    e = executable(qa, 
+        qa + '.cpp', 
         include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT Basic Tests', e)
+        link_language : 'cpp',
+        dependencies: deps, 
+        install : false)
+    test(qa, e)
+endforeach
 
-    srcs = ['qa_scalar.cpp']
-    e = executable('qa_pmt_scalar', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT Scalar Tests', e)
-
-    srcs = ['qa_vector.cpp']
-    e = executable('qa_pmt_vector', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT Vector Tests', e)
-
-    srcs = ['qa_vector_pmt.cpp']
-    e = executable('qa_pmt_vector_pmts', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT Vector Of Pmts Tests', e)
-
-    srcs = ['qa_string.cpp']
-    e = executable('qa_string', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT String Tests', e)
-
-    srcs = ['qa_map.cpp']
-    e = executable('qa_pmt_map', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT Map Tests', e)
-
-    srcs = ['qa_tag.cpp']
-    e = executable('qa_pmt_tag',
-        srcs,
-        include_directories : incdir,
-        dependencies: [pmtf_dep,
-                    gtest_dep],
-        install : true)
-    test('PMT Tag Tests', e)
-    
-    srcs = ['qa_null.cpp']
-    e = executable('qa_pmt_null', 
-        srcs, 
-        include_directories : incdir, 
-        dependencies: [pmtf_dep,
-                    gtest_dep], 
-        install : true)
-    test('PMT NULL Tests', e)
-endif
+test('Numpy Vector', py3, args : files('qa_vector_numpy.py'), env: TEST_ENV)

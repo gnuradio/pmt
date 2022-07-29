@@ -10,6 +10,7 @@ c_available = add_languages('c', required : true)
 python3_dep = dependency('python3', required : get_option('enable_python'))
 # Import python3 meson module which is used to find the Python dependencies.
 py3_inst = import('python').find_installation('python3')
+py3 = py3_inst
 pybind11_dep = dependency('pybind11', required : get_option('enable_python'))
 flatc = find_program('flatc', version : '>=2.0')
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
@@ -18,7 +19,9 @@ CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 
 subdir('include/pmtf')
 subdir('lib')
-subdir('test')
+if get_option('enable_testing')
+  subdir('test')
+endif
 subdir('bench')
 subdir('python/pmtf')
 
