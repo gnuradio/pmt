@@ -4,27 +4,6 @@ native_include "complex";
 
 namespace pmtf;
 
-enum DataType : byte {     
-    UNKNOWN = 0,
-    FLOAT,
-    DOUBLE,
-    CFLOAT,
-    CDOUBLE,
-    INT8,
-    INT16,
-    INT32,
-    INT64,
-    UINT8,
-    UINT16,
-    UINT32,
-    UINT64,
-    BOOL,
-    ENUM,
-    STRING,
-    PMT,
-    ANY,
-    VOID }
-
 struct Complex64 (native_type:"std::complex<float>") {
     re:float32;
     im:float32;
@@ -157,7 +136,6 @@ MapHeaderString, MapEntryString, Tag
 }
 
 table Pmt {
-    // data_type:DataType;
     data:Data;
 }
 
