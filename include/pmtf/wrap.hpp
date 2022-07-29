@@ -18,16 +18,7 @@
 
 namespace pmtf {
 
-typedef std::variant<
-    nullptr_t, std::string, bool, int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t,
-    int64_t, uint64_t, float, double, std::complex<float>, std::complex<double>,
-    std::vector<bool>, std::vector<int8_t>, std::vector<uint8_t>,
-    std::vector<int16_t>, std::vector<uint16_t>, std::vector<int32_t>,
-    std::vector<uint32_t>, std::vector<int64_t>, std::vector<uint64_t>,
-    std::vector<float>, std::vector<double>, std::vector<std::complex<float>>,
-    std::vector<std::complex<double>>, std::map<std::string, pmtf::pmt>>
 
-    pmt_variant_t;
 
 template <class T> bool pmt::operator==(const T &other) const {
   // If other is a pmt, then we will convert the first arg to its type
