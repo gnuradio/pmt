@@ -4,7 +4,7 @@ TEST_ENV = environment()
 TEST_ENV.prepend('LD_LIBRARY_PATH', 
     join_paths( meson.build_root(),'lib'),
 )
-TEST_ENV.prepend('PYTHONPATH', join_paths(meson.build_root(),'python') )
+TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 
 
 test_pmtf_sources = ['test_pmtf.cpp']

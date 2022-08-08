@@ -1,5 +1,3 @@
-# pmt_sources = ['pmt.cpp']
-
 incdir = include_directories('../include')
 
 
