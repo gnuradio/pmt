@@ -1,5 +1,3 @@
-
-
 pmt_gen_h = custom_target('flatc-output',
                         input : ['pmtf.fbs'],
                         output : ['pmtf_generated.h'],
@@ -21,4 +19,5 @@ files = [
     'vector.hpp',
     'wrap.hpp',
 ]
+
 install_headers(files, subdir : 'pmtf')
