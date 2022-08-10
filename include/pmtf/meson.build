@@ -12,6 +12,7 @@ files = [
     'base.hpp',
     'gsl-lite.hpp',
     'map.hpp',
+    'null.hpp',
     'scalar.hpp',
     'string.hpp',
     'tag.hpp',
