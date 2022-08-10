@@ -28,5 +28,4 @@ void bind_string(py::module& m)
         .def(py::init<const std::string&>())
 
         ;
-
 }
