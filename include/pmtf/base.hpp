@@ -64,7 +64,7 @@ private:
 Pmt class is a collection of base_buffers.  This makes it easy for us to work
 with collections of pmts like maps and vectors.
 */
-struct pmt {
+class pmt {
 public:
     // Constructors
     /*!
