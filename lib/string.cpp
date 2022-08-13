@@ -45,9 +45,9 @@ namespace pmtf {
     }
 
 
-    template <> pmt::pmt<string>(const string& x) { *this = x.get_pmt_buffer(); }
-    template <> pmt::pmt<std::string>(const std::string& x) { *this = string(x).get_pmt_buffer(); }
-    template <> pmt::pmt<char>(const char* x) { *this = string(x).get_pmt_buffer(); }
+    template <> pmt::pmt(const string& x) { *this = x.get_pmt_buffer(); }
+    template <> pmt::pmt(const std::string& x) { *this = string(x).get_pmt_buffer(); }
+    template <> pmt::pmt(const char* x) { *this = string(x).get_pmt_buffer(); }
 
 
     template <> pmt& pmt::operator=<std::string>(const std::string& x)

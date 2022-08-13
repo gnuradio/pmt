@@ -95,7 +95,7 @@ using IsTag = std::enable_if_t<std::is_same_v<tag, T>, bool>;
 template <class T>
 using IsNotTag = std::enable_if_t<!std::is_same_v<tag, T>, bool>;
 
-template <> inline pmt::pmt<tag>(const tag& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt(const tag& x) { *this = x.get_pmt_buffer(); }
 
 template <class T>
 bool tag::operator==(const T& other) const {
