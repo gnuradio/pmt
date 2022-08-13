@@ -12,6 +12,12 @@ python3_dep = dependency('python3', required : get_option('enable_python'))
 py3_inst = import('python').find_installation('python3')
 py3 = py3_inst
 pybind11_dep = dependency('pybind11', required : get_option('enable_python'))
+# For pybind11, if version < 2.4.4 then we need to add -fsized-deallocation flag
+if pybind11_dep.found() and meson.get_compiler('cpp').get_id() == 'clang'
+  if pybind11_dep.version().version_compare('<2.4.4')
+     add_global_arguments('-fsized-deallocation', language: 'cpp')
+  endif
+endif
 flatc = find_program('flatc', version : '>=2.0')
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 
