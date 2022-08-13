@@ -153,7 +153,7 @@ public:
         // TODO: implement at
         return data()[n];
     }
-    const reference operator[] (size_type n) const {
+    const_reference operator[] (size_type n) const {
         return data()[n];
     }
     void resize(size_type n) {
@@ -294,10 +294,10 @@ func(std::complex<double>)\
 func(pmtf::pmt)
 
 #define VectorPmt(T) \
-template <> inline pmt::pmt<std::vector<T>>(const std::vector<T>& x) \
+template <> inline pmt::pmt(const std::vector<T>& x) \
     { *this = vector<T>(x).get_pmt_buffer(); } \
-template <> inline pmt::pmt<vector<T>>(const vector<T>& x) { *this = x.get_pmt_buffer(); } \
-template <> inline pmt::pmt<gsl::span<T>>(const gsl::span<T>& x) { *this = vector<T>(x.begin(), x.end()).get_pmt_buffer(); } \
+template <> inline pmt::pmt(const vector<T>& x) { *this = x.get_pmt_buffer(); } \
+template <> inline pmt::pmt(const gsl::span<T>& x) { *this = vector<T>(x.begin(), x.end()).get_pmt_buffer(); } \
 template <> inline pmt& pmt::operator=<vector<T>>(const vector<T>& x) \
     { return operator=(x.get_pmt_buffer()); } \
 template <> inline pmt& pmt::operator=<std::vector<T>>(const std::vector<T>& x) \
@@ -383,5 +383,5 @@ bool operator!=(const U& y, const vector_wrap& x) {
     return x.operator!=(y);
 }
 
-template <> inline pmt::pmt<vector_wrap>(const vector_wrap& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt(const vector_wrap& x) { *this = x.get_pmt_buffer(); }
 } // namespace pmtf

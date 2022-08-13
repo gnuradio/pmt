@@ -151,9 +151,9 @@ using IsMap = std::enable_if_t<std::is_same_v<map, T>, bool>;
 template <class T>
 using IsNotMap = std::enable_if_t<!std::is_same_v<map, T>, bool>;
 
-template <> inline pmt::pmt<map>(const map& x) { *this = x.get_pmt_buffer(); }
+template <> inline pmt::pmt(const map& x) { *this = x.get_pmt_buffer(); }
 
-template <> inline pmt::pmt<std::map<std::string, pmt>>(const std::map<std::string, pmt>& x) {
+template <> inline pmt::pmt(const std::map<std::string, pmt>& x) {
     *this = map(x).get_pmt_buffer();
 }
 
