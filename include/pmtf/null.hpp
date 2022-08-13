@@ -56,7 +56,7 @@ private:
 template <class U>
 using IsNotPmtNull = std::enable_if_t<!std::is_same_v<null, U>, bool>;
 
-template <> inline pmt::pmt<null>(const null& x)
+template <> inline pmt::pmt(const null& x)
     { operator=(x.get_pmt_buffer()); }
 
 
@@ -64,7 +64,7 @@ template <> inline pmt::pmt<null>(const null& x)
 template <class U>
 bool null::operator==(const U& y) const {
     // U is a plain old data type (scalar<float> == float)
-    if constexpr(std::is_same_v<null, U> || std::is_same_v<nullptr_t, U>)
+    if constexpr(std::is_same_v<null, U> || std::is_same_v<std::nullptr_t, U>)
         return true;
     else if constexpr(std::is_same_v<U, pmt>)
         return y.data_type() == data_type();
