@@ -72,7 +72,7 @@ bool null::operator==(const U& y) const {
 }
 
 // Reversed case.  This allows for x == y and y == x
-template <class U, IsNotPmtNull<U> = true>
+template <class U, typename = IsNotPmtNull<U>, typename = IsNotPmt<U>>
 bool operator==(const U& y, const null& x) {
     return x.operator==(y);
 }

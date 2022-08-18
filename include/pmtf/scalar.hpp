@@ -173,13 +173,13 @@ bool scalar<T>::operator==(const U& y) const {
 }
 
 // Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsNotScalarT<T,U> = true>
+template <class T, class U, typename = IsNotScalarT<T,U>, typename = IsNotPmt<U>, typename = IsNotPmtDerived<U>>
 bool operator==(const U& y, const scalar<T>& x) {
     return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class T, class U, IsNotScalarT<T,U> = true>
+template <class T, class U, typename = IsNotScalarT<T,U>, typename = IsNotPmt<U>, typename = IsNotPmtDerived<U>>
 bool operator!=(const U& y, const scalar<T>& x) {
     return operator!=(x,y);
 }

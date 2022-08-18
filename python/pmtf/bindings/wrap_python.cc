@@ -27,7 +27,7 @@ namespace py = pybind11;
 // PYBIND11_MAKE_OPAQUE(std::map<std::string, pmtf::pmt>)
 
 namespace pmtf {
-using pmt_variant_t = std::variant<nullptr_t,
+using pmt_variant_t = std::variant<std::nullptr_t,
                                    std::string,
                                    bool,
                                    int8_t,
