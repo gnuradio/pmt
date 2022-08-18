@@ -39,6 +39,8 @@ struct is_pmt_derived<
 
 template <typename T>
 using IsNotPmtDerived = std::enable_if_t<!is_pmt_derived<T>::value, bool>;
+template <typename T>
+using IsPmtDerived = std::enable_if_t<is_pmt_derived<T>::value, bool>;
 
 // There are times where we need to do something different if the data is
 // complex.  These structs and types make is easy for us to distinguish them.

@@ -249,35 +249,6 @@ std::ostream& operator<<(std::ostream& os, const vector<T>& value) {
     return os;
 }
 
-template <class T>
-template <class U>
-bool vector<T>::operator==(const U& other) const {
-    // We can only compare true against containers
-    if constexpr(is_vector_like_container<U>::value) {
-        if constexpr(std::is_same_v<typename U::value_type, T>) {
-            if (size() != other.size()) return false;
-            return std::equal(begin(), end(), other.begin());
-        }
-        return false;
-    } else if constexpr(std::is_same_v<U, pmt>) {
-        return other.operator==(*this);
-    } else {
-        return false;
-    }
-}
-
-// Reversed case.  This allows for x == y and y == x
-template <class T, class U, IsNotVectorT<T, U> = true>
-bool operator==(const U& y, const vector<T>& x) {
-    return x.operator==(y);
-}
-
-// Reversed Not equal operator
-template <class T, class U, IsNotVectorT<T, U> = true>
-bool operator!=(const U& y, const vector<T>& x) {
-    return operator!=(x,y);
-}
-
 #define Apply(func) \
 func(uint8_t) \
 func(uint16_t) \
@@ -370,15 +341,46 @@ std::ostream& operator<<(std::ostream& os, const vector_wrap& value);
 template <class U>
 using IsNotVectorWrap = std::enable_if_t<!std::is_same_v<vector_wrap, U>, bool>;
 
+template <class T>
+template <class U>
+bool vector<T>::operator==(const U& other) const {
+    // We can only compare true against containers
+    if constexpr(std::is_same_v<U, vector_wrap>) {
+        return other.operator==(*this);
+    } else if constexpr(is_vector_like_container<U>::value) {
+        if constexpr(std::is_same_v<typename U::value_type, T>) {
+            if (size() != other.size()) return false;
+            return std::equal(begin(), end(), other.begin());
+        }
+        return false;
+    } else if constexpr(std::is_same_v<U, pmt>) {
+        return other.operator==(*this);
+    } else {
+        return false;
+    }
+}
 
 // Reversed case.  This allows for x == y and y == x
-template <class U, IsNotVectorWrap<U> = true>
+template <class T, class U, typename = IsNotVectorT<T, U>, typename = IsNotPmt<U>, typename =  IsNotVectorWrap<U> >
+bool operator==(const U& y, const vector<T>& x) {
+    return x.operator==(y);
+}
+
+// Reversed Not equal operator
+template <class T, class U, typename = IsNotVectorT<T, U>, typename = IsNotPmt<U>, typename =  IsNotVectorWrap<U> >
+bool operator!=(const U& y, const vector<T>& x) {
+    return operator!=(x,y);
+}
+
+
+// Reversed case.  This allows for x == y and y == x
+template <class U, typename = IsNotVectorWrap<U>, typename = IsNotPmt<U>>
 bool operator==(const U& y, const vector_wrap& x) {
     return x.operator==(y);
 }
 
 // Reversed Not equal operator
-template <class U, IsNotVectorWrap<U> = true>
+template <class U, typename = IsNotVectorWrap<U>, typename = IsNotPmt<U>>
 bool operator!=(const U& y, const vector_wrap& x) {
     return x.operator!=(y);
 }
