@@ -186,9 +186,9 @@ void bind_pmt(py::module& m)
                  case pmtf::Data::VectorUInt64:
                      ret = _pmt_to_np<uint64_t>(obj);
                      break;
-                     //   case pmtf::Data::ScalarBool:
-                     //     ret = pmtf::scalar<bool>(obj).value();
-                     //     break;
+                 case pmtf::Data::ScalarBool:
+                     ret = pmtf::scalar<bool>(obj).value();
+                     break;
                  case pmtf::Data::ScalarFloat32:
                      ret = pmtf::scalar<float>(obj).value();
                      break;
