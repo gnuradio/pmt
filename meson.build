@@ -9,8 +9,7 @@ rt_dep = cc.find_library('rt', required : false)
 c_available = add_languages('c', required : true)
 python3_dep = dependency('python3', required : get_option('enable_python'))
 # Import python3 meson module which is used to find the Python dependencies.
-py3_inst = import('python').find_installation('python3')
-py3 = py3_inst
+py3 = import('python').find_installation('python3')
 pybind11_dep = dependency('pybind11', required : get_option('enable_python'))
 # For pybind11, if version < 2.4.4 then we need to add -fsized-deallocation flag
 if pybind11_dep.found() and meson.get_compiler('cpp').get_id() == 'clang'
@@ -39,5 +38,5 @@ pkg.generate(libraries : libs,
              version : meson.project_version(),
              name : 'libpmtf',
              filebase : 'pmtf',
-             install_dir : 'lib/pkgconfig',
+             install_dir : get_option('libdir') / 'pkgconfig',
              description : 'PMTF - Polymorphic Types with Flatbuffers')

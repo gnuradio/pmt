@@ -9,4 +9,4 @@ configure_file(copy: true,
 )
 endforeach
 
-py3_inst.install_sources(files('__init__.py'), subdir : join_paths('pmtf'))
+py3.install_sources(files('__init__.py'), subdir : join_paths('pmtf'), pure : (get_option('libdir') == 'lib'))
