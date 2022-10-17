@@ -13,6 +13,7 @@
 #include <pmtf/wrap.hpp>
 #include <sstream>
 
+#include <pmtv/base.hpp>
 using namespace pmtf;
 
 using testing_types = ::testing::Types<uint8_t,
@@ -68,6 +69,12 @@ std::complex<double> PmtScalarFixture<std::complex<double>>::zero_value()
 }
 
 TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
+
+TYPED_TEST(PmtScalarFixture, PmtvScalarNull)
+{
+    pmtv::pmt x(TypeParam(0));
+    EXPECT_EQ(x, TypeParam(0));
+}
 
 TYPED_TEST(PmtScalarFixture, PmtScalarNull)
 {
