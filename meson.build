@@ -2,7 +2,7 @@ project('pmt', 'cpp',
   version : '0.0.2',
   meson_version: '>=0.52.0',
   license : 'GPLv3',
-  default_options : ['cpp_std=c++17'])
+  default_options : ['cpp_std=c++20'])
 
 cc = meson.get_compiler('cpp')
 rt_dep = cc.find_library('rt', required : false)
@@ -24,6 +24,7 @@ gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 
 subdir('include/pmtf')
+subdir('include/pmtv')
 subdir('lib')
 if get_option('enable_testing')
   subdir('test')

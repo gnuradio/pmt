@@ -15,6 +15,8 @@
 #include <pmtf/vector.hpp>
 #include <pmtf/wrap.hpp>
 
+#include <pmtv/base.hpp>
+
 using namespace pmtf;
 
 TEST(Pmt, get_as) {
