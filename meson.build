@@ -18,12 +18,10 @@ if pybind11_dep.found() and meson.get_compiler('cpp').get_id() == 'clang'
      add_global_arguments('-fsized-deallocation', language: 'cpp')
   endif
 endif
-flatc = find_program('flatc', version : '>=2.0')
-gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 
+gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 
-subdir('include/pmtf')
 subdir('include/pmtv')
 subdir('lib')
 if get_option('enable_testing')
@@ -33,12 +31,12 @@ subdir('bench')
 subdir('python/pmtf')
 
 pkg = import('pkgconfig')
-libs = [pmtf_lib]     # the library/libraries users need to link against
+libs = [pmt_lib]     # the library/libraries users need to link against
 h = ['.'] # subdirectories of ${prefix}/${includedir} to add to header path
 pkg.generate(libraries : libs,
              subdirs : h,
              version : meson.project_version(),
-             name : 'libpmtf',
-             filebase : 'pmtf',
+             name : 'libpmt',
+             filebase : 'pmt',
              install_dir : 'lib/pkgconfig',
-             description : 'PMTF - Polymorphic Types with Flatbuffers')
+             description : 'PMT - Polymorphic Types')
