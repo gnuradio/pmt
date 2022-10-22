@@ -32,8 +32,8 @@ template <typename T>
 class PmtScalarFixture : public ::testing::Test
 {
 public:
-    T get_value() { return (T)4; }
-    T zero_value() { return (T)0; }
+    T get_value() { return T(4); }
+    T zero_value() { return T(0); }
 };
 
 
@@ -50,17 +50,6 @@ template <>
 std::complex<double> PmtScalarFixture<std::complex<double>>::get_value()
 {
     return std::complex<double>(4.1, -4.1);
-}
-
-template <>
-std::complex<float> PmtScalarFixture<std::complex<float>>::zero_value()
-{
-    return std::complex<float>(0, 0);
-}
-template <>
-std::complex<double> PmtScalarFixture<std::complex<double>>::zero_value()
-{
-    return std::complex<double>(0, 0);
 }
 
 TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
@@ -99,35 +88,35 @@ TYPED_TEST(PmtScalarFixture, PmtScalarConstruction)
     EXPECT_EQ(d == value, true);
     EXPECT_EQ(d == a, true);
     EXPECT_EQ(value == d, true);
-
+   
     pmt e = value;
     EXPECT_EQ(a == e, true);
     EXPECT_EQ(e == value, true);
     EXPECT_EQ(e == b, true);
 }
 
-// TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
-//     // Get the value, change the value
-//     auto value = this->get_value();
-//     pmt x(value);
-//     EXPECT_EQ(x, value);
-//     value *= 2;
-//     x = value;
-//     EXPECT_EQ(x, value);
-// }
+TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
+    // Get the value, change the value
+    auto value = this->get_value();
+    pmt x(value);
+    EXPECT_EQ(x, value);
+    value *= 2;
+    x = value;
+    EXPECT_EQ(x, value);
+}
 
 
 
-// TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
-//     // Send to string stream and make sure it works.
-//     auto value = this->get_value();
-//     pmt x(value);
-//     std::stringstream ss;
-//     std::stringstream ss_check;
-//     ss << x;
-//     // ss_check << value;
-//     // EXPECT_EQ(ss.str(), ss_check.str());
-// }
+TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
+    // Send to string stream and make sure it works.
+    auto value = this->get_value();
+    pmt x(value);
+    std::stringstream ss;
+    std::stringstream ss_check;
+    ss << x;
+    ss_check << value;
+    EXPECT_EQ(ss.str(), ss_check.str());
+}
 
 
 TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
@@ -174,4 +163,9 @@ TYPED_TEST(PmtScalarFixture, base64)
     EXPECT_EQ(x == y, true);
 }
 
-
+TYPED_TEST(PmtScalarFixture, element_size)
+{
+    pmt x = this->get_value();
+    EXPECT_EQ(x.elements(), 1);
+    EXPECT_EQ(x.bytes_per_element(), sizeof(TypeParam));
+}
