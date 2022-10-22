@@ -19,8 +19,8 @@ using self_variant_base =
     nullptr_t,
     Ts...,
     std::shared_ptr<std::vector<Ts>>...,
-    // std::shared_ptr<std::vector<self_variant<Ts...>>>,
-    // std::shared_ptr<std::map<std::string, self_variant<Ts...>>>,
+    std::shared_ptr<std::vector<self_variant<Ts...>>>,
+    std::shared_ptr<std::map<std::string, self_variant<Ts...>>>,
     std::string
   >;
 
@@ -43,14 +43,6 @@ using _pmt_storage = self_variant<
     float, double, std::complex<float>, std::complex<double>
 >;
 
-
-
-using check2 = std::variant<
-    uint8_t, uint16_t, uint32_t, uint64_t,
-    int8_t, int16_t, int32_t, int64_t,
-    float, double, std::complex<float>, std::complex<double>
->;
-
 template <typename T>
 concept PmtNull = std::is_same_v<T, nullptr_t>;
 
@@ -68,6 +60,14 @@ concept PmtMap = std::is_same_v<T, std::map<std::string, _pmt_storage>>;
 
 template <typename T>
 concept PmtVector = std::is_same_v<T, std::vector<_pmt_storage>>;
+
+template <typename T>
+concept associative_array = requires {
+    typename T::key_type;
+    typename T::value_type;
+    typename T::begin;
+    typename T::end;
+};
 
 template <typename T> struct is_shared_ptr : std::false_type {};
 template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};

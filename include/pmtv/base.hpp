@@ -13,6 +13,8 @@
 #include <vector>
 #include <variant>
 #include <ranges>
+#include <span>
+#include <ostream>
 #include "base64/base64.h"
 
 namespace pmtv {
@@ -57,8 +59,30 @@ public:
     std::string to_base64() const;
     static pmtv::pmt from_base64(const std::string& encoded_str);
     // Data data_type() const;
-    // size_t elements() const;
-    // size_t bytes_per_element() const {
+    size_t elements() const noexcept {
+        return std::visit([](const auto& arg) -> size_t {
+            using T = std::decay_t<decltype(arg)>;
+            // All of the container types use a shared ptr.
+            if constexpr(IsSharedPtr<T>) return arg->size();
+            else if constexpr(std::same_as<T, std::string>) return arg.size();
+            else return 1; }
+            , _value.base()); }
+    size_t bytes_per_element() const noexcept {
+        return std::visit([](const auto& arg) -> size_t {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr(Scalar<T>) return sizeof(T);
+            else if constexpr(IsSharedPtr<T>) {
+                if constexpr(UniformVector<typename T::element_type>) {
+                    using Tv = typename T::element_type;
+                    return sizeof(typename Tv::value_type);
+                }
+                // Not sure what to do for vector/map of pmts.  I think this is correct.
+                return sizeof(_pmt_storage);
+            }
+            else if constexpr(std::same_as<std::nullptr_t, T>) return 0;
+            else if constexpr(std::same_as<T, std::string>) return sizeof(typename T::value_type);
+            return sizeof(T); }
+            , _value.base()); }
 
     //! Equality Comparisons
     // Declared as class members so that we don't do implicit conversions.
@@ -74,6 +98,8 @@ public:
             else throw std::runtime_error("Invalid PMT Cast");
         }, _value.base()); }
 
+    _pmt_storage storage() const noexcept { return _value; }
+
 protected:
     _pmt_storage _value;
 };
@@ -86,11 +112,17 @@ pmt::pmt(const T& other) {
     else if constexpr(std::is_same_v<T, std::string>) {
         _value = other;
     }
-    // else if constexpr(std::is_same_v<T, std::map>) {
-    //     _value = std::make_shared<std::vector<typename T::value_type>>(other.begin(), other.end());
-    // }
     else if constexpr(UniformVector<T>) {
+        // Vector of uniform arithmetic types
         _value = std::make_shared<std::vector<typename T::value_type>>(other.begin(), other.end());
+    }
+    else if constexpr(associative_array<T>) {
+        // Map or hash table
+        _value = std::make_shared<std::map<std::string, _pmt_storage>>(other.begin(), other.end());
+    }
+    else if constexpr(std::ranges::contiguous_range<T>) {
+        // Vector of non-uniform or non arithmetic types.
+        _value = std::make_shared<std::vector<_pmt_storage>>(other.begin(), other.end());
     }
     else {
         _value = nullptr;
@@ -330,6 +362,61 @@ pmt pmt::from_base64(const std::string& encoded_str)
     Base64decode(bufplain.data(), encoded_str.data());
     std::stringbuf sb(bufplain);
     return deserialize(sb); 
+}
+
+template <typename T>
+concept IsPmt = std::is_same_v<T, pmt>;
+
+template <IsPmt P>
+std::ostream& operator<<(std::ostream& os, const P& value);
+
+template <class T>
+std::ostream& _ostream_pmt_vector(std::ostream& os, const std::span<T>& value) {
+    os << "[ ";
+    bool first = true;
+    for (auto& v: value) {
+        if (!first) os << ", ";
+        first = false;
+        os << v;
+    }
+    os << " ]";
+    return os;
+}
+
+template <PmtMap T>
+std::ostream& _ostream_pmt_map(std::ostream& os, const T& value) {
+    os << "{ ";
+    bool first = true;
+    for (const auto& [k, v]: value) {
+        if (!first) os << ", ";
+        first = false;
+        os << k << ": " << v;
+    }
+    os << " }";
+    return os;
+}
+
+// Do the template here, so that this is overly aggressive.  Without it, the
+// function will be called on anything that can be cast to a pmt.
+template <IsPmt P>
+std::ostream& operator<<(std::ostream& os, const P& value) {
+    return std::visit([&os](const auto& arg) -> std::ostream& {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr(Complex<T>) os << "(" << arg.real() << "," << arg.imag() << ")";
+        else if constexpr(Scalar<T>) os << arg;
+        else if constexpr(IsSharedPtr<T>) {
+            if constexpr(UniformVector<typename T::element_type>) {
+                _ostream_pmt_vector(os, std::span(*arg));
+            } else if constexpr(PmtVector<typename T::element_type>) {
+                //_ostream_pmt_vector(os, std::span(*arg));
+            } else if constexpr(PmtMap<typename T::element_type>) {
+                //_ostream_pmt_map(os, *arg);
+            }
+        }
+        else if constexpr(std::same_as<std::nullptr_t, T>) os << "null";
+        else if constexpr(std::same_as<T, std::string>) os << arg;
+        return os; }
+        , value.storage().base());
 }
 
 
