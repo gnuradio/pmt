@@ -8,15 +8,12 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include <pmtf/base.hpp>
-#include <pmtf/vector.hpp>
-#include <pmtf/scalar.hpp>
-#include <pmtf/wrap.hpp>
+#include <pmtv/uniform_vector.hpp>
 
 #include <list>
 #include <map>
 
-using namespace pmtf;
+using namespace pmtv;
 
 using testing_types = ::testing::Types<uint8_t,
                                        int8_t,
@@ -90,6 +87,60 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 TYPED_TEST(PmtVectorFixture, VectorConstructors)
 {
     // Empty Constructor
+    uniform_vector<TypeParam> empty_vec;
+    EXPECT_EQ(empty_vec.size(), 0);
+
+    int num_values = this->num_values_;
+    // Size Constructor ( but uninit memory)
+    uniform_vector<TypeParam> sized_vec(num_values);
+    EXPECT_EQ(sized_vec.size(), num_values);
+
+    // Fill Constructor
+    uniform_vector<TypeParam> fill_vec(num_values, this->nonzero_value());
+    EXPECT_EQ(fill_vec.size(), num_values);
+    for (const auto& x: fill_vec) {
+        EXPECT_EQ(x, this->nonzero_value());
+    }
+
+    // Init from std::vector
+    std::vector<TypeParam> vec(this->num_values_);
+    for (auto i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(i);
+    }
+
+    // Range Constructor
+    uniform_vector<TypeParam> range_vec(vec.begin(), vec.end());
+    EXPECT_EQ(range_vec.size(), num_values);
+    for (size_t i = 0; i < range_vec.size(); i++) {
+        EXPECT_EQ(range_vec[i], vec[i]);
+    }
+
+    // Copy from std::vector
+    auto pmt_vec = uniform_vector<TypeParam>(vec);
+    EXPECT_EQ(pmt_vec == vec, true);
+
+    // // Copy Constructor
+    // auto a = uniform_vector<TypeParam>(pmt_vec);
+    // EXPECT_EQ(a == vec, true);
+    // EXPECT_EQ(a == pmt_vec, true);
+
+    // // Assignment operator from std::vector
+    // a = vec;
+    // EXPECT_EQ(a == vec, true);
+    // EXPECT_EQ(a == pmt_vec, true);
+
+    // a = pmt_vec;
+    // EXPECT_EQ(a == vec, true);
+    // EXPECT_EQ(a == pmt_vec, true);
+
+    // TODO: Add in Move contstructor
+}
+
+
+#if 0
+TYPED_TEST(PmtVectorFixture, VectorConstructors)
+{
+    // Empty Constructor
     vector<TypeParam> empty_vec;
     EXPECT_EQ(empty_vec.size(), 0);
     int num_values = this->num_values_;
@@ -138,6 +189,7 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 
     // TODO: Add in Move contstructor
 }
+
 
 TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
 {
@@ -290,3 +342,4 @@ TYPED_TEST(PmtVectorFixture, vector_wrapper)
     // Pointer to the beginning
 
 }
+#endif

@@ -1,23 +1,17 @@
 incdir = include_directories('../include')
 
 
-pmtf_sources = [
-	'base.cpp', 
-	'scalar.cpp',
-	'vector.cpp',
-	'string.cpp', 
-	'map.cpp', 
-	'wrap.cpp',
+pmt_sources = [
 	'base64/base64.c'
 ]
-pmtf_lib = library(
-	'pmtf', 
-	pmtf_sources, 
+pmt_lib = library(
+	'pmt', 
+	pmt_sources, 
 	include_directories : incdir, 
 	link_language : 'cpp',
 	install : true, 
-	dependencies : [pmt_gen_h_dep]
+	dependencies : []
 )
 
-pmtf_dep = declare_dependency(include_directories : incdir,
-					   link_with : pmtf_lib)
+pmt_dep = declare_dependency(include_directories : incdir,
+					   link_with : pmt_lib)
