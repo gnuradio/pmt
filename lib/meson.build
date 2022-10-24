@@ -20,4 +20,5 @@ pmtf_lib = library(
 )
 
 pmtf_dep = declare_dependency(include_directories : incdir,
-					   link_with : pmtf_lib)
+					   link_with : pmtf_lib,
+					   dependencies : [pmt_gen_h_dep])
