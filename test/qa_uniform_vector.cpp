@@ -36,7 +36,7 @@ public:
     T get_value(int i) { return (T)i; }
     T zero_value() { return (T)0; }
     T nonzero_value() { return (T)17; }
-    static const int num_values_ = 100;
+    static const int num_values_ = 10;
 };
 
 
@@ -119,62 +119,8 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
     auto pmt_vec = uniform_vector<TypeParam>(vec);
     EXPECT_EQ(pmt_vec == vec, true);
 
-    // // Copy Constructor
-    // auto a = uniform_vector<TypeParam>(pmt_vec);
-    // EXPECT_EQ(a == vec, true);
-    // EXPECT_EQ(a == pmt_vec, true);
-
-    // // Assignment operator from std::vector
-    // a = vec;
-    // EXPECT_EQ(a == vec, true);
-    // EXPECT_EQ(a == pmt_vec, true);
-
-    // a = pmt_vec;
-    // EXPECT_EQ(a == vec, true);
-    // EXPECT_EQ(a == pmt_vec, true);
-
-    // TODO: Add in Move contstructor
-}
-
-
-#if 0
-TYPED_TEST(PmtVectorFixture, VectorConstructors)
-{
-    // Empty Constructor
-    vector<TypeParam> empty_vec;
-    EXPECT_EQ(empty_vec.size(), 0);
-    int num_values = this->num_values_;
-
-    // Size Constructor ( but uninit memory)
-    vector<TypeParam> sized_vec(num_values);
-    EXPECT_EQ(sized_vec.size(), num_values);
-
-    // Fill Constructor
-    vector<TypeParam> fill_vec(num_values, this->nonzero_value());
-    EXPECT_EQ(fill_vec.size(), num_values);
-    for (const auto& x: fill_vec) {
-        EXPECT_EQ(x, this->nonzero_value());
-    }
-
-    // Init from std::vector
-    std::vector<TypeParam> vec(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
-    }
-
-    // Range Constructor
-    vector<TypeParam> range_vec(vec.begin(), vec.end());
-    EXPECT_EQ(range_vec.size(), num_values);
-    for (size_t i = 0; i < range_vec.size(); i++) {
-        EXPECT_EQ(range_vec[i], vec[i]);
-    }
-
-    // Copy from std::vector
-    auto pmt_vec = vector<TypeParam>(vec);
-    EXPECT_EQ(pmt_vec == vec, true);
-
     // Copy Constructor
-    auto a = vector<TypeParam>(pmt_vec);
+    auto a = uniform_vector<TypeParam>(pmt_vec);
     EXPECT_EQ(a == vec, true);
     EXPECT_EQ(a == pmt_vec, true);
 
@@ -191,6 +137,7 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 }
 
 
+
 TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
 {
 
@@ -203,13 +150,13 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
         vec_squared[i] = vec[i] * vec[i];
     }
     // Init from std::vector
-    auto pmt_vec = vector<TypeParam>(vec);
+    auto pmt_vec = uniform_vector<TypeParam>(vec);
     for (auto& xx : pmt_vec) {
         xx *= xx;
     }
     EXPECT_EQ(pmt_vec == vec_squared, true);
 
-    pmt_vec = vector<TypeParam>(vec);
+    pmt_vec = uniform_vector<TypeParam>(vec);
     for (auto& xx : pmt_vec) {
         xx += xx;
     }
@@ -222,11 +169,11 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     for (auto i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(i);
     }
-    vector<TypeParam> x(vec);
+    uniform_vector<TypeParam> x(vec);
     std::stringbuf sb;
-    x.get_pmt_buffer().serialize(sb);
+    x.serialize(sb);
     auto y = pmt::deserialize(sb);
-    EXPECT_EQ(x.value(), vector<TypeParam>(y).value());
+    EXPECT_EQ(x == y, true);
 }
 
 /*TYPED_TEST(PmtVectorFixture, VectorWrites)
@@ -252,16 +199,17 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
 
 }*/
 
+
 TYPED_TEST(PmtVectorFixture, OtherConstructors) {
 
     // Check the other constructors
-    vector<TypeParam> vec1(4);
-    EXPECT_EQ(vec1.size(), 4);
+    uniform_vector<TypeParam> vec1(4);
+    EXPECT_TRUE(vec1.size() == 4);
 
-    vector<TypeParam> vec2(4, this->nonzero_value());
+    uniform_vector<TypeParam> vec2(4, this->nonzero_value());
     std::cout << vec2.size() << std::endl;
     for (auto& e: vec2)
-        EXPECT_EQ(e, this->nonzero_value());
+        EXPECT_TRUE(e == this->nonzero_value());
 
 
     std::vector<TypeParam> data(this->num_values_);
@@ -269,15 +217,17 @@ TYPED_TEST(PmtVectorFixture, OtherConstructors) {
         data[i] = this->get_value(i);
     }
 
-    vector<TypeParam> vec3(data.begin(), data.end());
-    EXPECT_EQ(vec3.size(), data.size());
+    uniform_vector<TypeParam> vec3(data.begin(), data.end());
+    EXPECT_TRUE(vec3.size() == data.size());
     size_t i = 0;
     for (auto& e: vec3)
-        EXPECT_EQ(e, data[i++]);
+        EXPECT_TRUE(e == data[i++]);
 
-    vector<TypeParam> vec4(vec3);
-    EXPECT_EQ(vec3.value(), vec4.value());
+    uniform_vector<TypeParam> vec4(vec3);
+    EXPECT_TRUE(vec3 == vec4);
 }
+
+
 
 TYPED_TEST(PmtVectorFixture, get_as)
 {
@@ -287,26 +237,26 @@ TYPED_TEST(PmtVectorFixture, get_as)
     }
     pmt x = vec;
     // Make sure that we can get the value back out
-    auto y = get_as<std::vector<TypeParam>>(x);
-    EXPECT_EQ(x, y);
+    auto y = std::vector<TypeParam>(x);
+    EXPECT_TRUE(x == y);
 
-    // Should also work as a span
-    auto z = get_as<gsl::span<TypeParam>>(x);
-    EXPECT_EQ(x, std::vector<TypeParam>(z.begin(), z.end()));
+    // // Should also work as a span
+    // auto z = std::span<TypeParam>(x);
+    // EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
     
-    // Should also work as a list
-    auto q = get_as<std::list<TypeParam>>(x);
-    EXPECT_EQ(x, std::vector<TypeParam>(q.begin(), q.end()));
+    // // Should also work as a list
+    // auto q = std::list<TypeParam>(x);
+    // EXPECT_TRUE(x == std::vector<TypeParam>(q.begin(), q.end()));
 
-    // Fail if wrong type of vector or non vector type
-    EXPECT_THROW(get_as<int>(x), ConversionError);
-    if constexpr(std::is_same_v<TypeParam, int>)
-        EXPECT_THROW(get_as<std::vector<double>>(x), ConversionError);
-    else
-        EXPECT_THROW(get_as<std::vector<int>>(x), ConversionError);
+    // // Fail if wrong type of vector or non vector type
+    // EXPECT_THROW(int(x), ConversionError);
+    // if constexpr(std::is_same_v<TypeParam, int>)
+    //     EXPECT_THROW(std::vector<double>(x), ConversionError);
+    // else
+    //     EXPECT_THROW(std::vector<int>(x), ConversionError);
 
-    using mtype = std::map<std::string, pmt>;
-    EXPECT_THROW(get_as<mtype>(x), ConversionError);
+    // using mtype = std::map<std::string, pmt>;
+    // EXPECT_THROW(mtype(x), ConversionError);
     
 }
 
@@ -319,9 +269,10 @@ TYPED_TEST(PmtVectorFixture, base64)
     auto encoded_str = pmt(x).to_base64();
     auto y = pmt::from_base64(encoded_str);
 
-    EXPECT_EQ(x, y);
+    EXPECT_TRUE(x == y);
 }
 
+#if 0
 TYPED_TEST(PmtVectorFixture, vector_wrapper)
 {
     std::vector<TypeParam> vec(this->num_values_);

@@ -94,6 +94,12 @@ public:
     explicit operator T() const {
         return std::visit([](const auto& arg) -> T {
             using U = std::decay_t<decltype(arg)>;
+            if constexpr (UniformVectorInsidePmt<U>) {
+                if constexpr(std::constructible_from<T, typename U::element_type>) {
+                return T(*arg);
+                }
+                else throw std::runtime_error("Invalid PMT Cast");
+            }
             if constexpr(std::constructible_from<T, U>) return T(arg);
             else throw std::runtime_error("Invalid PMT Cast");
         }, _value.base()); }
@@ -167,13 +173,24 @@ bool PmtEqual(const T& arg, const U& other) {
             return arg == other;
         }
     }
-    else if constexpr(IsSharedPtr<T> && UniformVector<U>) {
+    else if constexpr(UniformVectorInsidePmt<T> && UniformVectorInsidePmt<U>) {
+        return std::visit([&arg, &other]() -> bool {
+            return PmtEqual(*arg, *other); }
+            );
+    }
+    else if constexpr(UniformVectorInsidePmt<T> && UniformVector<U>) {
         return std::visit([&arg, &other]() -> bool {
             return PmtEqual(*arg, other); }
             );
     }
+    else if constexpr(UniformVector<T> && UniformVectorInsidePmt<U>) {
+        return std::visit([&arg, &other]() -> bool {
+            return PmtEqual(arg, *other); }
+            );
+    }
     else if constexpr(UniformVector<T> && UniformVector<U>) {
-        if constexpr(std::is_same_v<T, U>) {
+        // if constexpr(std::is_same_v<T, U>) {
+        if constexpr(std::is_same_v<typename T::value_type, typename U::value_type>) {
             if (arg.size() == other.size()) {
                 return std::equal(arg.begin(), arg.end(), other.begin());
             }
@@ -183,11 +200,12 @@ bool PmtEqual(const T& arg, const U& other) {
             }
         }
         else {
-            return false;
+            // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
+            return PmtEqual(arg, other);
         }
     }
     else {
-        std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
+        // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
         return false;
     }
     // else if constexpr(std::is_convertible_v<T, U>) return arg == other;
@@ -243,10 +261,12 @@ size_t pmt::serialize(std::streambuf& sb) const {
     else if (container == pmt_container_type::UNIFORM_VECTOR) {
         std::visit([&length, &sb](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
-            if constexpr(UniformVector<T>) {
-                auto id = element_type<T>();
+            if constexpr(UniformVectorInsidePmt<T>) {
+                auto id = element_type<typename T::element_type>();
                 length += sb.sputn(reinterpret_cast<const char*>(&id), 1);
-                length += sb.sputn(reinterpret_cast<const char*>(arg.data()), arg.size()*sizeof(arg[0]));
+                uint64_t sz = arg->size();
+                length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+                length += sb.sputn(reinterpret_cast<const char*>(arg->data()), arg->size()*sizeof((*arg)[0]));
             }
         }, _value.base());
     
@@ -259,8 +279,8 @@ pmt pmt::deserialize(std::streambuf& sb)
 {
     uint16_t version;
     pmt_container_type container;
-    sb.sgetn(reinterpret_cast<char*>(&version), sizeof(version));
-    sb.sgetn(reinterpret_cast<char*>(&container), sizeof(container));
+    sb.sgetn(reinterpret_cast<char*>(&version), 2);
+    sb.sgetn(reinterpret_cast<char*>(&container), 2);
 
     pmt ret;
     if (container == pmt_container_type::EMPTY) {
@@ -337,7 +357,76 @@ pmt pmt::deserialize(std::streambuf& sb)
         }
     }
     else if (container == pmt_container_type::UNIFORM_VECTOR) {
-    
+        pmt_element_type T_type;
+        sb.sgetn(reinterpret_cast<char*>(&T_type), 1);
+        uint64_t sz; 
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+
+        switch(T_type) {
+            case pmt_element_type::UINT8: {
+                std::vector<uint8_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::UINT16: {
+                std::vector<uint16_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::UINT32: {
+                std::vector<uint32_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::UINT64: {
+                std::vector<uint64_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::INT8: {
+                std::vector<int8_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::INT16: {
+                std::vector<int16_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::INT32: {
+                std::vector<int32_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::INT64: {
+                std::vector<int64_t> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::FLOAT: {
+                std::vector<float> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::DOUBLE: {
+                std::vector<double> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::COMPLEX_FLOAT: {
+                std::vector<std::complex<float>> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            } break;
+            case pmt_element_type::COMPLEX_DOUBLE: {
+                std::vector<std::complex<double>> val(sz);
+                sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+                ret = pmt(val);
+            }
+            default:{
+
+            }
+        }
     }
 
     return ret;
@@ -418,6 +507,8 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         return os; }
         , value.storage().base());
 }
+
+// Explicit cast std::vector
 
 
 } // namespace pmtv
