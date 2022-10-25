@@ -66,6 +66,9 @@ template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, _pmt_storage>>;
 
 template <typename T>
+concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
+
+template <typename T>
 concept PmtVector = std::is_same_v<T, std::vector<_pmt_storage>>;
 
 template <typename T>

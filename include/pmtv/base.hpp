@@ -106,6 +106,11 @@ public:
 
     _pmt_storage storage() const noexcept { return _value; }
 
+    operator _pmt_storage() const {
+        return storage();
+    }
+
+
 protected:
     _pmt_storage _value;
 };
@@ -122,7 +127,8 @@ pmt::pmt(const T& other) {
         // Vector of uniform arithmetic types
         _value = std::make_shared<std::vector<typename T::value_type>>(other.begin(), other.end());
     }
-    else if constexpr(associative_array<T>) {
+    //else if constexpr(associative_array<T>) {
+    else if constexpr(PmtMap<T>) {
         // Map or hash table
         _value = std::make_shared<std::map<std::string, _pmt_storage>>(other.begin(), other.end());
     }
@@ -507,6 +513,8 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         return os; }
         , value.storage().base());
 }
+
+
 
 // Explicit cast std::vector
 
