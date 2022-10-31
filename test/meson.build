@@ -8,8 +8,9 @@ TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 
 # GR namespace tests
 qa_srcs = ['qa_scalar',
-            'qa_vector',
-            'qa_vector_of_pmts'
+            'qa_uniform_vector',
+            'qa_vector_of_pmts',
+            'qa_map'
           ]
 deps = [pmt_dep,
             gtest_dep]
