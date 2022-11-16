@@ -26,7 +26,7 @@ TEST(PmtMap, PmtMapTests)
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
-    std::map<std::string, pmt> input_map({
+    std::map<std::string, _pmt_storage_base> input_map({
         { "key1", val1 },
         { "key2", val2 },
     });
