@@ -462,7 +462,7 @@ pmt pmt::from_base64(const std::string& encoded_str)
 template <typename T>
 concept IsPmt = std::is_same_v<T, pmt>;
 
-template <IsPmt P>
+template <is_same<P, pmt>>
 std::ostream& operator<<(std::ostream& os, const P& value);
 
 template <class T>
