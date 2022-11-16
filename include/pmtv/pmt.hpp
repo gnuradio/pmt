@@ -172,13 +172,13 @@ inline pmt deserialize(std::streambuf& sb)
     sb.sgetn(reinterpret_cast<char*>(&version), 2);
     sb.sgetn(reinterpret_cast<char*>(&index), 2);
     std::cout << "Deserial: " << version << " " << int(index) << std::endl;
-    for (size_t i = 0; i < std::variant_size_v<pmt>; i++) {
-        using T = std::variant_alternative_t<i, pmt>;
-        /*if constexpr(Scalar<std::variant_alternative_t<i>) {
+    /*for (size_t i = 0; i < std::variant_size_v<pmt>; i++) {
+        //using T = std::variant_alternative_t<i, pmt>;
+        if constexpr(Scalar<std::variant_alternative_t<i>) {
             if (i == index) return deserialize_val<std::variant_alternative_t<i>(sb);
-        } else if constexpr(*/
+        } else if constexpr(
         
-    }
+    }*/
     /*switch(container) {
         case pmt_element_type::UINT8: return deserialize_val<uint8_t>(sb);
         case pmt_element_type::UINT16: return deserialize_val<uint16_t>(sb);
