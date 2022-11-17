@@ -34,12 +34,21 @@ class pmt : public pmt_var_t {
     // Probably only useful for strings
     template <class T>
     pmt(const T* other);
+
+    // Forwarding Constructor to wrap pmt_var_t
+    template <class... Args>
+    pmt(Args&&... args)
+        : variant{std::forward<Args>(args)...}
+    {}
+
     pmt& operator=(const pmt& other) = default;
 
     size_t serialize(std::streambuf& sb) const;
     static pmt deserialize(std::streambuf& sb);
     std::string to_base64() const;
     static pmtv::pmt from_base64(const std::string& encoded_str);
+
+
 
     // Allows us to cast from a pmt like this: float x = float(mypmt);
     // Must be explicit.
@@ -52,8 +61,11 @@ class pmt : public pmt_var_t {
         }, *this); }
 
 private:
-    template <Scalar T>
+    template <typename T>
     static T _deserialize_val(std::streambuf& sb);
+
+    template <typename T>
+    static pmt _deserialize_vec(std::streambuf& sb, size_t sz);
 };
 
 
@@ -129,7 +141,7 @@ size_t bytes_per_element(const P& value) {
         , value.get_base());
 }
 
-
+// FIXME - make this consistent endianness
 size_t pmt::serialize(std::streambuf& sb) const {
     size_t length = 0;
     length += sb.sputn(reinterpret_cast<const char*>(&pmt_version), 2);
@@ -162,8 +174,11 @@ size_t pmt::serialize(std::streambuf& sb) const {
         std::visit([&length, &sb](auto&& arg) {
             using T = std::decay_t<decltype(arg)>;
             if constexpr(UniformVector<T>) {
+
                 auto id = element_type<T>();
                 length += sb.sputn(reinterpret_cast<const char*>(&id), 1);
+                uint64_t sz = arg.size();
+                length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
                 length += sb.sputn(reinterpret_cast<const char*>(arg.data()), arg.size()*sizeof(arg[0]));
             }
         }, *this);
@@ -173,14 +188,30 @@ size_t pmt::serialize(std::streambuf& sb) const {
     return length;
 }
 
-template <Scalar T>
+template <typename T>
 T pmt::_deserialize_val(std::streambuf& sb) {
+    if constexpr(Scalar<T>) {
     T val;
     sb.sgetn(reinterpret_cast<char*>(&val), sizeof(val));
     std::cout << val << std::endl;
     return val;
+    }
+    else {
+        throw std::runtime_error("pmt::_deserialize_value: attempted to deserialize non-scalar type");
+    }
 }
 
+template <typename T>
+pmt pmt::_deserialize_vec(std::streambuf& sb, size_t sz) {
+    if constexpr(UniformVector<T>) {
+        std::vector<typename T::value_type> val(sz);
+        sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+        return pmt(val);
+    }
+    else {
+        throw std::runtime_error("pmt::_deserialize_vec: attempted to deserialize non-vector type");
+    }
+}
 
 pmt pmt::deserialize(std::streambuf& sb)
 {
@@ -211,11 +242,31 @@ pmt pmt::deserialize(std::streambuf& sb)
             case pmt_element_type::DOUBLE: return _deserialize_val<double>(sb); 
             case pmt_element_type::COMPLEX_FLOAT: return _deserialize_val<std::complex<float>>(sb); 
             case pmt_element_type::COMPLEX_DOUBLE: return _deserialize_val<std::complex<double>>(sb); 
-            default: throw std::runtime_error("pmt::deserialized: Invalid PMT type");
+            default: throw std::runtime_error("pmt::deserialized: Invalid PMT Scalar type");
         }
     }
     else if (container == pmt_container_type::UNIFORM_VECTOR) {
-    
+        pmt_element_type T_type;
+        sb.sgetn(reinterpret_cast<char*>(&T_type), 1);
+        uint64_t sz; 
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+
+        switch(T_type) {
+            case pmt_element_type::BOOL: return _deserialize_vec<std::vector<bool>>(sb, sz); 
+            case pmt_element_type::UINT8: return _deserialize_vec<std::vector<uint8_t>>(sb, sz); 
+            case pmt_element_type::UINT16: return _deserialize_vec<std::vector<uint16_t>>(sb, sz); 
+            case pmt_element_type::UINT32: return _deserialize_vec<std::vector<uint32_t>>(sb, sz); 
+            case pmt_element_type::UINT64: return _deserialize_vec<std::vector<uint64_t>>(sb, sz); 
+            case pmt_element_type::INT8: return _deserialize_vec<std::vector<int8_t>>(sb, sz); 
+            case pmt_element_type::INT16: return _deserialize_vec<std::vector<int16_t>>(sb, sz); 
+            case pmt_element_type::INT32: return _deserialize_vec<std::vector<int32_t>>(sb, sz); 
+            case pmt_element_type::INT64: return _deserialize_vec<std::vector<int64_t>>(sb, sz); 
+            case pmt_element_type::FLOAT: return _deserialize_vec<std::vector<float>>(sb, sz); 
+            case pmt_element_type::DOUBLE: return _deserialize_vec<std::vector<double>>(sb, sz); 
+            case pmt_element_type::COMPLEX_FLOAT: return _deserialize_vec<std::vector<std::complex<float>>>(sb, sz); 
+            case pmt_element_type::COMPLEX_DOUBLE: return _deserialize_vec<std::vector<std::complex<double>>>(sb, sz); 
+            default: throw std::runtime_error("pmt::deserialize: Invalid PMT UniformVector type");
+        }
     }
 
     return ret;
