@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, variant]
 jobs:
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
