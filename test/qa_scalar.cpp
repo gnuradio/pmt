@@ -121,15 +121,15 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
 }
 
 
-TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
-    // Serialize/Deserialize and make sure that it works
-    auto value = this->get_value();
-    pmt x(value);
-    std::stringbuf sb;
-    pmtv::serialize(sb, x);
-    auto y = pmtv::deserialize(sb);
-    EXPECT_EQ(value, y);
-}
+// TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
+//     // Serialize/Deserialize and make sure that it works
+//     auto value = this->get_value();
+//     pmt x(value);
+//     std::stringbuf sb;
+//     pmtv::serialize(sb, x);
+//     auto y = pmtv::deserialize(sb);
+//     EXPECT_EQ(value, y);
+// }
 
 
 /*TYPED_TEST(PmtScalarFixture, explicit_cast)
@@ -155,19 +155,19 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
 }*/
 
 
-TYPED_TEST(PmtScalarFixture, base64)
-{
-    pmt x = this->get_value();
-    // Make sure that we can get the value back out
-    auto encoded_str = to_base64(x);
-    auto y = from_base64(encoded_str);
+// TYPED_TEST(PmtScalarFixture, base64)
+// {
+//     pmt x = this->get_value();
+//     // Make sure that we can get the value back out
+//     auto encoded_str = to_base64(x);
+//     auto y = from_base64(encoded_str);
 
-    EXPECT_EQ(x == y, true);
-}
+//     EXPECT_EQ(x == y, true);
+// }
 
-TYPED_TEST(PmtScalarFixture, element_size)
-{
-    pmt x = this->get_value();
-    EXPECT_EQ(elements(x), 1);
-    EXPECT_EQ(bytes_per_element(x), sizeof(TypeParam));
-}
+// TYPED_TEST(PmtScalarFixture, element_size)
+// {
+//     pmt x = this->get_value();
+//     EXPECT_EQ(elements(x), 1);
+//     EXPECT_EQ(bytes_per_element(x), sizeof(TypeParam));
+// }
