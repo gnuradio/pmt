@@ -134,15 +134,15 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     // EXPECT_ANY_THROW(std::vector<int>(x));
 }*/
 
-// TYPED_TEST(PmtScalarFixture, base64)
-// {
-//     pmt x = this->get_value();
-//     // Make sure that we can get the value back out
-//     auto encoded_str = to_base64(x);
-//     auto y = from_base64(encoded_str);
+TYPED_TEST(PmtScalarFixture, base64)
+{
+    pmt x = this->get_value();
+    // Make sure that we can get the value back out
+    auto encoded_str = x.to_base64();
+    auto y = pmt::from_base64(encoded_str);
 
-//     EXPECT_EQ(x == y, true);
-// }
+    EXPECT_EQ(x == y, true);
+}
 
 // TYPED_TEST(PmtScalarFixture, element_size)
 // {
