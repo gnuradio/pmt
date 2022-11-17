@@ -144,9 +144,9 @@ TYPED_TEST(PmtScalarFixture, base64)
     EXPECT_EQ(x == y, true);
 }
 
-// TYPED_TEST(PmtScalarFixture, element_size)
-// {
-//     pmt x = this->get_value();
-//     EXPECT_EQ(elements(x), 1);
-//     EXPECT_EQ(bytes_per_element(x), sizeof(TypeParam));
-// }
+TYPED_TEST(PmtScalarFixture, element_size)
+{
+    pmt x = this->get_value();
+    EXPECT_EQ(elements(x), 1);
+    EXPECT_EQ(bytes_per_element(x), sizeof(TypeParam));
+}
