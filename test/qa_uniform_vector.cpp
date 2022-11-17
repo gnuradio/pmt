@@ -8,15 +8,15 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include <pmtv/uniform_vector.hpp>
+#include <pmtv/pmt.hpp>
 
 #include <list>
 #include <map>
 
 using namespace pmtv;
 
-using testing_types = ::testing::Types<uint8_t,
-                                       int8_t,
+using testing_types = ::testing::Types<uint32_t>;
+/*                                       int8_t,
                                        uint16_t,
                                        int16_t,
                                        uint32_t,
@@ -26,7 +26,7 @@ using testing_types = ::testing::Types<uint8_t,
                                        float,
                                        double,
                                        std::complex<float>,
-                                       std::complex<double>>;
+                                       std::complex<double>>;*/
 
 
 template <typename T>
@@ -86,21 +86,13 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 
 TYPED_TEST(PmtVectorFixture, VectorConstructors)
 {
-    // Empty Constructor
-    uniform_vector<TypeParam> empty_vec;
-    EXPECT_EQ(empty_vec.size(), 0);
+    // Emtpy Constructor
+    pmt empty_vec{std::vector<TypeParam>()};
+    EXPECT_EQ(std::get<std::vector<TypeParam>>(empty_vec).size(), 0);
 
     int num_values = this->num_values_;
-    // Size Constructor ( but uninit memory)
-    uniform_vector<TypeParam> sized_vec(num_values);
+    pmt sized_vec(vec_t<TypeParam>, num_values);
     EXPECT_EQ(sized_vec.size(), num_values);
-
-    // Fill Constructor
-    uniform_vector<TypeParam> fill_vec(num_values, this->nonzero_value());
-    EXPECT_EQ(fill_vec.size(), num_values);
-    for (const auto& x: fill_vec) {
-        EXPECT_EQ(x, this->nonzero_value());
-    }
 
     // Init from std::vector
     std::vector<TypeParam> vec(this->num_values_);
@@ -109,18 +101,19 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
     }
 
     // Range Constructor
-    uniform_vector<TypeParam> range_vec(vec.begin(), vec.end());
+    pmt range_vec(vec_t<TypeParam>, vec.begin(), vec.end());
     EXPECT_EQ(range_vec.size(), num_values);
+    const auto& range_vals = std::get<std::vector<TypeParam>>(range_vec);
     for (size_t i = 0; i < range_vec.size(); i++) {
-        EXPECT_EQ(range_vec[i], vec[i]);
+        EXPECT_EQ(range_vals[i], vec[i]);
     }
 
     // Copy from std::vector
-    auto pmt_vec = uniform_vector<TypeParam>(vec);
+    pmt pmt_vec = std::vector<TypeParam>(vec);
     EXPECT_EQ(pmt_vec == vec, true);
 
     // Copy Constructor
-    auto a = uniform_vector<TypeParam>(pmt_vec);
+    pmt a = pmt_vec;
     EXPECT_EQ(a == vec, true);
     EXPECT_EQ(a == pmt_vec, true);
 
@@ -150,14 +143,16 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
         vec_squared[i] = vec[i] * vec[i];
     }
     // Init from std::vector
-    auto pmt_vec = uniform_vector<TypeParam>(vec);
-    for (auto& xx : pmt_vec) {
+    auto pmt_vec = pmt(vec);
+    //for (auto& xx : std::span(std::get<std::vector<TypeParam>>(pmt_vec))) {
+    for (auto& xx : get_span<TypeParam>(pmt_vec)) {
         xx *= xx;
     }
+
     EXPECT_EQ(pmt_vec == vec_squared, true);
 
-    pmt_vec = uniform_vector<TypeParam>(vec);
-    for (auto& xx : pmt_vec) {
+    pmt_vec = vec;
+    for (auto& xx : get_span<TypeParam>(pmt_vec)) {
         xx += xx;
     }
     EXPECT_EQ(pmt_vec == vec_doubled, true);
@@ -169,10 +164,10 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     for (auto i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(i);
     }
-    uniform_vector<TypeParam> x(vec);
+    pmt x(vec);
     std::stringbuf sb;
-    x.serialize(sb);
-    auto y = pmt::deserialize(sb);
+    serialize(sb, x);
+    auto y = deserialize(sb);
     EXPECT_EQ(x == y, true);
 }
 
@@ -200,35 +195,6 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
 }*/
 
 
-TYPED_TEST(PmtVectorFixture, OtherConstructors) {
-
-    // Check the other constructors
-    uniform_vector<TypeParam> vec1(4);
-    EXPECT_TRUE(vec1.size() == 4);
-
-    uniform_vector<TypeParam> vec2(4, this->nonzero_value());
-    std::cout << vec2.size() << std::endl;
-    for (auto& e: vec2)
-        EXPECT_TRUE(e == this->nonzero_value());
-
-
-    std::vector<TypeParam> data(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        data[i] = this->get_value(i);
-    }
-
-    uniform_vector<TypeParam> vec3(data.begin(), data.end());
-    EXPECT_TRUE(vec3.size() == data.size());
-    size_t i = 0;
-    for (auto& e: vec3)
-        EXPECT_TRUE(e == data[i++]);
-
-    uniform_vector<TypeParam> vec4(vec3);
-    EXPECT_TRUE(vec3 == vec4);
-}
-
-
-
 TYPED_TEST(PmtVectorFixture, get_as)
 {
     std::vector<TypeParam> vec(this->num_values_);
@@ -237,7 +203,7 @@ TYPED_TEST(PmtVectorFixture, get_as)
     }
     pmt x = vec;
     // Make sure that we can get the value back out
-    auto y = std::vector<TypeParam>(x);
+    auto y = std::get<std::vector<TypeParam>>(x);
     EXPECT_TRUE(x == y);
 
     // // Should also work as a span
@@ -266,8 +232,8 @@ TYPED_TEST(PmtVectorFixture, base64)
     pmt x = vec;
     
     // Make sure that we can get the value back out
-    auto encoded_str = pmt(x).to_base64();
-    auto y = pmt::from_base64(encoded_str);
+    auto encoded_str = to_base64(x);
+    auto y = pmtv::from_base64(encoded_str);
 
     EXPECT_TRUE(x == y);
 }

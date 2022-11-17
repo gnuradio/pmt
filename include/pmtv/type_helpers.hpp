@@ -8,40 +8,6 @@ namespace pmtv {
 // It is really hard to declare a variant that contains itself.
 // These are the steps required.
 
-// Forward declaration of types.
-template<class...Ts>
-struct self_variant;
-
-// Base variant with the different types.
-template<class...Ts>
-using self_variant_base = 
-  std::variant<
-    nullptr_t,
-    Ts...,
-    std::shared_ptr<std::vector<Ts>>...,
-    std::shared_ptr<std::vector<self_variant<Ts...>>>,
-    std::shared_ptr<std::map<std::string, self_variant<Ts...>>>,
-    std::string
-  >;
-
-// The actual variant.  Derives from the base variant.
-template<class...Ts>
-struct self_variant:
-  self_variant_base<Ts...>
-{
-  using self_variant_base<Ts...>::self_variant_base;
-  self_variant_base<Ts...> const& base() const { return *this; }
-  self_variant_base<Ts...>& base() { return *this; }
-
-};
-
-
-// Name for the pmt storage variant with types.
-using _pmt_storage = self_variant<
-    uint8_t, uint16_t, uint32_t, uint64_t,
-    int8_t, int16_t, int32_t, int64_t,
-    float, double, std::complex<float>, std::complex<double>
->;
 
 template <typename T> struct is_shared_ptr : std::false_type {};
 template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
@@ -62,14 +28,14 @@ concept UniformVector = std::ranges::contiguous_range<T> && Scalar<typename T::v
 template <typename T>
 concept UniformVectorInsidePmt = IsSharedPtr<T> && UniformVector<typename T::element_type>;
 
-template <typename T>
+/*template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, _pmt_storage>>;
 
 template <typename T>
 concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
 
 template <typename T>
-concept PmtVector = std::is_same_v<T, std::vector<_pmt_storage>>;
+concept PmtVector = std::is_same_v<T, std::vector<_pmt_storage>>;*/
 
 template <typename T>
 concept associative_array = requires {
@@ -173,12 +139,12 @@ pmt_container_type container_type() {
     return pmt_container_type::UNIFORM_VECTOR;
 }
 
-template <PmtVector T>
+/*template <PmtVector T>
 std::string type_string() {
     return "vector:pmt";
-}
+}*/
 
-template <PmtVector T>
+/*template <PmtVector T>
 pmt_element_type element_type() {
     return pmt_element_type::PMT;
 }
@@ -201,7 +167,7 @@ pmt_element_type element_type() {
 template <PmtMap T>
 pmt_container_type container_type() {
     return pmt_container_type::MAP;
-}
+}*/
 
 template <class T>
 std::string type_string() {
@@ -301,7 +267,3 @@ using IsMapLikeContainer = std::enable_if_t<is_map_like_container<T>::value, boo
 } // namespace
 
 
-namespace std {
-    template <> struct variant_size<pmtv::_pmt_storage> : variant_size<pmtv::_pmt_storage::variant> {};   
-    // template <std::size_t I> struct variant_alternative<I, pmtv::_pmt_storage> : variant_alternative<I, pmtv::_pmt_storage::variant> {};
-}

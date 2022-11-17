@@ -30,15 +30,15 @@ public:
   map(const map_type &other) : pmt(other) {}
 
   // Copy from std map
-  map(const std::map<std::string, pmt> &other) : pmt(map_type{}) {
+  /*map(const std::map<std::string, _pmt_storage> &other) : pmt(map_type{}) {
     for (auto &[k, v] : other) {
         // FIXME - the [] operator seems to be returning 
         // the variant by value, not by reference
-        this->operator[](k) = v.storage();
+        this->operator[](k) = v;
         // auto x = this->operator[](k);
         // x = v.storage();
     }
-  }
+  }*/
 
   //     // Copy from pmt
   //     template <class T, typename = IsPmt<T>>
