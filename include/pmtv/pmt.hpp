@@ -1,6 +1,6 @@
 #pragma once
 
-#include <pmtv/rva_variant.hpp>
+
 #include <pmtv/type_helpers.hpp>
 #include <pmtv/version.hpp>
 #include "base64/base64.h"
@@ -12,20 +12,6 @@
 #include <fmt/format.h>
 
 namespace pmtv {
-
-
-using pmt_var_t = rva::variant<
-    std::nullptr_t,
-    uint8_t, uint16_t, uint32_t, uint64_t,
-    int8_t, int16_t, int32_t, int64_t,
-    float, double, std::complex<float>, std::complex<double>,
-    std::vector<uint8_t>, std::vector<uint16_t>, std::vector<uint32_t>, std::vector<uint64_t>,
-    std::vector<int8_t>, std::vector<int16_t>, std::vector<int32_t>, std::vector<int64_t>,
-    std::vector<float>, std::vector<double>,
-    std::vector<std::complex<float>>, std::vector<std::complex<double>>,
-    std::string,
-    std::vector<rva::self_t>,
-    std::map<std::string, rva::self_t>>;
 
 
 class pmt : public pmt_var_t {
@@ -47,6 +33,15 @@ class pmt : public pmt_var_t {
 
     pmt& operator=(const pmt& other) = default;
 
+    template <class U>
+    bool operator==(const U& other) const {
+        return std::visit([other](const auto& arg) -> bool {
+            using T = std::decay_t<decltype(arg)>;
+            using Ud = std::decay_t<U>;
+            return PmtEqual<T,Ud>(arg, other); }
+            , get_base());
+    }
+
     size_t serialize(std::streambuf& sb) const;
     static pmt deserialize(std::streambuf& sb);
     std::string to_base64() const;
@@ -61,6 +56,9 @@ class pmt : public pmt_var_t {
         return std::visit([](const auto& arg) -> T {
             using U = std::decay_t<decltype(arg)>;
             if constexpr(std::constructible_from<T, U>) return T(arg);
+            // else if constexpr (PmtMap<T> && PmtMap<U>) {
+            //     return std::get<std::map<std::string, pmt_var_t>>(arg);                
+            // }
             else throw std::runtime_error(fmt::format("Invalid PMT Cast {} {}", typeid(T).name(), typeid(U).name()));
         }, *this); }
 
@@ -72,6 +70,90 @@ private:
     static pmt _deserialize_vec(std::streambuf& sb, size_t sz);
 };
 
+template <class T, class U>
+bool PmtEqual(const T& arg, const U& other) {
+
+    if constexpr(PmtNull<T> && std::same_as<T, U>) {
+        return true;
+    }
+    else if constexpr(std::is_same_v<U, pmt>) {
+        // If we are comparing to a pmt, another call to ==
+        // will peel the value out
+        
+        return arg == other;
+    }
+    else if constexpr(Scalar<T> && std::is_convertible_v<T,U>) {
+        // Make sure we don't mess up signs or floating point
+        // We don't want uint8_t(255) == int8_t(-1)
+        // Or float(1.5) == int(1)
+        if constexpr(std::same_as<T, U>) {
+            return arg == other;
+        }
+        if constexpr(std::signed_integral<T> && std::unsigned_integral<U>){
+            return (arg > 0) && (U(arg) == other);
+        }
+        else if constexpr(std::unsigned_integral<T> && std::signed_integral<U>){
+            return (other > 0) && (T(other) == arg);
+        }
+        else if constexpr(Complex<T> && Complex<U>) {
+            return std::complex<double>(arg) == std::complex<double>(other);
+        }
+        else if constexpr(Complex<T> && ! Complex<U>) {
+            return false;
+        }
+        else if constexpr(Complex<U> && ! Complex<T>) { 
+            return false;
+        }
+        else { 
+            return arg == other;
+        }
+    }
+    // else if constexpr(UniformVectorInsidePmt<T> && UniformVectorInsidePmt<U>) {
+    //     return std::visit([&arg, &other]() -> bool {
+    //         return PmtEqual(*arg, *other); }
+    //         );
+    // }
+    // else if constexpr(UniformVectorInsidePmt<T> && UniformVector<U>) {
+    //     return std::visit([&arg, &other]() -> bool {
+    //         return PmtEqual(*arg, other); }
+    //         );
+    // }
+    // else if constexpr(UniformVector<T> && UniformVectorInsidePmt<U>) {
+    //     return std::visit([&arg, &other]() -> bool {
+    //         return PmtEqual(arg, *other); }
+    //         );
+    // }
+    else if constexpr(UniformVector<T> && UniformVector<U>) {
+        // if constexpr(std::is_same_v<T, U>) {
+        if constexpr(std::is_same_v<typename T::value_type, typename U::value_type>) {
+            if (arg.size() == other.size()) {
+                return std::equal(arg.begin(), arg.end(), other.begin());
+            }
+            else 
+            {
+                return false;
+            }
+        }
+        else {
+            // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
+            return PmtEqual(arg, other);
+        }
+    }
+    else {
+        // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
+        return false;
+    }
+    // else if constexpr(std::is_convertible_v<T, U>) return arg == other;
+    // else if constexpr(std::ranges::view<T> && std::ranges::view<U>) {
+    //     if (std::is_same_v<typename T::value_type, typename U::value_type>) {
+    //         if (arg.size() == other.size()) return std::equal(arg.begin(), arg.end(), other.begin());
+    //         else return false;
+    //     }
+    // }
+    
+    return false;
+    
+}
 
 
 template <class T>

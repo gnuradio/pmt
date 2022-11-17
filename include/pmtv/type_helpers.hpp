@@ -5,10 +5,25 @@
 #include <ranges>
 #include <variant>
 #include <vector>
+#include <map>
+#include <pmtv/rva_variant.hpp>
 
 namespace pmtv {
 // It is really hard to declare a variant that contains itself.
 // These are the steps required.
+
+using pmt_var_t = rva::variant<
+    std::nullptr_t,
+    uint8_t, uint16_t, uint32_t, uint64_t,
+    int8_t, int16_t, int32_t, int64_t,
+    float, double, std::complex<float>, std::complex<double>,
+    std::vector<uint8_t>, std::vector<uint16_t>, std::vector<uint32_t>, std::vector<uint64_t>,
+    std::vector<int8_t>, std::vector<int16_t>, std::vector<int32_t>, std::vector<int64_t>,
+    std::vector<float>, std::vector<double>,
+    std::vector<std::complex<float>>, std::vector<std::complex<double>>,
+    std::string,
+    std::vector<rva::self_t>,
+    std::map<std::string, rva::self_t>>;
 
 
 template <typename T> struct is_shared_ptr : std::false_type {};
@@ -30,9 +45,10 @@ concept UniformVector = std::ranges::contiguous_range<T> && Scalar<typename T::v
 template <typename T>
 concept UniformVectorInsidePmt = IsSharedPtr<T> && UniformVector<typename T::element_type>;
 
-/*template <typename T>
-concept PmtMap = std::is_same_v<T, std::map<std::string, _pmt_storage>>;
-
+class pmt;
+template <typename T>
+concept PmtMap = std::is_same_v<T, std::map<std::string, pmt>> || std::is_same_v<T, std::map<std::string, pmt_var_t>>;
+/*
 template <typename T>
 concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <map>
-#include <pmtv/base.hpp>
+#include <pmtv/pmt.hpp>
 #include <ranges>
 #include <span>
 
@@ -14,7 +14,7 @@ namespace pmtv {
 class map : public pmt {
 public:
   using key_type = std::string;
-  using mapped_type = _pmt_storage;
+  using mapped_type = pmt_var_t;
   using value_type = std::pair<const key_type, mapped_type>;
   using reference = value_type &;
   using const_reference = const value_type &;
@@ -30,7 +30,7 @@ public:
   map(const map_type &other) : pmt(other) {}
 
   // Copy from std map
-  /*map(const std::map<std::string, _pmt_storage> &other) : pmt(map_type{}) {
+  map(const std::map<std::string, pmt> &other) : pmt(map_type{}) {
     for (auto &[k, v] : other) {
         // FIXME - the [] operator seems to be returning 
         // the variant by value, not by reference
@@ -38,7 +38,7 @@ public:
         // auto x = this->operator[](k);
         // x = v.storage();
     }
-  }*/
+  }
 
   //     // Copy from pmt
   //     template <class T, typename = IsPmt<T>>
@@ -59,24 +59,24 @@ public:
   /**************************************************************************
    * Iterators
    **************************************************************************/
-  typename map_type::iterator begin() noexcept { return _get_map()->begin(); }
+  typename map_type::iterator begin() noexcept { return _get_map().begin(); }
   typename map_type::const_iterator begin() const noexcept {
-    return _get_map()->begin();
+    return _get_map().begin();
   }
-  typename map_type::iterator end() noexcept { return _get_map()->end(); }
+  typename map_type::iterator end() noexcept { return _get_map().end(); }
   typename map_type::const_iterator end() const noexcept {
-    return _get_map()->end();
+    return _get_map().end();
   }
 
   /**************************************************************************
    * Element Access
    **************************************************************************/
-  mapped_type &at(const key_type &key) { return _get_map()->at(key); }
+  mapped_type &at(const key_type &key) { return _get_map().at(key); }
   const mapped_type &at(const key_type &key) const {
-    return _get_map()->at(key);
+    return _get_map().at(key);
   }
   mapped_type &operator[](const key_type &key) {
-    return _get_map()->operator[](key);
+    return _get_map().operator[](key);
   }
 
   //     size_t size() const { return _get_map()->size(); }
@@ -102,8 +102,8 @@ public:
   //     }
 
 private:
-  map_sptr _get_map() { return std::get<map_sptr>(_value); }
-  const map_sptr _get_map() const { return std::get<map_sptr>(_value); }
+  map_type& _get_map() { return std::get<map_type>(get_base()); }
+  const map_type& _get_map() const { return std::get<map_type>(get_base()); }
 };
 
 // template <class T, class U>
