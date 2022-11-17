@@ -102,15 +102,15 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
   EXPECT_EQ(ss.str(), ss_check.str());
 }
 
-// TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
-//     // Serialize/Deserialize and make sure that it works
-//     auto value = this->get_value();
-//     pmt x(value);
-//     std::stringbuf sb;
-//     pmtv::serialize(sb, x);
-//     auto y = pmtv::deserialize(sb);
-//     EXPECT_EQ(value, y);
-// }
+TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
+    // Serialize/Deserialize and make sure that it works
+    auto value = this->get_value();
+    pmt x(value);
+    std::stringbuf sb;
+    x.serialize(sb);
+    auto y = pmt::deserialize(sb);
+    EXPECT_TRUE(value == y);
+}
 
 /*TYPED_TEST(PmtScalarFixture, explicit_cast)
 {
