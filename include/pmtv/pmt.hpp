@@ -41,6 +41,16 @@ class pmt : public pmt_var_t {
     std::string to_base64() const;
     static pmtv::pmt from_base64(const std::string& encoded_str);
 
+    // Allows us to cast from a pmt like this: float x = float(mypmt);
+    // Must be explicit.
+    template <class T>
+    explicit operator T() const {
+        return std::visit([](const auto& arg) -> T {
+            using U = std::decay_t<decltype(arg)>;
+            if constexpr(std::constructible_from<T, U>) return T(arg);
+            else throw std::runtime_error("Invalid PMT Cast");
+        }, *this); }
+
 private:
     template <Scalar T>
     static T _deserialize_val(std::streambuf& sb);
