@@ -28,31 +28,31 @@ public:
   uniform_vector(std::initializer_list<T> il)
       : pmt(std::vector<T>(il.begin(), il.size())) {}
 
-  uniform_vector &operator=(const T &value) { _value = value; }
-  T *data() { return std::get<std::shared_ptr<std::vector<T>>>(_value)->data(); }
-  const T *data() const {
-    return std::shared_ptr<std::vector<T>>(_value).data();
-  }
-  size_t size() const { 
-    return std::get<std::shared_ptr<std::vector<T>>>(_value.base())->size(); 
-  }
-  // const pmt& get_pmt_buffer() const { return _buf; }
-  const typename std::vector<T>::iterator begin() const {
-    return std::get<std::shared_ptr<std::vector<T>>>(_value)->begin();
-  }
-  const typename std::vector<T>::iterator end() const {
-    return std::get<std::shared_ptr<std::vector<T>>>(_value)->end();
-  }
-  // typename std::span<T>::const_iterator begin() const { return
-  // std::shared_ptr<std::vector<T>>(_value).begin(); } typename
-  // std::span<T>::const_iterator end() const { return
-  // std::shared_ptr<std::vector<T>>(_value).end(); }
-  T &operator[](size_t n) {
-    // operator[] doesn't do bounds checking, use at for that
-    // TODO: implement at
-    return this->data()[n];
-  }
-  const T &operator[](size_t n) const { return this->data()[n]; }
+  // uniform_vector &operator=(const T &value) { _value = value; }
+  // T *data() { return std::get<std::shared_ptr<std::vector<T>>>(_value)->data(); }
+  // const T *data() const {
+  //   return std::shared_ptr<std::vector<T>>(_value).data();
+  // }
+  // size_t size() const { 
+  //   return std::get<std::shared_ptr<std::vector<T>>>(_value.base())->size(); 
+  // }
+  // // const pmt& get_pmt_buffer() const { return _buf; }
+  // const typename std::vector<T>::iterator begin() const {
+  //   return std::get<std::shared_ptr<std::vector<T>>>(_value)->begin();
+  // }
+  // const typename std::vector<T>::iterator end() const {
+  //   return std::get<std::shared_ptr<std::vector<T>>>(_value)->end();
+  // }
+  // // typename std::span<T>::const_iterator begin() const { return
+  // // std::shared_ptr<std::vector<T>>(_value).begin(); } typename
+  // // std::span<T>::const_iterator end() const { return
+  // // std::shared_ptr<std::vector<T>>(_value).end(); }
+  // T &operator[](size_t n) {
+  //   // operator[] doesn't do bounds checking, use at for that
+  //   // TODO: implement at
+  //   return this->data()[n];
+  // }
+  // const T &operator[](size_t n) const { return this->data()[n]; }
 
     // template <class U>
     // bool operator==(const U& other) const { return _buf ==  other; }
