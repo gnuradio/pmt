@@ -38,6 +38,8 @@ class pmt : public pmt_var_t {
 
     size_t serialize(std::streambuf& sb) const;
     static pmt deserialize(std::streambuf& sb);
+    std::string to_base64() const;
+    static pmtv::pmt from_base64(const std::string& encoded_str);
 
 private:
     template <Scalar T>
@@ -209,13 +211,10 @@ pmt pmt::deserialize(std::streambuf& sb)
     return ret;
 }
 
-
-
-template <IsPmt P>
-std::string to_base64(const P& value)
+std::string pmt::to_base64() const
 {
     std::stringbuf sb; 
-    auto nbytes = serialize(sb, value);
+    auto nbytes = serialize(sb);
     std::string pre_encoded_str(nbytes, '0');
     sb.sgetn(pre_encoded_str.data(), nbytes);
     auto nencoded_bytes = Base64encode_len(nbytes);
@@ -225,11 +224,12 @@ std::string to_base64(const P& value)
     return encoded_str;
 }
 
-inline pmt from_base64(const std::string& encoded_str)
+pmt pmt::from_base64(const std::string& encoded_str)
 {
     std::string bufplain(encoded_str.size(), '0');
     Base64decode(bufplain.data(), encoded_str.data());
     std::stringbuf sb(bufplain);
-    return pmt::deserialize(sb); 
+    return deserialize(sb); 
 }
+
 }
