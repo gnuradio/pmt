@@ -12,7 +12,8 @@ qa_srcs = ['qa_scalar',
            # 'qa_vector_of_pmts',
            # 'qa_map'
           ]
-deps = [pmt_dep,
+deps = [pmt_dep, 
+            fmt_dep,
             gtest_dep]
 
 foreach qa : qa_srcs

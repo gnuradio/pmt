@@ -21,6 +21,7 @@ endif
 
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
+fmt_dep = dependency('fmt')
 
 subdir('include/pmtv')
 subdir('lib')
