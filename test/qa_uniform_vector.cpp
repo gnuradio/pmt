@@ -9,6 +9,7 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/uniform_vector.hpp>
 
 #include <list>
 #include <map>
@@ -171,72 +172,72 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     EXPECT_EQ(x == y, true);
 }
 
-// /*TYPED_TEST(PmtVectorFixture, VectorWrites)
-// {
-//     // Initialize a PMT Wrap from a std::vector object
-//     std::vector<TypeParam> vec(this->num_values_);
-//     std::vector<TypeParam> vec_modified(this->num_values_);
-//     for (auto i = 0; i < this->num_values_; i++) {
-//         vec[i] = this->get_value(i);
-//         vec_modified[i] = vec[i];
-//         if (i%7 == 2) {
-//             vec_modified[i] = vec[i] + this->get_value(i);
-//         }
-//     }
+TYPED_TEST(PmtVectorFixture, VectorWrites)
+{
+    // Initialize a PMT Wrap from a std::vector object
+    std::vector<TypeParam> vec(this->num_values_);
+    std::vector<TypeParam> vec_modified(this->num_values_);
+    for (auto i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(i);
+        vec_modified[i] = vec[i];
+        if (i%7 == 2) {
+            vec_modified[i] = vec[i] + this->get_value(i);
+        }
+    }
 
-//     auto pmt_vec = vector(vec);
-//     for (auto i = 0; i < this->num_values_; i++) {
-//         if (i%7 == 2) {
-//             pmt_vec[i] = pmt_vec[i] + this->get_value(i);
-//         }
-//     }
-//     EXPECT_EQ(pmt_vec, vec_modified);
+    auto pmt_vec = uniform_vector(vec);
+    for (auto i = 0; i < this->num_values_; i++) {
+        if (i%7 == 2) {
+            pmt_vec[i] = pmt_vec[i] + this->get_value(i);
+        }
+    }
+    EXPECT_EQ(pmt_vec == vec_modified, true);
 
-// }*/
+}
 
 
-// TYPED_TEST(PmtVectorFixture, get_as)
-// {
-//     std::vector<TypeParam> vec(this->num_values_);
-//     for (auto i = 0; i < this->num_values_; i++) {
-//         vec[i] = this->get_value(i);
-//     }
-//     pmt x = vec;
-//     // Make sure that we can get the value back out
-//     auto y = std::get<std::vector<TypeParam>>(x);
-//     EXPECT_TRUE(x == y);
+TYPED_TEST(PmtVectorFixture, get_as)
+{
+    std::vector<TypeParam> vec(this->num_values_);
+    for (auto i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(i);
+    }
+    pmt x = vec;
+    // Make sure that we can get the value back out
+    auto y = std::get<std::vector<TypeParam>>(x);
+    EXPECT_TRUE(x == y);
 
-//     // // Should also work as a span
-//     // auto z = std::span<TypeParam>(x);
-//     // EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
+    // // Should also work as a span
+    // auto z = std::span<TypeParam>(x);
+    // EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
     
-//     // // Should also work as a list
-//     // auto q = std::list<TypeParam>(x);
-//     // EXPECT_TRUE(x == std::vector<TypeParam>(q.begin(), q.end()));
+    // // Should also work as a list
+    // auto q = std::list<TypeParam>(x);
+    // EXPECT_TRUE(x == std::vector<TypeParam>(q.begin(), q.end()));
 
-//     // // Fail if wrong type of vector or non vector type
-//     // EXPECT_THROW(int(x), ConversionError);
-//     // if constexpr(std::is_same_v<TypeParam, int>)
-//     //     EXPECT_THROW(std::vector<double>(x), ConversionError);
-//     // else
-//     //     EXPECT_THROW(std::vector<int>(x), ConversionError);
+    // // Fail if wrong type of vector or non vector type
+    // EXPECT_THROW(int(x), ConversionError);
+    // if constexpr(std::is_same_v<TypeParam, int>)
+    //     EXPECT_THROW(std::vector<double>(x), ConversionError);
+    // else
+    //     EXPECT_THROW(std::vector<int>(x), ConversionError);
 
-//     // using mtype = std::map<std::string, pmt>;
-//     // EXPECT_THROW(mtype(x), ConversionError);
+    // using mtype = std::map<std::string, pmt>;
+    // EXPECT_THROW(mtype(x), ConversionError);
     
-// }
+}
 
-// TYPED_TEST(PmtVectorFixture, base64)
-// {
-//     std::vector<TypeParam> vec(this->num_values_);
-//     pmt x = vec;
+TYPED_TEST(PmtVectorFixture, base64)
+{
+    std::vector<TypeParam> vec(this->num_values_);
+    pmt x = vec;
     
-//     // Make sure that we can get the value back out
-//     auto encoded_str = to_base64(x);
-//     auto y = pmtv::from_base64(encoded_str);
+    // Make sure that we can get the value back out
+    auto encoded_str = x.to_base64();
+    auto y = pmt::from_base64(encoded_str);
 
-//     EXPECT_TRUE(x == y);
-// }
+    EXPECT_TRUE(x == y);
+}
 
 // #if 0
 // TYPED_TEST(PmtVectorFixture, vector_wrapper)
