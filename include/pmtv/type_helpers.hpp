@@ -76,6 +76,7 @@ enum class pmt_element_type : uint8_t {
   DOUBLE,
   COMPLEX_FLOAT,
   COMPLEX_DOUBLE,
+  BOOL,
 
   STRING=253,
   PMT=254,
