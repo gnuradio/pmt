@@ -1,3 +1,5 @@
+#pragma once
+
 #include <pmtv/rva_variant.hpp>
 #include <pmtv/type_helpers.hpp>
 #include <pmtv/version.hpp>
@@ -6,6 +8,8 @@
 #include <complex>
 #include <ranges>
 #include <span>
+
+#include <fmt/format.h>
 
 namespace pmtv {
 
@@ -57,7 +61,7 @@ class pmt : public pmt_var_t {
         return std::visit([](const auto& arg) -> T {
             using U = std::decay_t<decltype(arg)>;
             if constexpr(std::constructible_from<T, U>) return T(arg);
-            else throw std::runtime_error("Invalid PMT Cast");
+            else throw std::runtime_error(fmt::format("Invalid PMT Cast {} {}", typeid(T).name(), typeid(U).name()));
         }, *this); }
 
 private:
