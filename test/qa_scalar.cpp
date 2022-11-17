@@ -112,27 +112,27 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     EXPECT_TRUE(value == y);
 }
 
-/*TYPED_TEST(PmtScalarFixture, explicit_cast)
+TYPED_TEST(PmtScalarFixture, explicit_cast)
 {
     pmt x = this->get_value();
     // Make sure that we can get the value back out
     auto y = TypeParam(x);
-    EXPECT_EQ(x == y, true);
+    EXPECT_EQ(x , y);
 
     // Cast up to complex<double>
     auto z = std::complex<double>(x);
-    EXPECT_EQ(std::complex<double>(this->get_value()) == z, true);
+    EXPECT_EQ(std::complex<double>(this->get_value()) , z);
 
     // Cast up to double if possible
     if constexpr(!Complex<TypeParam>) {
         auto z = double(x);
-        EXPECT_EQ(this->get_value() == z, true);
+        EXPECT_EQ(this->get_value() , z);
     }
 
     // Fail if we try to get a container type
     // FIXME: doesn't throw yet because this is not detected
     // EXPECT_ANY_THROW(std::vector<int>(x));
-}*/
+}
 
 TYPED_TEST(PmtScalarFixture, base64)
 {
