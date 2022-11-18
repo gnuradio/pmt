@@ -19,7 +19,8 @@ if pybind11_dep.found() and meson.get_compiler('cpp').get_id() == 'clang'
   endif
 endif
 
-gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
+gtest_dep = dependency('gtest', main : true, version : '>=1.11', required : get_option('enable_testing'))
+gtest_main_dep = dependency('gtest_main', version : '>=1.11', required : get_option('enable_testing'))
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 fmt_dep = dependency('fmt')
 
