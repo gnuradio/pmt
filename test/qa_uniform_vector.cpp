@@ -9,7 +9,7 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
-#include <pmtv/uniform_vector.hpp>
+// #include <pmtv/uniform_vector.hpp>
 
 #include <list>
 #include <map>
@@ -185,10 +185,11 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
         }
     }
 
-    auto pmt_vec = uniform_vector(vec);
+    auto pmt_vec = pmt(vec);
+    auto pmt_span = get_span<TypeParam>(pmt_vec);
     for (auto i = 0; i < this->num_values_; i++) {
         if (i%7 == 2) {
-            pmt_vec[i] = pmt_vec[i] + this->get_value(i);
+            pmt_span[i] = pmt_span[i] + this->get_value(i);
         }
     }
     EXPECT_EQ(pmt_vec == vec_modified, true);
@@ -207,9 +208,9 @@ TYPED_TEST(PmtVectorFixture, get_as)
     auto y = std::get<std::vector<TypeParam>>(x);
     EXPECT_TRUE(x == y);
 
-    // // Should also work as a span
-    // auto z = std::span<TypeParam>(x);
-    // EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
+    // Should also work as a span
+    auto z = get_span<TypeParam>(x);
+    EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
     
     // // Should also work as a list
     // auto q = std::list<TypeParam>(x);
