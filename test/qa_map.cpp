@@ -68,43 +68,43 @@ TEST(PmtMap, MapSerialize)
 
 }
 
-// TEST(PmtMap, get_as)
-// {
-//     std::complex<float> val1(1.2, -3.4);
-//     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+TEST(PmtMap, get_as)
+{
+    std::complex<float> val1(1.2, -3.4);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-//     // Create the PMT map
-//     std::map<std::string, pmt> input_map({
-//         { "key1", val1 },
-//         { "key2", val2 },
-//     });
-//     pmt x = map(input_map);
-//     // Make sure that we can get the value back out
-//     // auto y = std::map<std::string, pmt>(x);
-//     auto y = std::map<std::string, pmt>(x);
-//     EXPECT_EQ(x == y, true);
+    // Create the PMT map
+    std::map<std::string, pmt> input_map({
+        { "key1", val1 },
+        { "key2", val2 },
+    });
+    auto x = pmt(input_map);
+    // Make sure that we can get the value back out
+    // auto y = std::map<std::string, pmt>(x);
+    auto y = get_map(x);
+    EXPECT_EQ(x == y, true);
 
-//     // Throw an error for other types.
-//     // EXPECT_ANY_THROW(float(x));
+    // Throw an error for other types.
+    // EXPECT_ANY_THROW(float(x));
     
-// }
+}
 
-// TEST(PmtMap, base64)
-// {
-//     std::complex<float> val1(1.2, -3.4);
-//     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+TEST(PmtMap, base64)
+{
+    std::complex<float> val1(1.2, -3.4);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-//     // Create the PMT map
-//     std::map<std::string, pmt> input_map({
-//         { "key1", val1 },
-//         { "key2", val2 },
-//     });
-//     pmt x = input_map;
+    // Create the PMT map
+    std::map<std::string, pmt> input_map({
+        { "key1", val1 },
+        { "key2", val2 },
+    });
+    pmt x = input_map;
     
-//     // Make sure that we can get the value back out
-//     auto encoded_str = pmt(x).to_base64();
-//     auto y = pmt::from_base64(encoded_str);
+    // Make sure that we can get the value back out
+    auto encoded_str = pmtv::to_base64(x);
+    auto y = pmtv::from_base64(encoded_str);
 
-//     EXPECT_EQ(x, y);
-// }
+    EXPECT_TRUE(x == y);
+}
 // #endif
