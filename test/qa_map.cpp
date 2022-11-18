@@ -48,24 +48,25 @@ TEST(PmtMap, PmtMapTests)
     EXPECT_TRUE(get_vec<int32_t>(vv2) == val2);
     std::cout << map_pmt << std::endl;
 }
-// #if 0
-// TEST(PmtMap, MapSerialize)
-// {
-//     std::complex<float> val1(1.2, -3.4);
-//     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-//     // Create the PMT map
-//     std::map<std::string, pmt> input_map({
-//         { "key1", val1 },
-//         { "key2", val2 },
-//     });
-//     map map_pmt(input_map);
-//     std::stringbuf sb;
-//     map_pmt.get_pmt_buffer().serialize(sb);
-//     auto y = pmt::deserialize(sb);
-//     EXPECT_EQ(map_pmt, y);
+TEST(PmtMap, MapSerialize)
+{
+    std::complex<float> val1(1.2, -3.4);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
-// }
+    // Create the PMT map
+    map_t input_map({
+        { "key1", val1 },
+        { "key2", val2 },
+    });
+    pmt map_pmt(input_map);
+    std::stringbuf sb;
+    serialize(sb, map_pmt);
+    auto y = pmtv::deserialize(sb);
+    auto z = std::get<map_t>(y);
+    EXPECT_TRUE(map_pmt == y);
+
+}
 
 // TEST(PmtMap, get_as)
 // {

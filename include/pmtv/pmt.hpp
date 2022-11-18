@@ -202,6 +202,19 @@ std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec) {
     return os;
 }
 
+std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec);
+//     bool first = true;
+//     os << "[";
+//     for (const auto& [k, v]: vec) {
+//         if (!first) 
+//             os << ", ";
+//         os << "{" << k << ", " << v << "}";
+//         first = false;
+//     }
+//     os << "]";
+//     return os;
+// }
+
 template <IsPmt P>
 std::ostream& operator<<(std::ostream& os, const P& value) {
     return std::visit([&os](const auto& arg) -> std::ostream& {
@@ -209,6 +222,7 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         if constexpr(Complex<T>) os << "(" << arg.real() << "," << arg.imag() << ")";
         else if constexpr(Scalar<T>) os << arg;
         else if constexpr(UniformVector<T>)  _ostream_pmt_vector(os, std::span(arg));
+        else if constexpr(PmtMap<T>) _ostream_pmt_map(os, arg);
         /*else if constexpr(IsSharedPtr<T>) {
             if constexpr(UniformVector<typename T::element_type>) {
                 _ostream_pmt_vector(os, std::span(*arg));
@@ -222,6 +236,19 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         else if constexpr(std::same_as<T, std::string>) os << arg;
         return os; }
         , value.get_base());
+}
+
+std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec) {
+    bool first = true;
+    os << "[";
+    for (const auto& [k, v]: vec) {
+        if (!first) 
+            os << ", ";
+        os << "{" << k << ", " << v << "}";
+        first = false;
+    }
+    os << "]";
+    return os;
 }
 
 template <IsPmt P>
@@ -302,6 +329,18 @@ size_t serialize(std::streambuf& sb, const P& value) {
                 length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
                 length += sb.sputn(reinterpret_cast<const char*>(arg.data()), arg.size()*sizeof(arg[0]));
             }
+            else if constexpr(PmtMap<T>) {
+                uint32_t nkeys = arg.size();
+                length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
+                uint32_t ksize;
+                for (const auto& [k, v]: arg) {
+                    // For right now just prefix the size to the key and send it
+                    ksize = k.size();
+                    length += sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
+                    length += sb.sputn(k.c_str(), ksize);
+                    length += serialize(sb, v);
+                }
+            }
             
         }, value);
 
@@ -311,23 +350,7 @@ size_t serialize(std::streambuf& sb, const P& value) {
 }
 
 template <class T>
-T _deserialize_val(std::streambuf& sb) {
-    if constexpr(Scalar<T>) {
-        T val;
-        sb.sgetn(reinterpret_cast<char*>(&val), sizeof(val));
-        return val;
-    }
-    else if constexpr(UniformVector<T>) {
-        uint64_t sz; 
-        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
-        std::vector<typename T::value_type> val(sz);
-        sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
-        return val;
-    }
-    else {
-        throw std::runtime_error("pmt::_deserialize_value: attempted to deserialize invalid PMT type");
-    }
-}
+T _deserialize_val(std::streambuf& sb);
 
 pmt deserialize(std::streambuf& sb)
 {
@@ -369,10 +392,47 @@ pmt deserialize(std::streambuf& sb)
         case serialInfo<std::vector<double>>::value: return _deserialize_val<std::vector<double>>(sb); 
         case serialInfo<std::vector<std::complex<float>>>::value: return _deserialize_val<std::vector<std::complex<float>>>(sb); 
         case serialInfo<std::vector<std::complex<double>>>::value: return _deserialize_val<std::vector<std::complex<double>>>(sb); 
+
+        case serialInfo<map_t>::value: return _deserialize_val<map_t>(sb);
         default: throw std::runtime_error("pmt::deserialize: Invalid PMT type type");
     }
 
     return ret;
+}
+
+template <class T>
+T _deserialize_val(std::streambuf& sb) {
+    if constexpr(Scalar<T>) {
+        T val;
+        sb.sgetn(reinterpret_cast<char*>(&val), sizeof(val));
+        return val;
+    }
+    else if constexpr(UniformVector<T>) {
+        uint64_t sz; 
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+        std::vector<typename T::value_type> val(sz);
+        sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+        return val;
+    }
+    else if constexpr(PmtMap<T>) {
+        map_t val;
+
+        uint32_t nkeys;
+        sb.sgetn(reinterpret_cast<char*>(&nkeys), sizeof(nkeys));
+        for (uint32_t n=0; n<nkeys; n++) {
+            uint32_t ksize;
+            sb.sgetn(reinterpret_cast<char*>(&ksize), sizeof(ksize));
+            std::vector<char> data;
+            data.resize(ksize);
+            sb.sgetn(data.data(), ksize);
+
+            val[std::string(data.begin(), data.end())] = deserialize(sb);
+        }
+        return val;
+    }
+    else {
+        throw std::runtime_error("pmt::_deserialize_value: attempted to deserialize invalid PMT type");
+    }
 }
 
 template <IsPmt P>
