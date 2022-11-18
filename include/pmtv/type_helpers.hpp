@@ -100,61 +100,9 @@ enum class pmt_element_type : uint8_t {
   INVALID=255
 };
 
-template <Scalar T>
-pmt_element_type element_type() {
-    if constexpr(std::is_same_v<T, uint8_t>) return pmt_element_type::UINT8;
-    else if constexpr(std::is_same_v<T, uint16_t>) return pmt_element_type::UINT16;
-    else if constexpr(std::is_same_v<T, uint32_t>) return pmt_element_type::UINT32;
-    else if constexpr(std::is_same_v<T, uint64_t>) return pmt_element_type::UINT64;
-    else if constexpr(std::is_same_v<T, int8_t>) return pmt_element_type::INT8;
-    else if constexpr(std::is_same_v<T, int16_t>) return pmt_element_type::INT16;
-    else if constexpr(std::is_same_v<T, int32_t>) return pmt_element_type::INT32;
-    else if constexpr(std::is_same_v<T, int64_t>) return pmt_element_type::INT64;
-    else if constexpr(std::is_same_v<T, float>) return pmt_element_type::FLOAT;
-    else if constexpr(std::is_same_v<T, double>) return pmt_element_type::DOUBLE;
-    else if constexpr(std::is_same_v<T, std::complex<float>>) return pmt_element_type::COMPLEX_FLOAT;
-    else if constexpr(std::is_same_v<T, std::complex<double>>) return pmt_element_type::COMPLEX_DOUBLE;
-    return pmt_element_type::UNKNOWN;
-}
-
-
-enum class pmt_container_type : uint16_t {
-    EMPTY,
-    SCALAR,
-    UNIFORM_VECTOR,
-    PMT_VECTOR,
-    MAP,
-    STRING
-};
-
-template <Scalar T>
-pmt_container_type container_type() {
-    return pmt_container_type::SCALAR;
-}
-
 template <UniformVector T>
 std::string type_string() {
     return "vector:" + type_string<typename T::value_type>();
-}
-
-template <UniformVector T>
-pmt_element_type element_type() {
-    return element_type<typename T::value_type>();
-}
-
-template <UniformVectorInsidePmt T>
-pmt_element_type element_type() {
-    return element_type<typename T::element_type>();
-}
-
-template <UniformVector T>
-pmt_container_type container_type() {
-    return pmt_container_type::UNIFORM_VECTOR;
-}
-
-template <UniformVectorInsidePmt T>
-pmt_container_type container_type() {
-    return pmt_container_type::UNIFORM_VECTOR;
 }
 
 /*template <PmtVector T>
@@ -162,46 +110,15 @@ std::string type_string() {
     return "vector:pmt";
 }*/
 
-/*template <PmtVector T>
-pmt_element_type element_type() {
-    return pmt_element_type::PMT;
-}
-
-template <PmtVector T>
-pmt_container_type container_type() {
-    return pmt_container_type::PMT_VECTOR;
-}
-
 template <PmtMap T>
 std::string type_string() {
     return "map:pmt";
 }
 
-template <PmtMap T>
-pmt_element_type element_type() {
-    return pmt_element_type::PMT;
-}
-
-template <PmtMap T>
-pmt_container_type container_type() {
-    return pmt_container_type::MAP;
-}*/
-
 template <class T>
 std::string type_string() {
     return "Unknown";
 }
-
-template <class T>
-pmt_element_type element_type() {
-    return pmt_element_type::UNKNOWN;
-}
-
-template <class T>
-pmt_container_type container_type() {
-    return pmt_container_type::EMPTY;
-}
-
 
 inline std::string get_type_string(const auto& arg) {
     using T = std::decay_t<decltype(arg)>;

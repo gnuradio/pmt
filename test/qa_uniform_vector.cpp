@@ -9,7 +9,6 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
-// #include <pmtv/uniform_vector.hpp>
 
 #include <list>
 #include <map>

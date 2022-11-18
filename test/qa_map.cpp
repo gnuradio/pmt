@@ -8,8 +8,6 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-// #include <pmtv/map.hpp>
-// #include <pmtv/uniform_vector.hpp>
 #include <pmtv/pmt.hpp>
 
 using namespace pmtv;
@@ -45,7 +43,7 @@ TEST(PmtMap, PmtMapTests)
     EXPECT_TRUE(std::get<std::complex<float>>(vv1) == val1);
 
     auto vv2 = get_map(map_pmt)["key2"];
-    EXPECT_TRUE(get_vec<int32_t>(vv2) == val2);
+    EXPECT_TRUE(get_vector<int32_t>(vv2) == val2);
     std::cout << map_pmt << std::endl;
 }
 
