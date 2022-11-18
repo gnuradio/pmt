@@ -9,14 +9,16 @@
 #include <complex>
 
 // #include <pmtv/map.hpp>
-#include <pmtv/uniform_vector.hpp>
+// #include <pmtv/uniform_vector.hpp>
+#include <pmtv/pmt.hpp>
 
 using namespace pmtv;
 
 TEST(PmtMap, EmptyMap) {
-    map empty;
-    empty["abc"] = pmt(uint64_t(4)); 
-    empty["xyz"] = pmt(std::vector<double>{1,2,3,4,5}); 
+    auto empty = pmt(map_t{});
+    auto v = get_map(empty);
+    v["abc"] = pmt(uint64_t(4)); 
+    v["xyz"] = pmt(std::vector<double>{1,2,3,4,5}); 
 }
 
 
@@ -30,19 +32,20 @@ TEST(PmtMap, PmtMapTests)
         { "key1", val1 },
         { "key2", val2 },
     });
-    map map_pmt = input_map;
+
+    pmt map_pmt = input_map;
     std::cout << map_pmt << std::endl;
     std::cout << pmt(val1) << std::endl;
 
     // Lookup values in the PMT map and compare with what was put in there
-    pmt vv1 = map_pmt["key1"];
-    std::cout << std::complex<float>(vv1) << std::endl;
+    pmt vv1 = get_map(map_pmt)["key1"];
+    std::cout << std::get<std::complex<float>>(vv1) << std::endl;
     std::cout << "Before" << std::endl;
     std::cout << vv1 << std::endl;
-    EXPECT_TRUE(std::complex<float>(vv1) == val1);
+    EXPECT_TRUE(std::get<std::complex<float>>(vv1) == val1);
 
-    auto vv2 = map_pmt["key2"];
-    EXPECT_TRUE(uniform_vector<int32_t>(vv2) == val2);
+    auto vv2 = get_map(map_pmt)["key2"];
+    EXPECT_TRUE(get_vec<int32_t>(vv2) == val2);
     std::cout << map_pmt << std::endl;
 }
 // #if 0

@@ -9,11 +9,16 @@
 #include <ranges>
 #include <span>
 
+
 #include <fmt/format.h>
 
 namespace pmtv {
 
 using pmt = pmt_var_t;
+
+// template <class T>
+// using vector_t = std::vector<T>;
+using map_t = std::map<std::string, pmt>;
 
 // class pmt : public pmt_var_t {
 //     public:
@@ -169,9 +174,20 @@ auto get_vector(V value) -> decltype(std::get<std::vector<T>>(value) {
 }*/
 
 template <class T, class V>
+std::vector<T>& get_vec(V& value) {
+    return std::get<std::vector<T>>(value);
+}
+
+template <class T, class V>
 std::span<T> get_span(V& value) {
     return std::span(std::get<std::vector<T>>(value));
 }
+
+template <class V>
+map_t& get_map(V& value) {
+    return std::get<map_t>(value);
+}
+
 
 template <std::ranges::view T>
 std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec) {
