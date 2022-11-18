@@ -14,7 +14,8 @@ qa_srcs = ['qa_scalar',
           ]
 deps = [pmt_dep, 
             fmt_dep,
-            gtest_dep]
+            gtest_dep,
+            gtest_main_dep]
 
 foreach qa : qa_srcs
     e = executable(qa, 

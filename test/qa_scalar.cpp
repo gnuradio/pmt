@@ -43,7 +43,7 @@ TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
 TYPED_TEST(PmtScalarFixture, PmtScalarNull) {
   // Should initialize to nullptr
   pmt x; //{this->get_value()};
-  EXPECT_EQ(x, nullptr);
+  EXPECT_TRUE(x == nullptr);
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarConstruction) {
@@ -55,38 +55,38 @@ TYPED_TEST(PmtScalarFixture, PmtScalarConstruction) {
   auto value = this->get_value();
   // Init from value
   auto a = value;
-  EXPECT_EQ(a, value);
+  EXPECT_TRUE(a == value);
 
   // Copy Constructor
   auto b = a;
-  EXPECT_EQ(b, value);
-  EXPECT_EQ(b, a);
+  EXPECT_TRUE(b == value);
+  EXPECT_TRUE(b == a);
 
   // Assignment operator from pmt
   pmt c(b);
-  EXPECT_EQ(c, value);
-  EXPECT_EQ(c, a);
+  EXPECT_TRUE(c == value);
+  EXPECT_TRUE(c == a);
 
   // Assignment operator from value
   pmt d(value);
-  EXPECT_EQ(d, value);
-  EXPECT_EQ(d, a);
-  EXPECT_EQ(value, d);
+  EXPECT_TRUE(d == value);
+  EXPECT_TRUE(d == a);
+  EXPECT_TRUE(value == d);
 
   pmt e = value;
-  EXPECT_EQ(a, e);
-  EXPECT_EQ(e, value);
-  EXPECT_EQ(e, b);
+  EXPECT_TRUE(a == e);
+  EXPECT_TRUE(e == value);
+  EXPECT_TRUE(e == b);
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
   // Get the value, change the value
   auto value = this->get_value();
   pmt x(value);
-  EXPECT_EQ(x, value);
+  EXPECT_TRUE(x == value);
   value *= 2;
   x = value;
-  EXPECT_EQ(x, value);
+  EXPECT_TRUE(x == value);
   // pmt e({{"abc", 123}, {"you and me", "baby"}});
   pmt e(std::vector({4, 5, 6}));
 }
@@ -99,7 +99,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
   std::stringstream ss_check;
   ss << x;
   ss_check << value;
-  EXPECT_EQ(ss.str(), ss_check.str());
+  EXPECT_TRUE(ss.str() == ss_check.str());
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
@@ -117,16 +117,16 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     pmt x = this->get_value();
     // Make sure that we can get the value back out
     auto y = pmtv::cast<TypeParam>(x);
-    EXPECT_EQ(x , y);
+    EXPECT_TRUE(x == y);
 
     // Cast up to complex<double>
     auto z = pmtv::cast<std::complex<double>>(x);
-    EXPECT_EQ(std::complex<double>(this->get_value()) , z);
+    EXPECT_TRUE(std::complex<double>(this->get_value()) == z);
 
     // Cast up to double if possible
     if constexpr(!Complex<TypeParam>) {
         auto z = pmtv::cast<double>(x);
-        EXPECT_EQ(this->get_value() , z);
+        EXPECT_TRUE(this->get_value() == z);
     }
 
     // Fail if we try to get a container type
@@ -141,12 +141,12 @@ TYPED_TEST(PmtScalarFixture, base64)
     auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);
 
-    EXPECT_EQ(x == y, true);
+    EXPECT_TRUE(x == y);
 }
 
 TYPED_TEST(PmtScalarFixture, element_size)
 {
     pmt x = this->get_value();
-    EXPECT_EQ(elements(x), 1);
-    EXPECT_EQ(bytes_per_element(x), sizeof(TypeParam));
+    EXPECT_TRUE(elements(x) == 1);
+    EXPECT_TRUE(bytes_per_element(x) == sizeof(TypeParam));
 }
