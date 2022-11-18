@@ -167,8 +167,8 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     }
     pmt x(vec);
     std::stringbuf sb;
-    x.serialize(sb);
-    auto y = pmt::deserialize(sb);
+    pmtv::serialize(sb, x);
+    auto y = pmtv::deserialize(sb);
     EXPECT_EQ(x == y, true);
 }
 
@@ -233,8 +233,8 @@ TYPED_TEST(PmtVectorFixture, base64)
     pmt x = vec;
     
     // Make sure that we can get the value back out
-    auto encoded_str = x.to_base64();
-    auto y = pmt::from_base64(encoded_str);
+    auto encoded_str = pmtv::to_base64(x);
+    auto y = pmtv::from_base64(encoded_str);
 
     EXPECT_TRUE(x == y);
 }
