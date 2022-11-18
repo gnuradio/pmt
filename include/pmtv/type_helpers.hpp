@@ -45,9 +45,8 @@ concept UniformVector = std::ranges::contiguous_range<T> && Scalar<typename T::v
 template <typename T>
 concept UniformVectorInsidePmt = IsSharedPtr<T> && UniformVector<typename T::element_type>;
 
-class pmt;
 template <typename T>
-concept PmtMap = std::is_same_v<T, std::map<std::string, pmt>> || std::is_same_v<T, std::map<std::string, pmt_var_t>>;
+concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
 /*
 template <typename T>
 concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;

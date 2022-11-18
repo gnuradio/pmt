@@ -1,7 +1,7 @@
 /*-*-c++-*-*/
 /*
- * Copyright 2021 John Sallay
- * Copyright 2021 Josh Morman
+ * Copyright 2021-2022 John Sallay
+ * Copyright 2021-2022 Josh Morman
  *
  * SPDX-License-Identifier: LGPL-3.0
  *
@@ -43,7 +43,7 @@ TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
 TYPED_TEST(PmtScalarFixture, PmtScalarNull) {
   // Should initialize to nullptr
   pmt x; //{this->get_value()};
-  EXPECT_TRUE(x == nullptr);
+  EXPECT_EQ(x, nullptr);
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarConstruction) {
@@ -107,8 +107,8 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     auto value = this->get_value();
     pmt x(value);
     std::stringbuf sb;
-    x.serialize(sb);
-    auto y = pmt::deserialize(sb);
+    pmtv::serialize(sb, x);
+    auto y = pmtv::deserialize(sb);
     EXPECT_TRUE(value == y);
 }
 
@@ -116,16 +116,16 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
 {
     pmt x = this->get_value();
     // Make sure that we can get the value back out
-    auto y = TypeParam(x);
+    auto y = pmtv::cast<TypeParam>(x);
     EXPECT_EQ(x , y);
 
     // Cast up to complex<double>
-    auto z = std::complex<double>(x);
+    auto z = pmtv::cast<std::complex<double>>(x);
     EXPECT_EQ(std::complex<double>(this->get_value()) , z);
 
     // Cast up to double if possible
     if constexpr(!Complex<TypeParam>) {
-        auto z = double(x);
+        auto z = pmtv::cast<double>(x);
         EXPECT_EQ(this->get_value() , z);
     }
 
@@ -138,8 +138,8 @@ TYPED_TEST(PmtScalarFixture, base64)
 {
     pmt x = this->get_value();
     // Make sure that we can get the value back out
-    auto encoded_str = x.to_base64();
-    auto y = pmt::from_base64(encoded_str);
+    auto encoded_str = pmtv::to_base64(x);
+    auto y = pmtv::from_base64(encoded_str);
 
     EXPECT_EQ(x == y, true);
 }
