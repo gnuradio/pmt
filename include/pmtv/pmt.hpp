@@ -15,152 +15,7 @@
 namespace pmtv {
 
 using pmt = pmt_var_t;
-
-// template <class T>
-// using vector_t = std::vector<T>;
 using map_t = std::map<std::string, pmt>;
-
-// class pmt : public pmt_var_t {
-//     public:
-//     pmt(): pmt_var_t(nullptr) {}
-//     pmt(const pmt& other) = default;
-    
-//     template <class T>
-//     pmt(const T& other) : pmt_var_t(other) {} 
-//     // Probably only useful for strings
-//     template <class T>
-//     pmt(const T* other);
-
-//     // Forwarding Constructor to wrap pmt_var_t
-//     template <class... Args>
-//     pmt(Args&&... args)
-//         : variant{std::forward<Args>(args)...}
-//     {}
-
-//     pmt& operator=(const pmt& other) = default;
-
-//     template <class U>
-//     bool operator==(const U& other) const {
-//         return std::visit([other](const auto& arg) -> bool {
-//             using T = std::decay_t<decltype(arg)>;
-//             using Ud = std::decay_t<U>;
-//             return PmtEqual<T,Ud>(arg, other); }
-//             , get_base());
-//     }
-
-//     size_t serialize(std::streambuf& sb) const;
-//     static pmt deserialize(std::streambuf& sb);
-//     std::string to_base64() const;
-//     static pmtv::pmt from_base64(const std::string& encoded_str);
-
-
-
-//     // Allows us to cast from a pmt like this: float x = float(mypmt);
-//     // Must be explicit.
-//     template <class T>
-//     explicit operator T() const {
-//         return std::visit([](const auto& arg) -> T {
-//             using U = std::decay_t<decltype(arg)>;
-//             if constexpr(std::constructible_from<T, U>) return T(arg);
-//             // else if constexpr (PmtMap<T> && PmtMap<U>) {
-//             //     return std::get<std::map<std::string, pmt_var_t>>(arg);                
-//             // }
-//             else throw std::runtime_error(fmt::format("Invalid PMT Cast {} {}", typeid(T).name(), typeid(U).name()));
-//         }, *this); }
-
-// private:
-//     template <typename T>
-//     static T _deserialize_val(std::streambuf& sb);
-
-//     template <typename T>
-//     static pmt _deserialize_vec(std::streambuf& sb, size_t sz);
-// };
-
-// template <class T, class U>
-// bool PmtEqual(const T& arg, const U& other) {
-
-//     if constexpr(PmtNull<T> && std::same_as<T, U>) {
-//         return true;
-//     }
-//     else if constexpr(std::is_same_v<U, pmt>) {
-//         // If we are comparing to a pmt, another call to ==
-//         // will peel the value out
-        
-//         return arg == other;
-//     }
-//     else if constexpr(Scalar<T> && std::is_convertible_v<T,U>) {
-//         // Make sure we don't mess up signs or floating point
-//         // We don't want uint8_t(255) == int8_t(-1)
-//         // Or float(1.5) == int(1)
-//         if constexpr(std::same_as<T, U>) {
-//             return arg == other;
-//         }
-//         if constexpr(std::signed_integral<T> && std::unsigned_integral<U>){
-//             return (arg > 0) && (U(arg) == other);
-//         }
-//         else if constexpr(std::unsigned_integral<T> && std::signed_integral<U>){
-//             return (other > 0) && (T(other) == arg);
-//         }
-//         else if constexpr(Complex<T> && Complex<U>) {
-//             return std::complex<double>(arg) == std::complex<double>(other);
-//         }
-//         else if constexpr(Complex<T> && ! Complex<U>) {
-//             return false;
-//         }
-//         else if constexpr(Complex<U> && ! Complex<T>) { 
-//             return false;
-//         }
-//         else { 
-//             return arg == other;
-//         }
-//     }
-//     // else if constexpr(UniformVectorInsidePmt<T> && UniformVectorInsidePmt<U>) {
-//     //     return std::visit([&arg, &other]() -> bool {
-//     //         return PmtEqual(*arg, *other); }
-//     //         );
-//     // }
-//     // else if constexpr(UniformVectorInsidePmt<T> && UniformVector<U>) {
-//     //     return std::visit([&arg, &other]() -> bool {
-//     //         return PmtEqual(*arg, other); }
-//     //         );
-//     // }
-//     // else if constexpr(UniformVector<T> && UniformVectorInsidePmt<U>) {
-//     //     return std::visit([&arg, &other]() -> bool {
-//     //         return PmtEqual(arg, *other); }
-//     //         );
-//     // }
-//     else if constexpr(UniformVector<T> && UniformVector<U>) {
-//         // if constexpr(std::is_same_v<T, U>) {
-//         if constexpr(std::is_same_v<typename T::value_type, typename U::value_type>) {
-//             if (arg.size() == other.size()) {
-//                 return std::equal(arg.begin(), arg.end(), other.begin());
-//             }
-//             else 
-//             {
-//                 return false;
-//             }
-//         }
-//         else {
-//             // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
-//             return PmtEqual(arg, other);
-//         }
-//     }
-//     else {
-//         // std::cerr << typeid(T).name() << " " << typeid(U).name() << std::endl;
-//         return false;
-//     }
-//     // else if constexpr(std::is_convertible_v<T, U>) return arg == other;
-//     // else if constexpr(std::ranges::view<T> && std::ranges::view<U>) {
-//     //     if (std::is_same_v<typename T::value_type, typename U::value_type>) {
-//     //         if (arg.size() == other.size()) return std::equal(arg.begin(), arg.end(), other.begin());
-//     //         else return false;
-//     //     }
-//     // }
-    
-//     return false;
-    
-// }
-
 
 template <class T>
 inline constexpr std::in_place_type_t<std::vector<T>> vec_t{};
@@ -168,13 +23,12 @@ inline constexpr std::in_place_type_t<std::vector<T>> vec_t{};
 template <typename T>
 concept IsPmt = std::is_same_v<T, pmt>;
 
-/*template <class T, class V>
-auto get_vector(V value) -> decltype(std::get<std::vector<T>>(value) {
-    return std::get<std::vector<T>>(value);
-}*/
-
+// template <class T, class V>
+// auto get_vector(V value) -> decltype(std::get<std::vector<T>>(value) {
+//     return std::get<std::vector<T>>(value);
+// }
 template <class T, class V>
-std::vector<T>& get_vec(V& value) {
+std::vector<T>& get_vector(V value)  {
     return std::get<std::vector<T>>(value);
 }
 
@@ -203,17 +57,6 @@ std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec) {
 }
 
 std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec);
-//     bool first = true;
-//     os << "[";
-//     for (const auto& [k, v]: vec) {
-//         if (!first) 
-//             os << ", ";
-//         os << "{" << k << ", " << v << "}";
-//         first = false;
-//     }
-//     os << "]";
-//     return os;
-// }
 
 template <IsPmt P>
 std::ostream& operator<<(std::ostream& os, const P& value) {
@@ -343,8 +186,6 @@ size_t serialize(std::streambuf& sb, const P& value) {
             }
             
         }, value);
-
-
 
     return length;
 }
