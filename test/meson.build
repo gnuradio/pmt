@@ -27,5 +27,5 @@ foreach qa : qa_srcs
     test(qa, e)
 endforeach
 
+test('Python Bindings', py3, args : files('qa_pybind.py'), env: TEST_ENV)
 
-# e = executable('test_cereal', 'test_cereal.cpp', dependencies: cereal_dep, include_directories : incdir)
