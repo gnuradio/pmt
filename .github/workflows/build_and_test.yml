@@ -3,11 +3,11 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
+    branches: [main, variant] 
 jobs:
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     # The GH default is 360 minutes (it's also the max as of Feb-2021). However
     # we should fail sooner. The only reason to exceed this time is if a test
     # hangs.
@@ -21,8 +21,8 @@ jobs:
         # descriptive name, and one key 'containerid' with the name of the
         # container (i.e., what you want to docker-pull)
         include:
-          - distro: 'Ubuntu 20.04'
-            containerid: 'mormj/newsched-ci-docker'
+          - distro: 'Ubuntu 22.04'
+            containerid: 'mormj/newsched-ci-docker:ubuntu-22.04'
             cxxflags: -Werror
           # - distro: 'Fedora 33'
           #   containerid: 'gnuradio/ci:fedora-33-3.9'

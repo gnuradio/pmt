@@ -10,10 +10,12 @@ TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 qa_srcs = ['qa_scalar',
            'qa_uniform_vector',
            # 'qa_vector_of_pmts',
-           # 'qa_map'
+           'qa_map'
           ]
-deps = [pmt_dep,
-            gtest_dep]
+deps = [pmt_dep, 
+            fmt_dep,
+            gtest_dep,
+            gtest_main_dep]
 
 foreach qa : qa_srcs
     e = executable(qa, 

@@ -1,12 +1,29 @@
+#pragma once
+
 #include <complex>
 #include <concepts>
 #include <ranges>
 #include <variant>
 #include <vector>
+#include <map>
+#include <pmtv/rva_variant.hpp>
 
 namespace pmtv {
 // It is really hard to declare a variant that contains itself.
 // These are the steps required.
+
+using pmt_var_t = rva::variant<
+    std::nullptr_t,
+    uint8_t, uint16_t, uint32_t, uint64_t,
+    int8_t, int16_t, int32_t, int64_t,
+    float, double, std::complex<float>, std::complex<double>,
+    std::vector<uint8_t>, std::vector<uint16_t>, std::vector<uint32_t>, std::vector<uint64_t>,
+    std::vector<int8_t>, std::vector<int16_t>, std::vector<int32_t>, std::vector<int64_t>,
+    std::vector<float>, std::vector<double>,
+    std::vector<std::complex<float>>, std::vector<std::complex<double>>,
+    std::string,
+    std::vector<rva::self_t>,
+    std::map<std::string, rva::self_t>>;
 
 
 template <typename T> struct is_shared_ptr : std::false_type {};
@@ -28,9 +45,9 @@ concept UniformVector = std::ranges::contiguous_range<T> && Scalar<typename T::v
 template <typename T>
 concept UniformVectorInsidePmt = IsSharedPtr<T> && UniformVector<typename T::element_type>;
 
-/*template <typename T>
-concept PmtMap = std::is_same_v<T, std::map<std::string, _pmt_storage>>;
-
+template <typename T>
+concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
+/*
 template <typename T>
 concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
 
@@ -76,67 +93,16 @@ enum class pmt_element_type : uint8_t {
   DOUBLE,
   COMPLEX_FLOAT,
   COMPLEX_DOUBLE,
+  BOOL,
 
   STRING=253,
   PMT=254,
   INVALID=255
 };
 
-template <Scalar T>
-pmt_element_type element_type() {
-    if constexpr(std::is_same_v<T, uint8_t>) return pmt_element_type::UINT8;
-    else if constexpr(std::is_same_v<T, uint16_t>) return pmt_element_type::UINT16;
-    else if constexpr(std::is_same_v<T, uint32_t>) return pmt_element_type::UINT32;
-    else if constexpr(std::is_same_v<T, uint64_t>) return pmt_element_type::UINT64;
-    else if constexpr(std::is_same_v<T, int8_t>) return pmt_element_type::INT8;
-    else if constexpr(std::is_same_v<T, int16_t>) return pmt_element_type::INT16;
-    else if constexpr(std::is_same_v<T, int32_t>) return pmt_element_type::INT32;
-    else if constexpr(std::is_same_v<T, int64_t>) return pmt_element_type::INT64;
-    else if constexpr(std::is_same_v<T, float>) return pmt_element_type::FLOAT;
-    else if constexpr(std::is_same_v<T, double>) return pmt_element_type::DOUBLE;
-    else if constexpr(std::is_same_v<T, std::complex<float>>) return pmt_element_type::COMPLEX_FLOAT;
-    else if constexpr(std::is_same_v<T, std::complex<double>>) return pmt_element_type::COMPLEX_DOUBLE;
-    return pmt_element_type::UNKNOWN;
-}
-
-
-enum class pmt_container_type : uint16_t {
-    EMPTY,
-    SCALAR,
-    UNIFORM_VECTOR,
-    PMT_VECTOR,
-    MAP,
-    STRING
-};
-
-template <Scalar T>
-pmt_container_type container_type() {
-    return pmt_container_type::SCALAR;
-}
-
 template <UniformVector T>
 std::string type_string() {
     return "vector:" + type_string<typename T::value_type>();
-}
-
-template <UniformVector T>
-pmt_element_type element_type() {
-    return element_type<typename T::value_type>();
-}
-
-template <UniformVectorInsidePmt T>
-pmt_element_type element_type() {
-    return element_type<typename T::element_type>();
-}
-
-template <UniformVector T>
-pmt_container_type container_type() {
-    return pmt_container_type::UNIFORM_VECTOR;
-}
-
-template <UniformVectorInsidePmt T>
-pmt_container_type container_type() {
-    return pmt_container_type::UNIFORM_VECTOR;
 }
 
 /*template <PmtVector T>
@@ -144,46 +110,15 @@ std::string type_string() {
     return "vector:pmt";
 }*/
 
-/*template <PmtVector T>
-pmt_element_type element_type() {
-    return pmt_element_type::PMT;
-}
-
-template <PmtVector T>
-pmt_container_type container_type() {
-    return pmt_container_type::PMT_VECTOR;
-}
-
 template <PmtMap T>
 std::string type_string() {
     return "map:pmt";
 }
 
-template <PmtMap T>
-pmt_element_type element_type() {
-    return pmt_element_type::PMT;
-}
-
-template <PmtMap T>
-pmt_container_type container_type() {
-    return pmt_container_type::MAP;
-}*/
-
 template <class T>
 std::string type_string() {
     return "Unknown";
 }
-
-template <class T>
-pmt_element_type element_type() {
-    return pmt_element_type::UNKNOWN;
-}
-
-template <class T>
-pmt_container_type container_type() {
-    return pmt_container_type::EMPTY;
-}
-
 
 inline std::string get_type_string(const auto& arg) {
     using T = std::decay_t<decltype(arg)>;

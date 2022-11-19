@@ -86,7 +86,7 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 
 TYPED_TEST(PmtVectorFixture, VectorConstructors)
 {
-    // Emtpy Constructor
+    // Empty Constructor
     pmt empty_vec{std::vector<TypeParam>()};
     EXPECT_EQ(std::get<std::vector<TypeParam>>(empty_vec).size(), 0);
 
@@ -166,12 +166,12 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
     }
     pmt x(vec);
     std::stringbuf sb;
-    serialize(sb, x);
-    auto y = deserialize(sb);
+    pmtv::serialize(sb, x);
+    auto y = pmtv::deserialize(sb);
     EXPECT_EQ(x == y, true);
 }
 
-/*TYPED_TEST(PmtVectorFixture, VectorWrites)
+TYPED_TEST(PmtVectorFixture, VectorWrites)
 {
     // Initialize a PMT Wrap from a std::vector object
     std::vector<TypeParam> vec(this->num_values_);
@@ -184,15 +184,16 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
         }
     }
 
-    auto pmt_vec = vector(vec);
+    auto pmt_vec = pmt(vec);
+    auto pmt_span = get_span<TypeParam>(pmt_vec);
     for (auto i = 0; i < this->num_values_; i++) {
         if (i%7 == 2) {
-            pmt_vec[i] = pmt_vec[i] + this->get_value(i);
+            pmt_span[i] = pmt_span[i] + this->get_value(i);
         }
     }
-    EXPECT_EQ(pmt_vec, vec_modified);
+    EXPECT_EQ(pmt_vec == vec_modified, true);
 
-}*/
+}
 
 
 TYPED_TEST(PmtVectorFixture, get_as)
@@ -206,9 +207,9 @@ TYPED_TEST(PmtVectorFixture, get_as)
     auto y = std::get<std::vector<TypeParam>>(x);
     EXPECT_TRUE(x == y);
 
-    // // Should also work as a span
-    // auto z = std::span<TypeParam>(x);
-    // EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
+    // Should also work as a span
+    auto z = get_span<TypeParam>(x);
+    EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
     
     // // Should also work as a list
     // auto q = std::list<TypeParam>(x);
@@ -232,31 +233,31 @@ TYPED_TEST(PmtVectorFixture, base64)
     pmt x = vec;
     
     // Make sure that we can get the value back out
-    auto encoded_str = to_base64(x);
+    auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);
 
     EXPECT_TRUE(x == y);
 }
 
-#if 0
-TYPED_TEST(PmtVectorFixture, vector_wrapper)
-{
-    std::vector<TypeParam> vec(this->num_values_);
-    pmt x = vec;
-    // This should not throw
-    pmtf::vector_wrap z(x);
+// #if 0
+// TYPED_TEST(PmtVectorFixture, vector_wrapper)
+// {
+//     std::vector<TypeParam> vec(this->num_values_);
+//     pmt x = vec;
+//     // This should not throw
+//     pmtf::vector_wrap z(x);
 
-    EXPECT_EQ(z.size(), vec.size());
-    EXPECT_EQ(z.bytes_per_element(), sizeof(TypeParam));
-    EXPECT_EQ(z.bytes(), vec.size() * sizeof(TypeParam));
-    EXPECT_EQ(z,x);
-    EXPECT_EQ(x,z);
+//     EXPECT_EQ(z.size(), vec.size());
+//     EXPECT_EQ(z.bytes_per_element(), sizeof(TypeParam));
+//     EXPECT_EQ(z.bytes(), vec.size() * sizeof(TypeParam));
+//     EXPECT_EQ(z,x);
+//     EXPECT_EQ(x,z);
 
-    pmtf::vector_wrap a(vec);
-    std::cout << a << std::endl;
+//     pmtf::vector_wrap a(vec);
+//     std::cout << a << std::endl;
 
-    // TODO: Define all of the functionality that we should have here.
-    // Pointer to the beginning
+//     // TODO: Define all of the functionality that we should have here.
+//     // Pointer to the beginning
 
-}
-#endif
+// }
+// #endif
