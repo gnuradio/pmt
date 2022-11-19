@@ -30,7 +30,7 @@ if get_option('enable_testing')
   subdir('test')
 endif
 subdir('bench')
-subdir('python/pmtf')
+subdir('python/pmtv')
 
 pkg = import('pkgconfig')
 libs = [pmt_lib]     # the library/libraries users need to link against
