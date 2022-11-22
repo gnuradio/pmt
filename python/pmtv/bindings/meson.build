@@ -11,7 +11,7 @@ numpy_include = include_directories(
   ).stdout().strip()
 )
 
-pmtv_pybind_deps = [python3_dep, pybind11_dep, pmt_dep]
+pmtv_pybind_deps = [python3_dep, pybind11_dep, pmt_dep, fmt_dep]
 pmtv_pybind = py3_inst.extension_module('pmtv_python',
     pmtv_pybind_sources,
     include_directories: [numpy_include, '../../../include'],
