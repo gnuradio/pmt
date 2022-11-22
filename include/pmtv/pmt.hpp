@@ -49,7 +49,9 @@ std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec) {
     os << "[";
     for (const auto& v: vec) {
         if (first) os << v;
-        else os << ", " << v;
+        else { 
+            os << ", " << v;
+        }
         first = false;
     }
     os << "]";
@@ -64,7 +66,10 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr(Complex<T>) os << "(" << arg.real() << "," << arg.imag() << ")";
         else if constexpr(Scalar<T>) os << arg;
-        else if constexpr(UniformVector<T>)  _ostream_pmt_vector(os, std::span(arg));
+        else if constexpr(UniformVector<T> || PmtVector<T>)  
+            _ostream_pmt_vector(os, std::span(arg));
+        else if constexpr(std::same_as<T, std::vector<pmt>>) 
+            _ostream_pmt_vector(os, std::span(arg));
         else if constexpr(PmtMap<T>) _ostream_pmt_map(os, arg);
         /*else if constexpr(IsSharedPtr<T>) {
             if constexpr(UniformVector<typename T::element_type>) {
@@ -77,6 +82,7 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         }*/
         else if constexpr(std::same_as<std::nullptr_t, T>) os << "null";
         else if constexpr(std::same_as<T, std::string>) os << arg;
+        else os << "wtf " << typeid(T).name();
         return os; }
         , value.get_base());
 }

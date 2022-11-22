@@ -23,10 +23,8 @@ namespace py = pybind11;
 
 // pydoc.h is automatically generated in the build directory
 // #include <pmt_pydoc.h>
-#include <pybind11/stl_bind.h>
 
 // PYBIND11_MAKE_OPAQUE(std::map<std::string, pmtv::pmt>)
-
 
 template <typename T>
 static pmtv::pmt _np_to_pmt(py::array_t<T> np_vec)
@@ -61,6 +59,7 @@ void* pmt_init_numpy()
 
 pmtv::pmt buffer_to_pmt(const py::buffer& b) {
     auto buf = b.request();
+    if (buf.size == 1) {
     if (buf.format == "f") {
         float val;
         memcpy(&val, buf.ptr, sizeof(val));
@@ -111,7 +110,7 @@ pmtv::pmt buffer_to_pmt(const py::buffer& b) {
         memcpy(&val, buf.ptr, sizeof(val));
         return pmtv::pmt(val);
     } 
-
+    }
     std::cerr << buf.format << " " << buf.itemsize << std::endl;
 
     throw std::runtime_error("Invalid py::buffer object parsing");
@@ -130,60 +129,88 @@ void bind_pmt(py::module& m)
         // Null Wrapper
         .def(py::init([]() { return pmtv::pmt(); }))
 
-        // Scalar constructors
-        .def(py::init([](const bool& val) { 
-            return pmtv::pmt(val); }))
-        .def(py::init([](const int8_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const uint8_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const int16_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const uint16_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const int32_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const uint32_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const int64_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const uint64_t& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const double& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const float& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const std::complex<double>& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
-        .def(py::init([](const std::complex<float>& val) { 
-            return pmtv::pmt(val); }), py::arg{}.noconvert())
+        // // Scalar constructors - python supported types
+        // .def(py::init([](const bool& val) { 
+        //     return pmtv::pmt(val); }))
+        // .def(py::init([](const int64_t& val) { 
+        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
+        // .def(py::init([](const double& val) { 
+        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
+        // .def(py::init([](const std::complex<double>& val) { 
+        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
 
         // Vector Wrappers
         // .def(py::init([](const std::vector<bool>& vec) { return pmtf::pmt(vec); }))
-        .def(py::init([](const py::array_t<int8_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<int16_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<int32_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<int64_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<uint8_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<uint16_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<uint32_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<uint64_t>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<float>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array_t<double>& vec) { return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<int8_t>& vec) { 
+            return _np_to_pmt(vec); 
+            }))
+        .def(py::init([](const py::array_t<int16_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<int32_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<int64_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<uint8_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<uint16_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<uint32_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<uint64_t>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<float>& vec) { 
+            return _np_to_pmt(vec); }))
+        .def(py::init([](const py::array_t<double>& vec) { 
+            return _np_to_pmt(vec); }))
         .def(py::init(
-            [](const py::array_t<std::complex<float>>& vec) { return _np_to_pmt(vec); }))
+            [](const py::array_t<std::complex<float>>& vec) { 
+                return _np_to_pmt(vec); }))
         .def(py::init(
-            [](const py::array_t<std::complex<double>>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](py::array val) { 
-            return pmtv::pmt(); }), py::arg{}.noconvert())
+            [](const py::array_t<std::complex<double>>& vec) { 
+                return _np_to_pmt(vec); }))
+        .def(py::init(
+            [](const py::array& vec) { 
+                return pmt(); 
+                }))
+        .def(py::init([](std::vector<pmt>& vec) { 
+            // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
+            // but each element as a pmt of type std::vector<int8>
+            for (auto& a : vec) {
+                // int x= pmtv::cast<int>(a);
+                
+                std::cout << a.index() <<": " << typeid(a).name() << std::endl;
+                // std::cout << std::to_string(pmtv::cast<int>(a)) << std::endl;
+            }
+            return pmt(vec); })
+        )
+
+        // The list binding allows pmt([1,2,3]) as well as pmt([pmt(1), pmt(2), pmt(3)])
+        // Uniform vectors should use numpy types, anything pmt(list) should become [pmt...]
+        // .def(py::init(
+        //     [](const py::list& ll) { 
+        // //         std::vector<pmt> ret(ll.size());
+        // //         size_t idx = 0;
+        // //         for (const auto& items : ll) {
+        // //             ret[idx++] = pmt(items);
+        // //         }
+        // //         return pmt(ret);
+        // return pmt();
+        // }))
+        // .def(py::init([](py::array val) { 
+        //     return pmtv::pmt(); }), py::arg{}.noconvert())
         // Map constructor
         .def(py::init([](const std::map<std::string, pmtv::pmt>& mm) { return pmtv::pmt(mm); }))
+
+        // Fallback for types not directly mapped to pybind types
         // For supporting e.g. numpy.float32 scalar
         .def(py::init([](py::buffer val) { 
             return buffer_to_pmt(val);
         }))
 
-
+        .def("__repr__", [](pmtv::pmt obj){
+            std::ostringstream os;
+            pmtv::operator<<(os, obj);
+            return os.str();})
 
         .def("__str__", [](pmtv::pmt obj){
             std::ostringstream os;
@@ -204,14 +231,27 @@ void bind_pmt(py::module& m)
                         // return pmtv::pmt_nr_var_t(arg);
                         return py::array_t<typename T::value_type>(arg.size(), arg.data());
                     }
-                    // if constexpr(pmtv::PmtMap<T>) {
-                    //     throw new std::runtime_error("Cannot use __call__ operator on PMT Map, use instead get_map method");
-                    // }
-                    // if constexpr(pmtv::PmtVector<T>) {
-                    //     throw new std::runtime_error("Cannot use __call__ operator on PMT Vector, use instead get_vector method");
-                    // }
-                    throw new std::runtime_error("__call__ operator only defined for Scalar and UniformVector objects");
-                        //  return py::none();
+                    if constexpr(pmtv::PmtMap<T>) {
+                        //     throw new std::runtime_error("Cannot use __call__ operator on PMT Map, use instead get_map method");
+                        // put the std::map into a python dict
+                        // probably can do this more elegantly by using custom type_caster
+                        py::dict d;
+                        for (const auto& [k,v] : arg) {
+                            d[k.c_str()] = v;
+                        }
+                        return d;
+                    }
+                    if constexpr(std::same_as<T, std::vector<pmt>>) { // pmtv::PmtVector<T>) {
+                        // throw new py::type_error("Cannot use __call__ operator on PMT Vector, use instead get_vector method");
+                        py::list ll;
+                        for (const auto& item : arg) {
+                            ll.append(item);
+                        }
+                        return ll;
+                        // return py::array_t<typename T::value_type>(arg.size(), arg.data()); //py::array(arg);
+                    }
+                    throw new py::type_error("__call__ operator only defined for Scalar and UniformVector objects");
+                         return py::none();
 
                     }
                     , obj.get_base());
@@ -219,7 +259,7 @@ void bind_pmt(py::module& m)
     ;
 
     m.def("get_map", &pmtv::get_map<pmt>, "Get a map from a pmt");
+    m.def("get_vector", &pmtv::get_vector<pmt,pmt>, "Get a vector from a pmt");
     
-
     
 }
