@@ -3,8 +3,8 @@
 #include <string>
 
 #include "CLI/App.hpp"
-#include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 
 #include <pmtv/pmt.hpp>
 
@@ -18,7 +18,7 @@ bool run_test(const int times, uint64_t nitems)
         // Create the dictionary
         std::map<std::string, pmt> starting_map;
 
-        #if 1
+#if 1
         for (uint64_t k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = pmt(k);
@@ -26,17 +26,17 @@ bool run_test(const int times, uint64_t nitems)
             starting_map[key] = value;
         }
         auto d_in = pmt(starting_map);
-        #else
+#else
         auto d_in = map<std::string>::make(starting_map);
         for (int k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = scalar<int32_t>::make(k);
 
-            d_in->set(key,value);
+            d_in->set(key, value);
         }
-        #endif
+#endif
 
-        #if 0
+#if 0
         auto d_out = d_in->value();
 
         for (int k = 0; k < nitems; k++) {
@@ -47,7 +47,7 @@ bool run_test(const int times, uint64_t nitems)
                 valid = false;
             }
         }
-        #endif
+#endif
     }
     return valid;
 }
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
     uint64_t items = 100;
 
 
-    CLI::App app{"Benchmarking Script for Dictionary Packing and Unpacking"};
+    CLI::App app{ "Benchmarking Script for Dictionary Packing and Unpacking" };
 
     // app.add_option("-h,--help", "display help");
     app.add_option("--samples", samples, "Number of times to perform lookup");

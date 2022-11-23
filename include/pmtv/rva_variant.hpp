@@ -28,15 +28,16 @@ struct replace;
 template <class T, class Find, class Replace>
 using replace_t = typename replace<T, Find, Replace>::type;
 
-struct self_t {};
+struct self_t {
+};
 
 // See: https://en.cppreference.com/w/cpp/utility/variant
 template <class... T>
-class variant : public std::variant<replace_t<T, self_t, variant<T...>>...> {
-   public:
+class variant : public std::variant<replace_t<T, self_t, variant<T...>>...>
+{
+public:
     using base_type = std::variant<replace_t<T, self_t, variant<T...>>...>;
-    constexpr static bool
-        nothrow_swappable = std::is_nothrow_swappable_v<base_type>;
+    constexpr static bool nothrow_swappable = std::is_nothrow_swappable_v<base_type>;
 
     using base_type::base_type;
 
@@ -56,7 +57,8 @@ class variant : public std::variant<replace_t<T, self_t, variant<T...>>...> {
     variant& operator=(variant const&) = default;
     variant& operator=(variant&&) = default;
 
-    constexpr void swap(variant& other) noexcept(nothrow_swappable) {
+    constexpr void swap(variant& other) noexcept(nothrow_swappable)
+    {
         base_type::swap(other);
     }
     constexpr base_type& get_base() & noexcept { return *this; }
@@ -65,91 +67,107 @@ class variant : public std::variant<replace_t<T, self_t, variant<T...>>...> {
     constexpr base_type const&& get_base() const&& noexcept { return *this; }
 
     constexpr base_type* get_pointer_to_base() noexcept { return this; }
-    constexpr base_type const* get_pointer_to_base() const noexcept {
-        return this;
-    }
+    constexpr base_type const* get_pointer_to_base() const noexcept { return this; }
 
     auto operator<=>(variant const&) const = default;
     bool operator==(variant const&) const = default;
 
-    size_t size() {
-        return std::visit([](const auto& arg) -> size_t {
-            using TYPE = std::decay_t<decltype(arg)>;
-            if constexpr(std::same_as<std::nullptr_t, TYPE>) return 0;
-            else if constexpr(std::ranges::range<TYPE>) return arg.size();
-            return 1; }
-            , get_base());
+    size_t size()
+    {
+        return std::visit(
+            [](const auto& arg) -> size_t {
+                using TYPE = std::decay_t<decltype(arg)>;
+                if constexpr (std::same_as<std::nullptr_t, TYPE>)
+                    return 0;
+                else if constexpr (std::ranges::range<TYPE>)
+                    return arg.size();
+                return 1;
+            },
+            get_base());
     }
 };
 
 // See: https://en.cppreference.com/w/cpp/utility/variant/visit
 template <class Visitor, class... Variants>
-constexpr decltype(auto) visit(Visitor&& visitor, Variants&&... variants) {
-    return std::visit(
-        std::forward<Visitor>(visitor),
-        std::forward<Variants>(variants).get_base()...);
+constexpr decltype(auto) visit(Visitor&& visitor, Variants&&... variants)
+{
+    return std::visit(std::forward<Visitor>(visitor),
+                      std::forward<Variants>(variants).get_base()...);
 }
 template <class R, class Visitor, class... Variants>
-constexpr R visit(Visitor&& visitor, Variants&&... variants) {
-    return std::visit<R>(
-        std::forward<Visitor>(visitor),
-        std::forward<Variants>(variants).get_base()...);
+constexpr R visit(Visitor&& visitor, Variants&&... variants)
+{
+    return std::visit<R>(std::forward<Visitor>(visitor),
+                         std::forward<Variants>(variants).get_base()...);
 }
 
 // See: https://en.cppreference.com/w/cpp/utility/variant/get
 template <std::size_t I, class... Types>
-constexpr decltype(auto) get(rva::variant<Types...>& v) {
+constexpr decltype(auto) get(rva::variant<Types...>& v)
+{
     return std::get<I>(std::forward<decltype(v)>(v).get_base());
 }
 template <std::size_t I, class... Types>
-constexpr decltype(auto) get(rva::variant<Types...>&& v) {
+constexpr decltype(auto) get(rva::variant<Types...>&& v)
+{
     return std::get<I>(std::forward<decltype(v)>(v).get_base());
 }
 template <std::size_t I, class... Types>
-constexpr decltype(auto) get(const rva::variant<Types...>& v) {
+constexpr decltype(auto) get(const rva::variant<Types...>& v)
+{
     return std::get<I>(std::forward<decltype(v)>(v).get_base());
 }
 template <std::size_t I, class... Types>
-constexpr decltype(auto) get(const rva::variant<Types...>&& v) {
+constexpr decltype(auto) get(const rva::variant<Types...>&& v)
+{
     return std::get<I>(std::forward<decltype(v)>(v).get_base());
 }
 template <class T, class... Types>
-constexpr T& get(rva::variant<Types...>& v) {
+constexpr T& get(rva::variant<Types...>& v)
+{
     return std::get<T>(std::forward<decltype(v)>(v).get_base());
 }
 template <class T, class... Types>
-constexpr T&& get(rva::variant<Types...>&& v) {
+constexpr T&& get(rva::variant<Types...>&& v)
+{
     return std::get<T>(std::forward<decltype(v)>(v).get_base());
 }
 template <class T, class... Types>
-constexpr const T& get(const rva::variant<Types...>& v) {
+constexpr const T& get(const rva::variant<Types...>& v)
+{
     return std::get<T>(std::forward<decltype(v)>(v).get_base());
 }
 template <class T, class... Types>
-constexpr const T&& get(const rva::variant<Types...>&& v) {
+constexpr const T&& get(const rva::variant<Types...>&& v)
+{
     return std::get<T>(std::forward<decltype(v)>(v).get_base());
 }
 
 // See: https://en.cppreference.com/w/cpp/utility/variant/get_if
 template <std::size_t I, class... Types>
-constexpr auto* get_if(rva::variant<Types...>* pv) noexcept {
+constexpr auto* get_if(rva::variant<Types...>* pv) noexcept
+{
     return std::get_if<I>(pv->get_pointer_to_base());
 }
 template <std::size_t I, class... Types>
-constexpr auto const* get_if(const rva::variant<Types...>* pv) noexcept {
+constexpr auto const* get_if(const rva::variant<Types...>* pv) noexcept
+{
     return std::get_if<I>(pv->get_pointer_to_base());
 }
 template <class T, class... Types>
-constexpr auto* get_if(rva::variant<Types...>* pv) noexcept {
+constexpr auto* get_if(rva::variant<Types...>* pv) noexcept
+{
     return std::get_if<T>(pv->get_pointer_to_base());
 }
 template <class T, class... Types>
-constexpr auto const* get_if(const rva::variant<Types...>* pv) noexcept {
+constexpr auto const* get_if(const rva::variant<Types...>* pv) noexcept
+{
     return std::get_if<T>(pv->get_pointer_to_base());
 }
 
 template <class T, class... Types>
-constexpr bool holds_alternative(const rva::variant<Types...>& v) noexcept {
+constexpr bool holds_alternative(const rva::variant<Types...>& v) noexcept
+{
     return std::holds_alternative(v.get_base());
 }
 } // namespace rva
@@ -161,24 +179,29 @@ struct std::hash<rva::variant<T...>> : std::hash<std::variant<T...>> {
     hash() = default;
     hash(hash const&) = default;
     hash(hash&&) = default;
-    size_t operator()(rva::variant<T...> const& v) const {
+    size_t operator()(rva::variant<T...> const& v) const
+    {
         return base_type::operator()(v.get_base());
     }
 };
 
 template <class... Types>
 struct std::variant_size<rva::variant<Types...>>
-  : std::integral_constant<std::size_t, sizeof...(Types)> {};
+    : std::integral_constant<std::size_t, sizeof...(Types)> {
+};
 template <class... Types>
 struct std::variant_size<const rva::variant<Types...>>
-  : std::integral_constant<std::size_t, sizeof...(Types)> {};
+    : std::integral_constant<std::size_t, sizeof...(Types)> {
+};
 
 template <std::size_t I, class... Types>
 struct std::variant_alternative<I, rva::variant<Types...>>
-  : std::variant_alternative<I, typename rva::variant<Types...>::base_type> {};
+    : std::variant_alternative<I, typename rva::variant<Types...>::base_type> {
+};
 template <std::size_t I, class... Types>
 struct std::variant_alternative<I, const rva::variant<Types...>>
-  : std::variant_alternative<I, typename rva::variant<Types...>::base_type> {};
+    : std::variant_alternative<I, typename rva::variant<Types...>::base_type> {
+};
 
 // Implementation for replace
 namespace rva {

@@ -3,8 +3,8 @@
 #include <string>
 
 #include "CLI/App.hpp"
-#include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 
 #include <pmtv/pmt.hpp>
 
@@ -14,20 +14,18 @@ bool run_test(const int times, pmt& d, int32_t index)
 {
     std::stringbuf sb; // fake channel
 
-    auto key = std::string("key"+std::to_string(index));
+    auto key = std::string("key" + std::to_string(index));
 
     auto themap = pmtv::get_map(d);
 
     bool valid = true;
-    for (int i=0; i< times; i++)
-    {
+    for (int i = 0; i < times; i++) {
         auto ref = themap[key];
 
         // if (ref == nullptr)
         //    valid = false;
         auto s = pmtv::cast<int32_t>(ref);
-        if (s != index)
-        {
+        if (s != index) {
             valid = false;
         }
     }
@@ -41,7 +39,7 @@ int main(int argc, char* argv[])
     uint64_t index = 0;
 
 
-    CLI::App app{"Benchmarking Script for Dictionary Packing and Unpacking"};
+    CLI::App app{ "Benchmarking Script for Dictionary Packing and Unpacking" };
 
     // app.add_option("-h,--help", "display help");
     app.add_option("--samples", samples, "Number of times to perform lookup");
@@ -52,9 +50,8 @@ int main(int argc, char* argv[])
 
     {
         // Create the dictionary
-        std::map<std::string,pmt> starting_map;
-        for (uint32_t k = 0; k < items; k++)
-        {
+        std::map<std::string, pmt> starting_map;
+        for (uint32_t k = 0; k < items; k++) {
             // auto key = std::string("key" + std::to_string(k));
             // auto value = scalar(k);
 

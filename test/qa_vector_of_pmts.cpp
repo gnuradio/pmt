@@ -19,7 +19,7 @@ using namespace pmtv;
 
 /*
 How to do the map wrapper???
-0) Derived class 
+0) Derived class
     Has all the same methods.
     Works anywhere a pmt is needed.
     Need to use pointers, which is a little different than what I'm doing.
@@ -31,17 +31,18 @@ What does it need to do???
 Construct from an initializer list.
 Range based for loop.
 operator[] (lookup and add)
-Cheap copies (could be moves)    
+Cheap copies (could be moves)
 */
 
-TEST(PmtVectorPmt, Constructor) {
+TEST(PmtVectorPmt, Constructor)
+{
     // Empty Constructor
-    pmt empty_vec{std::vector<pmt>()};
+    pmt empty_vec{ std::vector<pmt>() };
     EXPECT_EQ(std::get<std::vector<pmt>>(empty_vec).size(), 0);
 
     std::vector<pmt> vec;
     vec.push_back(pmt(1));
-    vec.push_back(pmt(std::vector<uint32_t>{1,2,3}));
+    vec.push_back(pmt(std::vector<uint32_t>{ 1, 2, 3 }));
 
     auto p = pmt(vec);
 
