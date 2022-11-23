@@ -13,6 +13,6 @@ foreach s : srcs
         include_directories : incdir, 
         dependencies: deps, 
         install : false)
-    test(s, e)
+    # test(s, e)
 endforeach
 endif
