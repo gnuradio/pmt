@@ -8,10 +8,12 @@
 #include <gtest/gtest.h>
 #include <complex>
 
-#include <pmtv/uniform_vector.hpp>
-
 #include <list>
 #include <map>
+
+#include <pmtv/pmt.hpp>
+
+#include <fmt/core.h>
 
 using namespace pmtv;
 
@@ -33,5 +35,18 @@ Cheap copies (could be moves)
 */
 
 TEST(PmtVectorPmt, Constructor) {
-    
+    // Empty Constructor
+    pmt empty_vec{std::vector<pmt>()};
+    EXPECT_EQ(std::get<std::vector<pmt>>(empty_vec).size(), 0);
+
+    std::vector<pmt> vec;
+    vec.push_back(pmt(1));
+    vec.push_back(pmt(std::vector<uint32_t>{1,2,3}));
+
+    auto p = pmt(vec);
+
+    auto vec2 = pmtv::get_vector<pmt>(p);
+
+    EXPECT_TRUE(vec[0] == vec2[0]);
+    EXPECT_TRUE(vec[1] == vec2[1]);
 }

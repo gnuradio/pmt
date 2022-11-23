@@ -9,7 +9,7 @@ TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 # GR namespace tests
 qa_srcs = ['qa_scalar',
            'qa_uniform_vector',
-           # 'qa_vector_of_pmts',
+           'qa_vector_of_pmts',
            'qa_map'
           ]
 deps = [pmt_dep, 
@@ -27,5 +27,5 @@ foreach qa : qa_srcs
     test(qa, e)
 endforeach
 
+test('Python Bindings', py3, args : files('qa_pybind.py'), env: TEST_ENV)
 
-# e = executable('test_cereal', 'test_cereal.cpp', dependencies: cereal_dep, include_directories : incdir)

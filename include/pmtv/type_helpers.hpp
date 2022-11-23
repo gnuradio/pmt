@@ -25,6 +25,19 @@ using pmt_var_t = rva::variant<
     std::vector<rva::self_t>,
     std::map<std::string, rva::self_t>>;
 
+// A variant of only the non-recursive types
+using pmt_nr_var_t = std::variant<
+    std::nullptr_t,
+    uint8_t, uint16_t, uint32_t, uint64_t,
+    int8_t, int16_t, int32_t, int64_t,
+    float, double, std::complex<float>, std::complex<double>,
+    std::vector<uint8_t>, std::vector<uint16_t>, std::vector<uint32_t>, std::vector<uint64_t>,
+    std::vector<int8_t>, std::vector<int16_t>, std::vector<int32_t>, std::vector<int64_t>,
+    std::vector<float>, std::vector<double>,
+    std::vector<std::complex<float>>, std::vector<std::complex<double>>,
+    std::string>;
+
+
 
 template <typename T> struct is_shared_ptr : std::false_type {};
 template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
@@ -47,6 +60,13 @@ concept UniformVectorInsidePmt = IsSharedPtr<T> && UniformVector<typename T::ele
 
 template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
+
+template <typename T>
+concept String = std::is_same_v<T, std::string>;
+
+template <typename T>
+concept PmtVector = std::ranges::contiguous_range<T> && std::is_same_v<T::value_type, pmt_var_t>;
+
 /*
 template <typename T>
 concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
@@ -78,27 +98,6 @@ std::string type_string() {
     else if constexpr(std::is_same_v<T, std::complex<double>>) return "complex:float64";
     return "Unknown Type";
 }
-
-enum class pmt_element_type : uint8_t {
-  UNKNOWN = 0,
-  UINT8 = 1,
-  UINT16,
-  UINT32,
-  UINT64,
-  INT8,
-  INT16,
-  INT32,
-  INT64,
-  FLOAT,
-  DOUBLE,
-  COMPLEX_FLOAT,
-  COMPLEX_DOUBLE,
-  BOOL,
-
-  STRING=253,
-  PMT=254,
-  INVALID=255
-};
 
 template <UniformVector T>
 std::string type_string() {
