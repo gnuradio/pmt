@@ -15,12 +15,13 @@
 using namespace pmtv;
 
 
-TEST(PmtString, Constructor) {
+TEST(PmtString, Constructor)
+{
     // Empty Constructor
-    pmt empty_vec{std::string()};
+    pmt empty_vec{ std::string() };
     EXPECT_EQ(std::get<std::string>(empty_vec).size(), 0);
 
-    std::string s1{"hello world"};
+    std::string s1{ "hello world" };
 
     auto p = pmt(s1);
 
@@ -29,8 +30,9 @@ TEST(PmtString, Constructor) {
     EXPECT_TRUE(s1 == s2);
 }
 
-TEST(PmtString, Serialization) {
-    std::string s1{"hello world"};
+TEST(PmtString, Serialization)
+{
+    std::string s1{ "hello world" };
 
     auto x = pmt(s1);
 
@@ -38,6 +40,4 @@ TEST(PmtString, Serialization) {
     pmtv::serialize(sb, x);
     auto y = pmtv::deserialize(sb);
     EXPECT_EQ(x == y, true);
-
 }
-
