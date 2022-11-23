@@ -80,6 +80,16 @@ class qa_pybind (unittest.TestCase):
         self.assertEqual(pmtv.get_map(xp['meta'])['abc'](),123)
         self.assertTrue(np.array_equal(xp['data'](),[1,2,3]))
 
+        # call operator used on returned pmt
+        xp = x()
+        self.assertEqual(xp['meta']()['abc'](),123)
+        self.assertTrue(np.array_equal(xp['data'](),[1,2,3]))
+
+    def test_vector_of_pmt(self):
+        x = pmt([pmt(12345), pmt(67890)])
+        xp = x()
+        self.assertEqual(xp[0](),12345)
+        self.assertEqual(xp[1](),67890)
 
 
 if __name__ == '__main__':
