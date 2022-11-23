@@ -20,7 +20,8 @@ import numpy as np
 # print(x)
 
 # x = pmt(np.array([1,2,3],dtype=np.float32))
-x = pmt([pmt(12345), pmt(67890)])
+# x = pmt([pmt(12345), pmt(67890)])
+x = pmt(np.uint64(17))
 # print(type(x))
 # print(x)
 print(type(x()))
