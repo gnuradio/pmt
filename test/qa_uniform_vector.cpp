@@ -15,8 +15,8 @@
 
 using namespace pmtv;
 
-using testing_types = ::testing::Types<uint32_t>;
-/*                                       int8_t,
+using testing_types = ::testing::Types<uint32_t,
+                                       int8_t,
                                        uint16_t,
                                        int16_t,
                                        uint32_t,
@@ -26,7 +26,7 @@ using testing_types = ::testing::Types<uint32_t>;
                                        float,
                                        double,
                                        std::complex<float>,
-                                       std::complex<double>>;*/
+                                       std::complex<double>>;
 
 
 template <typename T>

@@ -172,6 +172,10 @@ void bind_pmt(py::module& m)
             [](const py::array& vec) { 
                 return pmt(); 
                 }))
+        .def(py::init(
+            [](const std::string& str) { 
+                return pmt(str); 
+                }))
         .def(py::init([](std::vector<pmt>& vec) { 
             // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
             // but each element as a pmt of type std::vector<int8>
@@ -227,9 +231,13 @@ void bind_pmt(py::module& m)
                         // return pmtv::pmt_nr_var_t(arg);
                         return create_numpy_scalar(arg);
                     }
-                    if constexpr(pmtv::UniformVector<T>) { // || pmtv::UniformVector<T> || pmtv::String<T>) {
+                    if constexpr(pmtv::UniformVector<T> && !pmtv::String<T>) { // || pmtv::UniformVector<T> || pmtv::String<T>) {
                         // return pmtv::pmt_nr_var_t(arg);
                         return py::array_t<typename T::value_type>(arg.size(), arg.data());
+                    }
+                    if constexpr(pmtv::String<T>) { // || pmtv::UniformVector<T> || pmtv::String<T>) {
+                        // return pmtv::pmt_nr_var_t(arg);
+                        return py::str(arg.c_str());
                     }
                     if constexpr(pmtv::PmtMap<T>) {
                         //     throw new std::runtime_error("Cannot use __call__ operator on PMT Map, use instead get_map method");
@@ -261,5 +269,14 @@ void bind_pmt(py::module& m)
     m.def("get_map", &pmtv::get_map<pmt>, "Get a map from a pmt");
     m.def("get_vector", &pmtv::get_vector<pmt,pmt>, "Get a vector from a pmt");
     
-    
+    m.def("serialize",
+            [](pmtv::pmt obj) {
+                std::stringbuf sb; // fake channel
+                auto nbytes = pmtv::serialize(sb, obj);
+                std::vector<uint8_t> pre_encoded_str(nbytes, 0);
+                sb.sgetn((char*)pre_encoded_str.data(), nbytes);
+                return pre_encoded_str;
+            });
+    m.def("to_base64", &pmtv::to_base64<pmtv::pmt>);
+    m.def("from_base64", &pmtv::from_base64);
 }

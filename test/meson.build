@@ -10,7 +10,8 @@ TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 qa_srcs = ['qa_scalar',
            'qa_uniform_vector',
            'qa_vector_of_pmts',
-           'qa_map'
+           'qa_map',
+           'qa_string'
           ]
 deps = [pmt_dep, 
             fmt_dep,

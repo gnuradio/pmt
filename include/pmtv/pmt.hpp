@@ -58,7 +58,7 @@ std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec) {
     return os;
 }
 
-std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec);
+static std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec);
 
 template <IsPmt P>
 std::ostream& operator<<(std::ostream& os, const P& value) {
@@ -87,7 +87,7 @@ std::ostream& operator<<(std::ostream& os, const P& value) {
         , value.get_base());
 }
 
-std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec) {
+static std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec) {
     bool first = true;
     os << "[";
     for (const auto& [k, v]: vec) {
@@ -173,7 +173,7 @@ size_t serialize(std::streambuf& sb, const P& value) {
                 auto v = arg;
                 length += sb.sputn(reinterpret_cast<const char*>(&v), sizeof(v));
             }
-            else if constexpr(UniformVector<T>) {
+            else if constexpr(UniformVector<T> || String<T>) {
                 uint64_t sz = arg.size();
                 length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
                 length += sb.sputn(reinterpret_cast<const char*>(arg.data()), arg.size()*sizeof(arg[0]));
@@ -199,7 +199,7 @@ size_t serialize(std::streambuf& sb, const P& value) {
 template <class T>
 T _deserialize_val(std::streambuf& sb);
 
-pmt deserialize(std::streambuf& sb)
+static pmt deserialize(std::streambuf& sb)
 {
     uint16_t version;
     // pmt_container_type container;
@@ -240,6 +240,8 @@ pmt deserialize(std::streambuf& sb)
         case serialInfo<std::vector<std::complex<float>>>::value: return _deserialize_val<std::vector<std::complex<float>>>(sb); 
         case serialInfo<std::vector<std::complex<double>>>::value: return _deserialize_val<std::vector<std::complex<double>>>(sb); 
 
+        case serialInfo<std::string>::value: return _deserialize_val<std::string>(sb); 
+
         case serialInfo<map_t>::value: return _deserialize_val<map_t>(sb);
         default: throw std::runtime_error("pmt::deserialize: Invalid PMT type type");
     }
@@ -254,11 +256,18 @@ T _deserialize_val(std::streambuf& sb) {
         sb.sgetn(reinterpret_cast<char*>(&val), sizeof(val));
         return val;
     }
-    else if constexpr(UniformVector<T>) {
+    else if constexpr(UniformVector<T> && !String<T>) {
         uint64_t sz; 
         sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
         std::vector<typename T::value_type> val(sz);
         sb.sgetn(reinterpret_cast<char*>(val.data()), sz*sizeof(val[0]));
+        return val;
+    }
+    else if constexpr(String<T>) {
+        uint64_t sz; 
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+        std::string val(sz, '0');
+        sb.sgetn(reinterpret_cast<char*>(val.data()), sz);
         return val;
     }
     else if constexpr(PmtMap<T>) {
@@ -296,7 +305,7 @@ std::string to_base64(const P& value)
     return encoded_str;
 }
 
-pmt from_base64(const std::string& encoded_str)
+[[maybe_unused]] static pmt from_base64(const std::string& encoded_str)
 {
     std::string bufplain(encoded_str.size(), '0');
     Base64decode(bufplain.data(), encoded_str.data());

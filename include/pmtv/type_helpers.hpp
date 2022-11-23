@@ -6,6 +6,8 @@
 #include <variant>
 #include <vector>
 #include <map>
+#include <memory>
+
 #include <pmtv/rva_variant.hpp>
 
 namespace pmtv {
