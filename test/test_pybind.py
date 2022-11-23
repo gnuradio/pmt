@@ -20,16 +20,16 @@ import numpy as np
 # print(x)
 
 # x = pmt(np.array([1,2,3],dtype=np.float32))
-# x = pmt([pmt(12345), pmt(67890)])
-x = pmt(np.uint64(17))
+x = pmt([pmt(12345), pmt(67890)])
+# x = pmt(np.uint64(17))
 # print(type(x))
 # print(x)
 print(type(x()))
-# print(type(x()[0]))
-# print(type(x()[0]()))
+print(type(x()[0]))
+print(type(x()[0]()))
 
-# print(x()[0]())
-# print(x()[1]())
+print(x()[0]())
+print(x()[1]())
 
 # x = pmt(np.int16(777))
 # print(x)

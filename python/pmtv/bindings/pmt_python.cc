@@ -129,15 +129,15 @@ void bind_pmt(py::module& m)
         // Null Wrapper
         .def(py::init([]() { return pmtv::pmt(); }))
 
-        // // Scalar constructors - python supported types
-        // .def(py::init([](const bool& val) { 
-        //     return pmtv::pmt(val); }))
-        // .def(py::init([](const int64_t& val) { 
-        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
-        // .def(py::init([](const double& val) { 
-        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
-        // .def(py::init([](const std::complex<double>& val) { 
-        //     return pmtv::pmt(val); }), py::arg{}.noconvert())
+        // Scalar constructors - python supported types
+        .def(py::init([](const bool& val) { 
+            return pmtv::pmt(val); }), py::arg{}.noconvert())
+        .def(py::init([](const int64_t& val) { 
+            return pmtv::pmt(val); }), py::arg{}.noconvert())
+        .def(py::init([](const double& val) { 
+            return pmtv::pmt(val); }), py::arg{}.noconvert())
+        .def(py::init([](const std::complex<double>& val) { 
+            return pmtv::pmt(val); }), py::arg{}.noconvert())
 
         // Vector Wrappers
         // .def(py::init([](const std::vector<bool>& vec) { return pmtf::pmt(vec); }))
@@ -172,17 +172,17 @@ void bind_pmt(py::module& m)
             [](const py::array& vec) { 
                 return pmt(); 
                 }))
-        // .def(py::init([](std::vector<pmt>& vec) { 
-        //     // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
-        //     // but each element as a pmt of type std::vector<int8>
-        //     for (auto& a : vec) {
-        //         // int x= pmtv::cast<int>(a);
+        .def(py::init([](std::vector<pmt>& vec) { 
+            // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
+            // but each element as a pmt of type std::vector<int8>
+            // for (auto& a : vec) {
+            //     // int x= pmtv::cast<int>(a);
                 
-        //         std::cout << a.index() <<": " << typeid(a).name() << std::endl;
-        //         // std::cout << std::to_string(pmtv::cast<int>(a)) << std::endl;
-        //     }
-        //     return pmt(vec); })
-        // )
+            //     std::cout << a.index() <<": " << typeid(a).name() << std::endl;
+            //     // std::cout << std::to_string(pmtv::cast<int>(a)) << std::endl;
+            // }
+            return pmt(vec); })
+        )
 
         // The list binding allows pmt([1,2,3]) as well as pmt([pmt(1), pmt(2), pmt(3)])
         // Uniform vectors should use numpy types, anything pmt(list) should become [pmt...]
