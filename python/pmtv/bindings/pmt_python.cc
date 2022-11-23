@@ -70,7 +70,7 @@ pmtv::pmt buffer_to_pmt(const py::buffer& b) {
         memcpy(&val, buf.ptr, sizeof(val));
         return pmtv::pmt(val);
     }
-    else if (buf.format == "b") {
+    else if (buf.format == "b" || buf.format == "B") {
         uint8_t val;
         memcpy(&val, buf.ptr, sizeof(val));
         return pmtv::pmt(val);
@@ -105,7 +105,7 @@ pmtv::pmt buffer_to_pmt(const py::buffer& b) {
         memcpy(&val, buf.ptr, sizeof(val));
         return pmtv::pmt(val);
     }
-    else if (buf.format == "l") {
+    else if (buf.format == "l" || buf.format == "L") {
         int64_t val;
         memcpy(&val, buf.ptr, sizeof(val));
         return pmtv::pmt(val);
@@ -172,17 +172,17 @@ void bind_pmt(py::module& m)
             [](const py::array& vec) { 
                 return pmt(); 
                 }))
-        .def(py::init([](std::vector<pmt>& vec) { 
-            // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
-            // but each element as a pmt of type std::vector<int8>
-            for (auto& a : vec) {
-                // int x= pmtv::cast<int>(a);
+        // .def(py::init([](std::vector<pmt>& vec) { 
+        //     // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
+        //     // but each element as a pmt of type std::vector<int8>
+        //     for (auto& a : vec) {
+        //         // int x= pmtv::cast<int>(a);
                 
-                std::cout << a.index() <<": " << typeid(a).name() << std::endl;
-                // std::cout << std::to_string(pmtv::cast<int>(a)) << std::endl;
-            }
-            return pmt(vec); })
-        )
+        //         std::cout << a.index() <<": " << typeid(a).name() << std::endl;
+        //         // std::cout << std::to_string(pmtv::cast<int>(a)) << std::endl;
+        //     }
+        //     return pmt(vec); })
+        // )
 
         // The list binding allows pmt([1,2,3]) as well as pmt([pmt(1), pmt(2), pmt(3)])
         // Uniform vectors should use numpy types, anything pmt(list) should become [pmt...]
