@@ -64,7 +64,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarNull)
 {
     // Should initialize to nullptr
     pmt x; //{this->get_value()};
-    EXPECT_TRUE(x == nullptr);
+    EXPECT_TRUE(x == pmt_null());
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarConstruction)

@@ -14,7 +14,7 @@ namespace pmtv {
 // It is really hard to declare a variant that contains itself.
 // These are the steps required.
 
-using pmt_var_t = rva::variant<std::nullptr_t,
+using pmt_var_t = rva::variant<std::monostate,
                                uint8_t,
                                uint16_t,
                                uint32_t,
@@ -44,7 +44,7 @@ using pmt_var_t = rva::variant<std::nullptr_t,
                                std::map<std::string, rva::self_t>>;
 
 // A variant of only the non-recursive types
-using pmt_nr_var_t = std::variant<std::nullptr_t,
+using pmt_nr_var_t = std::variant<std::monostate,
                                   uint8_t,
                                   uint16_t,
                                   uint32_t,
@@ -72,6 +72,9 @@ using pmt_nr_var_t = std::variant<std::nullptr_t,
                                   std::string>;
 
 
+using pmt_null = std::monostate;
+
+
 template <typename T>
 struct is_shared_ptr : std::false_type {
 };
@@ -82,7 +85,7 @@ template <typename T>
 concept IsSharedPtr = is_shared_ptr<T>::value;
 
 template <typename T>
-concept PmtNull = std::is_same_v<T, nullptr_t>;
+concept PmtNull = std::is_same_v<T, std::monostate>;
 
 template <typename T>
 concept Complex =

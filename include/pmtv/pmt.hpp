@@ -90,12 +90,12 @@ std::ostream& operator<<(std::ostream& os, const P& value)
                     //_ostream_pmt_map(os, *arg);
                 }
             }*/
-            else if constexpr (std::same_as<std::nullptr_t, T>)
+            else if constexpr (std::same_as<std::monostate, T>)
                 os << "null";
             else if constexpr (std::same_as<T, std::string>)
                 os << arg;
             else
-                os << "wtf " << typeid(T).name();
+                os << "unknown type: " << typeid(T).name();
             return os;
         },
         value.get_base());
@@ -121,7 +121,7 @@ size_t elements(const P& value)
     return std::visit(
         [](const auto& arg) -> size_t {
             using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::same_as<std::nullptr_t, T>)
+            if constexpr (std::same_as<std::monostate, T>)
                 return 0;
             else if constexpr (std::ranges::range<T>)
                 return arg.size();
@@ -136,7 +136,7 @@ size_t bytes_per_element(const P& value)
     return std::visit(
         [](const auto& arg) -> size_t {
             using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::same_as<std::nullptr_t, T>)
+            if constexpr (std::same_as<std::monostate, T>)
                 return 0;
             else if constexpr (std::ranges::range<T>)
                 return sizeof(typename T::value_type);
@@ -148,7 +148,7 @@ size_t bytes_per_element(const P& value)
 template <class T>
 constexpr uint8_t pmtTypeIndex()
 {
-    if constexpr (std::same_as<T, std::nullptr_t>)
+    if constexpr (std::same_as<T, std::monostate>)
         return 0;
     else if constexpr (std::same_as<T, bool>)
         return 1;
