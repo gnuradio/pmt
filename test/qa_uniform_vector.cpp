@@ -15,8 +15,8 @@
 
 using namespace pmtv;
 
-using testing_types = ::testing::Types<uint32_t>;
-/*                                       int8_t,
+using testing_types = ::testing::Types<uint32_t,
+                                       int8_t,
                                        uint16_t,
                                        int16_t,
                                        uint32_t,
@@ -26,7 +26,7 @@ using testing_types = ::testing::Types<uint32_t>;
                                        float,
                                        double,
                                        std::complex<float>,
-                                       std::complex<double>>;*/
+                                       std::complex<double>>;
 
 
 template <typename T>
@@ -87,7 +87,7 @@ TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
 TYPED_TEST(PmtVectorFixture, VectorConstructors)
 {
     // Empty Constructor
-    pmt empty_vec{std::vector<TypeParam>()};
+    pmt empty_vec{ std::vector<TypeParam>() };
     EXPECT_EQ(std::get<std::vector<TypeParam>>(empty_vec).size(), 0);
 
     int num_values = this->num_values_;
@@ -130,7 +130,6 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 }
 
 
-
 TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
 {
 
@@ -144,7 +143,7 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
     }
     // Init from std::vector
     auto pmt_vec = pmt(vec);
-    //for (auto& xx : std::span(std::get<std::vector<TypeParam>>(pmt_vec))) {
+    // for (auto& xx : std::span(std::get<std::vector<TypeParam>>(pmt_vec))) {
     for (auto& xx : get_span<TypeParam>(pmt_vec)) {
         xx *= xx;
     }
@@ -158,7 +157,8 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
     EXPECT_EQ(pmt_vec == vec_doubled, true);
 }
 
-TYPED_TEST(PmtVectorFixture, PmtVectorSerialize) {
+TYPED_TEST(PmtVectorFixture, PmtVectorSerialize)
+{
     // Serialize/Deserialize and make sure that it works
     std::vector<TypeParam> vec(this->num_values_);
     for (auto i = 0; i < this->num_values_; i++) {
@@ -179,7 +179,7 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
     for (auto i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(i);
         vec_modified[i] = vec[i];
-        if (i%7 == 2) {
+        if (i % 7 == 2) {
             vec_modified[i] = vec[i] + this->get_value(i);
         }
     }
@@ -187,12 +187,11 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
     auto pmt_vec = pmt(vec);
     auto pmt_span = get_span<TypeParam>(pmt_vec);
     for (auto i = 0; i < this->num_values_; i++) {
-        if (i%7 == 2) {
+        if (i % 7 == 2) {
             pmt_span[i] = pmt_span[i] + this->get_value(i);
         }
     }
     EXPECT_EQ(pmt_vec == vec_modified, true);
-
 }
 
 
@@ -210,7 +209,7 @@ TYPED_TEST(PmtVectorFixture, get_as)
     // Should also work as a span
     auto z = get_span<TypeParam>(x);
     EXPECT_TRUE(x == std::vector<TypeParam>(z.begin(), z.end()));
-    
+
     // // Should also work as a list
     // auto q = std::list<TypeParam>(x);
     // EXPECT_TRUE(x == std::vector<TypeParam>(q.begin(), q.end()));
@@ -224,14 +223,13 @@ TYPED_TEST(PmtVectorFixture, get_as)
 
     // using mtype = std::map<std::string, pmt>;
     // EXPECT_THROW(mtype(x), ConversionError);
-    
 }
 
 TYPED_TEST(PmtVectorFixture, base64)
 {
     std::vector<TypeParam> vec(this->num_values_);
     pmt x = vec;
-    
+
     // Make sure that we can get the value back out
     auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);

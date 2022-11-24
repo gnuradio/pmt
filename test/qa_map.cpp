@@ -12,11 +12,12 @@
 
 using namespace pmtv;
 
-TEST(PmtMap, EmptyMap) {
+TEST(PmtMap, EmptyMap)
+{
     auto empty = pmt(map_t{});
     auto v = get_map(empty);
-    v["abc"] = pmt(uint64_t(4)); 
-    v["xyz"] = pmt(std::vector<double>{1,2,3,4,5}); 
+    v["abc"] = pmt(uint64_t(4));
+    v["xyz"] = pmt(std::vector<double>{ 1, 2, 3, 4, 5 });
 }
 
 
@@ -63,7 +64,6 @@ TEST(PmtMap, MapSerialize)
     auto y = pmtv::deserialize(sb);
     auto z = std::get<map_t>(y);
     EXPECT_TRUE(map_pmt == y);
-
 }
 
 TEST(PmtMap, get_as)
@@ -84,7 +84,6 @@ TEST(PmtMap, get_as)
 
     // Throw an error for other types.
     // EXPECT_ANY_THROW(float(x));
-    
 }
 
 TEST(PmtMap, base64)
@@ -98,7 +97,7 @@ TEST(PmtMap, base64)
         { "key2", val2 },
     });
     pmt x = input_map;
-    
+
     // Make sure that we can get the value back out
     auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);

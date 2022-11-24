@@ -2,8 +2,8 @@
 #include <iostream>
 
 #include "CLI/App.hpp"
-#include "CLI/Formatter.hpp"
 #include "CLI/Config.hpp"
+#include "CLI/Formatter.hpp"
 
 #include <pmtv/pmt.hpp>
 
@@ -14,8 +14,7 @@ bool run_test(const int times, const std::vector<int32_t>& data)
     bool valid = true;
 
     std::stringbuf sb; // fake channel
-    for (int i=0; i< times; i++)
-    {
+    for (int i = 0; i < times; i++) {
         sb.str(""); // reset channel to empty
         // auto p1 = vector<int32_t>(data);
         pmt p1 = data;
@@ -33,7 +32,7 @@ int main(int argc, char* argv[])
     uint64_t samples = 1000000;
     size_t veclen = 1024;
 
-    CLI::App app{"Benchmarking Script for Uniform Vector Serialization"};
+    CLI::App app{ "Benchmarking Script for Uniform Vector Serialization" };
 
     // app.add_option("-h,--help", "display help");
     app.add_option("--samples", samples, "Number of Samples");
@@ -44,8 +43,7 @@ int main(int argc, char* argv[])
     {
 
         std::vector<int32_t> data(veclen);
-        for (size_t i=0; i<veclen; i++)
-        {
+        for (size_t i = 0; i < veclen; i++) {
             data[i] = i;
         }
         auto t1 = std::chrono::steady_clock::now();
