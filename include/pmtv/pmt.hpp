@@ -81,15 +81,6 @@ std::ostream& operator<<(std::ostream& os, const P& value)
                 _ostream_pmt_vector(os, std::span(arg));
             else if constexpr (PmtMap<T>)
                 _ostream_pmt_map(os, arg);
-            /*else if constexpr(IsSharedPtr<T>) {
-                if constexpr(UniformVector<typename T::element_type>) {
-                    _ostream_pmt_vector(os, std::span(*arg));
-                } else if constexpr(PmtVector<typename T::element_type>) {
-                    //_ostream_pmt_vector(os, std::span(*arg));
-                } else if constexpr(PmtMap<typename T::element_type>) {
-                    //_ostream_pmt_map(os, *arg);
-                }
-            }*/
             else if constexpr (std::same_as<std::monostate, T>)
                 os << "null";
             else if constexpr (std::same_as<T, std::string>)
@@ -177,7 +168,10 @@ constexpr uint8_t pmtTypeIndex()
 template <class T>
 constexpr uint16_t serialId()
 {
-    if constexpr (Scalar<T> || std::same_as<T, bool>) {
+    if constexpr (Complex<T>) {
+        return (pmtTypeIndex<T>() << 8) | sizeof(typename T::value_type);
+    }
+    else if constexpr (Scalar<T> || std::same_as<T, bool>) {
         static_assert(sizeof(T) < 32, "Can't serial data wider than 16 bytes");
         return (pmtTypeIndex<T>() << 8) | sizeof(T);
     }

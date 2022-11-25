@@ -11,78 +11,41 @@
 #include <pmtv/rva_variant.hpp>
 
 namespace pmtv {
-// It is really hard to declare a variant that contains itself.
-// These are the steps required.
 
-using pmt_var_t = rva::variant<std::monostate,
-                               uint8_t,
-                               uint16_t,
-                               uint32_t,
-                               uint64_t,
-                               int8_t,
-                               int16_t,
-                               int32_t,
-                               int64_t,
-                               float,
-                               double,
-                               std::complex<float>,
-                               std::complex<double>,
-                               std::vector<uint8_t>,
-                               std::vector<uint16_t>,
-                               std::vector<uint32_t>,
-                               std::vector<uint64_t>,
-                               std::vector<int8_t>,
-                               std::vector<int16_t>,
-                               std::vector<int32_t>,
-                               std::vector<int64_t>,
-                               std::vector<float>,
-                               std::vector<double>,
-                               std::vector<std::complex<float>>,
-                               std::vector<std::complex<double>>,
-                               std::string,
-                               std::vector<rva::self_t>,
-                               std::map<std::string, rva::self_t>>;
+namespace detail {
 
-// A variant of only the non-recursive types
-using pmt_nr_var_t = std::variant<std::monostate,
-                                  uint8_t,
-                                  uint16_t,
-                                  uint32_t,
-                                  uint64_t,
-                                  int8_t,
-                                  int16_t,
-                                  int32_t,
-                                  int64_t,
-                                  float,
-                                  double,
-                                  std::complex<float>,
-                                  std::complex<double>,
-                                  std::vector<uint8_t>,
-                                  std::vector<uint16_t>,
-                                  std::vector<uint32_t>,
-                                  std::vector<uint64_t>,
-                                  std::vector<int8_t>,
-                                  std::vector<int16_t>,
-                                  std::vector<int32_t>,
-                                  std::vector<int64_t>,
-                                  std::vector<float>,
-                                  std::vector<double>,
-                                  std::vector<std::complex<float>>,
-                                  std::vector<std::complex<double>>,
-                                  std::string>;
+// Convert a list of types to the full set used for the pmt.
+template<template<typename... > class VariantType, typename... Args>
+struct as_pmt {
+    using type = VariantType<std::monostate,
+                             Args...,
+                             std::vector<Args>...,
+                             std::string,
+                             std::vector<rva::self_t>,
+                             std::map<std::string, rva::self_t>>;
+};
 
+template<template<typename... > class TemplateType, typename ...T>
+struct as_pmt<TemplateType, std::tuple<T...>> {
+    using type = as_pmt<TemplateType, T...>::type;
+};
+}
+
+
+template<template<typename... > class VariantType, class... Args>
+using as_pmt_t = detail::as_pmt<VariantType, Args...>::type;
+
+// Note that per the spec, std::complex is undefined for any type other than float, double, or long_double
+using default_supported_types = std::tuple<bool,
+                                           uint8_t, uint16_t, uint32_t, uint64_t,
+                                           int8_t, int16_t, int32_t, int64_t,
+                                           float, double, std::complex<float>, std::complex<double>>;
+
+// initialisation via type list stored in tuple (N.B. tuple could be extended by user with custom OOT types)
+using pmt_var_t = as_pmt_t<rva::variant, default_supported_types>;
 
 using pmt_null = std::monostate;
 
-
-template <typename T>
-struct is_shared_ptr : std::false_type {
-};
-template <typename T>
-struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {
-};
-template <typename T>
-concept IsSharedPtr = is_shared_ptr<T>::value;
 
 template <typename T>
 concept PmtNull = std::is_same_v<T, std::monostate>;
@@ -92,15 +55,11 @@ concept Complex =
     std::is_same_v<T, std::complex<float>> || std::is_same_v<T, std::complex<double>>;
 
 template <typename T>
-concept Scalar = std::integral<T> || std::floating_point<T> || Complex<T>;
+concept Scalar = std::same_as<T, bool> || std::integral<T> || std::floating_point<T> || Complex<T>;
 
 template <typename T>
 concept UniformVector =
     std::ranges::contiguous_range<T> && Scalar<typename T::value_type>;
-
-template <typename T>
-concept UniformVectorInsidePmt =
-    IsSharedPtr<T> && UniformVector<typename T::element_type>;
 
 template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
@@ -111,13 +70,6 @@ concept String = std::is_same_v<T, std::string>;
 template <typename T>
 concept PmtVector =
     std::ranges::contiguous_range<T> && std::is_same_v<T::value_type, pmt_var_t>;
-
-/*
-template <typename T>
-concept PmtMapInsidePmt = IsSharedPtr<T> && PmtMap<T>;
-
-template <typename T>
-concept PmtVector = std::is_same_v<T, std::vector<_pmt_storage>>;*/
 
 template <typename T>
 concept associative_array = requires
