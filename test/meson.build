@@ -2,27 +2,21 @@
 
 TEST_ENV = environment()
 TEST_ENV.prepend('LD_LIBRARY_PATH', 
-    join_paths( meson.build_root(),get_option('libdir')),
+    join_paths( meson.build_root(),'lib'),
 )
 TEST_ENV.prepend('PYTHONPATH', join_paths(meson.project_build_root(),'python') )
 
-
-test_pmtf_sources = ['test_pmtf.cpp']
-executable('test_pmtf', test_pmtf_sources, include_directories : incdir, dependencies: [pmtf_dep], install : false)
-
-
 # GR namespace tests
-qa_srcs = ['qa_pmt',
-           'qa_scalar',
+qa_srcs = ['qa_scalar',
+           'qa_uniform_vector',
+           'qa_vector_of_pmts',
            'qa_map',
-           'qa_null',
-           'qa_string',
-           'qa_tag',
-           'qa_vector_pmt',
-           'qa_vector'
+           'qa_string'
           ]
-deps = [pmtf_dep,
-                gtest_dep]
+deps = [pmt_dep, 
+            fmt_dep,
+            gtest_dep,
+            gtest_main_dep]
 
 foreach qa : qa_srcs
     e = executable(qa, 
@@ -34,4 +28,5 @@ foreach qa : qa_srcs
     test(qa, e)
 endforeach
 
-test('Numpy Vector', py3, args : files('qa_vector_numpy.py'), env: TEST_ENV)
+test('Python Bindings', py3, args : files('qa_pybind.py'), env: TEST_ENV)
+

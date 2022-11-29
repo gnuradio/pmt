@@ -1,76 +1,43 @@
+/*-*-c++-*-*/
+/*
+ * Copyright 2021 John Sallay
+ *
+ * SPDX-License-Identifier: LGPL-3.0
+ *
+ */
 #include <gtest/gtest.h>
 
-#include <pmtf/base.hpp>
-#include <pmtf/string.hpp>
-#include <pmtf/wrap.hpp>
+#include <pmtv/pmt.hpp>
 
-#include <iostream>
+#include <fmt/core.h>
+#include <string>
 
-using namespace pmtf;
+using namespace pmtv;
 
-TEST(PmtString, Basic)
+
+TEST(PmtString, Constructor)
 {
-    {
-    auto str_pmt = string("hello");
-    EXPECT_EQ(str_pmt, "hello");
-    }
-    {
-    /*string str_pmt = "goodbye";
-    EXPECT_EQ(str_pmt, "goodbye");*/
-    }
+    // Empty Constructor
+    pmt empty_vec{ std::string() };
+    EXPECT_EQ(std::get<std::string>(empty_vec).size(), 0);
+
+    std::string s1{ "hello world" };
+
+    auto p = pmt(s1);
+
+    auto s2 = pmtv::cast<std::string>(p);
+
+    EXPECT_TRUE(s1 == s2);
 }
 
-
-TEST(PmtString, Assignment)
+TEST(PmtString, Serialization)
 {
-    auto str_pmt = string("hello");
-    
-    str_pmt = "goodbye";
+    std::string s1{ "hello world" };
 
-    EXPECT_EQ(str_pmt, "goodbye");
-}
+    auto x = pmt(s1);
 
-
-TEST(PmtString, Serdes)
-{
-    auto str_pmt = string("hello");
-    
-    std::stringbuf sb; // fake channel
-    sb.str("");        // reset channel to empty
-    //bool ret = str_pmt.ptr()->serialize(sb);
-    //std::cout << ret << std::endl;
-    //auto base_ptr = base::deserialize(sb);
-
-    
-    //EXPECT_EQ(string(base_ptr), "hello");
-}
-
-TEST(Pmt, PmtWrap)
-{
-    /*wrap x;
-    x = std::string("hello");
-    
-    EXPECT_EQ(string(x), "hello");*/
-}
-
-TEST(PmtString, get_as)
-{
-    pmt x = std::string("hello");
-    // Make sure that we can get the value back out
-    auto y = get_as<std::string>(x);
-    EXPECT_EQ("hello", y);
-
-    // Throw an error for other types.
-    EXPECT_THROW(get_as<float>(x), ConversionError);
-}
-
-TEST(PmtString, base64)
-{
-    pmt x = std::string("hello");
-    
-    // Make sure that we can get the value back out
-    auto encoded_str = pmt(x).to_base64();
-    auto y = pmt::from_base64(encoded_str);
-
-    EXPECT_EQ(x, y);
+    std::stringbuf sb;
+    pmtv::serialize(sb, x);
+    auto y = pmtv::deserialize(sb);
+    EXPECT_EQ(x == y, true);
 }
