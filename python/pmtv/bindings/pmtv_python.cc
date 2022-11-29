@@ -15,8 +15,6 @@
 
 namespace py = pybind11;
 
-void bind_map(py::module&);
-void bind_string(py::module&);
 void bind_pmt(py::module&);
 
 // We need this hack because import_array() returns NULL
@@ -29,12 +27,10 @@ void* init_numpy()
     return NULL;
 }
 
-PYBIND11_MODULE(pmtf_python, m)
+PYBIND11_MODULE(pmtv_python, m)
 {
+    init_numpy();
     // Initialize the numpy C API
     // (otherwise we will see segmentation faults)
-    init_numpy();
-    bind_map(m);
-    bind_string(m);
     bind_pmt(m);
 }
