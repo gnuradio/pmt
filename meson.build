@@ -25,7 +25,6 @@ CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 fmt_dep = dependency('fmt')
 
 subdir('include/pmtv')
-subdir('lib')
 if get_option('enable_testing')
   subdir('test')
 endif
