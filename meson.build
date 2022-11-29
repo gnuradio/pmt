@@ -24,6 +24,9 @@ gtest_main_dep = dependency('gtest_main', version : '>=1.10', required : get_opt
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 fmt_dep = dependency('fmt')
 
+incdir = include_directories('../include')
+pmt_dep = declare_dependency(include_directories : incdir)
+
 subdir('include/pmtv')
 if get_option('enable_testing')
   subdir('test')
