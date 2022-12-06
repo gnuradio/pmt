@@ -24,9 +24,9 @@ jobs:
           - distro: 'Ubuntu 22.04'
             containerid: 'mormj/newsched-ci-docker:ubuntu-22.04'
             cxxflags: -Werror
-          # - distro: 'Fedora 33'
-          #   containerid: 'gnuradio/ci:fedora-33-3.9'
-          #   cxxflags: ''
+          - distro: 'Fedora 36'
+            containerid: 'mormj/newsched-ci-docker:fedora-36'
+            cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
           #   cxxflags: -Werror
