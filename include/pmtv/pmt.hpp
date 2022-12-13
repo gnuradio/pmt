@@ -45,6 +45,8 @@ map_t& get_map(V& value)
     return std::get<map_t>(value);
 }
 
+template <IsPmt P>
+std::ostream& operator<<(std::ostream& os, const P& value);
 
 template <std::ranges::view T>
 std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec)
