@@ -2,14 +2,13 @@
 
 https://wiki.gnuradio.org/index.php/Polymorphic_Types_(PMTs)
 
-PMT Objects represent a serializable container of data that can be passed across various interfaced.  In GNU Radio, these are used to carry data on stream tags or through message passing, and could be used to pass data to external consumers of GNU Radio.  This PMT library restructures the API beyond what has previously been included in the GNU Radio codebase to more closely align with the functionality and usability in the C++ Standard Template Library, and uses Flatbuffers for the underlying data storage and serialization 
+PMT Objects represent a serializable container of data that can be passed across various interfaced.  In GNU Radio, these are used to carry data on stream tags or through message passing, and could be used to pass data to external consumers of GNU Radio.  This PMT library restructures the API beyond what has previously been included in the GNU Radio codebase to more closely align with the functionality and usability in the C++ Standard Template Library, and uses std::variant for the underlying data storage and serialization 
 
 ## Dependencies
 
 - meson
 - ninja
-- flatbuffers (>=2.0.0)
-- C++17
+- C++20
 
 ## Installation
 
