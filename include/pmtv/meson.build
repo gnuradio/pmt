@@ -1,18 +1,9 @@
 files = [
-    #'alloc.hpp',
     'pmt.hpp',
     'rva_variant.hpp',
-    #'gsl-lite.hpp',
-    #'map.hpp',
-    #'null.hpp',
-    #'scalar.hpp',
-    #'string.hpp',
-    #'tag.hpp',
-    #'type_helpers.hpp',
     'version.hpp',
-    #'vector.hpp',
-    #'wrap.hpp',
-    'base64/base64.h'
+    'type_helpers.hpp'
 ]
 
 install_headers(files, subdir : 'pmtv')
+install_headers('base64/base64.h', subdir : 'pmtv/base64')
