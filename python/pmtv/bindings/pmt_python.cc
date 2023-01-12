@@ -113,8 +113,6 @@ pmtv::pmt buffer_to_pmt(const py::buffer& b)
             return pmtv::pmt(val);
         }
     }
-    std::cerr << buf.format << " " << buf.itemsize << std::endl;
-
     throw std::runtime_error("Invalid py::buffer object parsing");
 }
 
