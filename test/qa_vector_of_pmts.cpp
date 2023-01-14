@@ -51,3 +51,12 @@ TEST(PmtVectorPmt, Constructor)
     EXPECT_TRUE(vec[0] == vec2[0]);
     EXPECT_TRUE(vec[1] == vec2[1]);
 }
+
+TEST(PmtVectorPmt, fmt)
+{
+    std::vector<pmt> vec;
+    vec.push_back(pmt(1));
+    vec.push_back(pmt(std::vector<uint32_t>{ 1, 2, 3 }));
+    EXPECT_EQ(fmt::format("{}", pmt(vec)), fmt::format("[{}]", fmt::join(vec, ", ")));
+
+}

@@ -237,25 +237,8 @@ TYPED_TEST(PmtVectorFixture, base64)
     EXPECT_TRUE(x == y);
 }
 
-// #if 0
-// TYPED_TEST(PmtVectorFixture, vector_wrapper)
-// {
-//     std::vector<TypeParam> vec(this->num_values_);
-//     pmt x = vec;
-//     // This should not throw
-//     pmtf::vector_wrap z(x);
-
-//     EXPECT_EQ(z.size(), vec.size());
-//     EXPECT_EQ(z.bytes_per_element(), sizeof(TypeParam));
-//     EXPECT_EQ(z.bytes(), vec.size() * sizeof(TypeParam));
-//     EXPECT_EQ(z,x);
-//     EXPECT_EQ(x,z);
-
-//     pmtf::vector_wrap a(vec);
-//     std::cout << a << std::endl;
-
-//     // TODO: Define all of the functionality that we should have here.
-//     // Pointer to the beginning
-
-// }
-// #endif
+TYPED_TEST(PmtVectorFixture, fmt) {
+    std::vector<TypeParam> vec(this->num_values_);
+    pmt x = vec;
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("[{}]", fmt::join(vec, ", ")));
+}

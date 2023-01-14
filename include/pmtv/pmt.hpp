@@ -9,7 +9,9 @@
 #include <ranges>
 #include <span>
 
-
+// Support for std::format is really spotty.
+// Gcc12 does not support it.
+// Eventually replace with std::format when that is widely available.
 #include <fmt/format.h>
 
 namespace pmtv {
@@ -43,69 +45,6 @@ template <class V>
 map_t& get_map(V& value)
 {
     return std::get<map_t>(value);
-}
-
-template <IsPmt P>
-std::ostream& operator<<(std::ostream& os, const P& value);
-
-template <std::ranges::view T>
-std::ostream& _ostream_pmt_vector(std::ostream& os, const T& vec)
-{
-    bool first = true;
-    os << "[";
-    for (const auto& v : vec) {
-        if (first)
-            os << v;
-        else {
-            os << ", " << v;
-        }
-        first = false;
-    }
-    os << "]";
-    return os;
-}
-
-static std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec);
-
-template <IsPmt P>
-std::ostream& operator<<(std::ostream& os, const P& value)
-{
-    return std::visit(
-        [&os](const auto& arg) -> std::ostream& {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (Complex<T>)
-                os << "(" << arg.real() << "," << arg.imag() << ")";
-            else if constexpr (Scalar<T>)
-                os << arg;
-            else if constexpr (UniformVector<T> || PmtVector<T>)
-                _ostream_pmt_vector(os, std::span(arg));
-            else if constexpr (std::same_as<T, std::vector<pmt>>)
-                _ostream_pmt_vector(os, std::span(arg));
-            else if constexpr (PmtMap<T>)
-                _ostream_pmt_map(os, arg);
-            else if constexpr (std::same_as<std::monostate, T>)
-                os << "null";
-            else if constexpr (std::same_as<T, std::string>)
-                os << arg;
-            else
-                os << "unknown type: " << typeid(T).name();
-            return os;
-        },
-        value.get_base());
-}
-
-static std::ostream& _ostream_pmt_map(std::ostream& os, const map_t& vec)
-{
-    bool first = true;
-    os << "[";
-    for (const auto& [k, v] : vec) {
-        if (!first)
-            os << ", ";
-        os << "{" << k << ", " << v << "}";
-        first = false;
-    }
-    os << "]";
-    return os;
 }
 
 template <IsPmt P>
@@ -403,3 +342,77 @@ T cast(const P& value)
 }
 
 } // namespace pmtv
+
+namespace fmt {
+template <>
+struct formatter<pmtv::map_t::value_type> {
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const pmtv::map_t::value_type& kv, FormatContext& ctx) {
+        return format_to(ctx.out(), "{}: {}", kv.first, kv.second);
+    }
+};
+
+template <pmtv::Complex C>
+struct formatter<C> {
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const C& arg, FormatContext& ctx) {
+        if (arg.imag() >= 0)
+            return format_to(ctx.out(), "{0}+j{1}", arg.real(), arg.imag());
+        else
+            return format_to(ctx.out(), "{0}-j{1}", arg.real(), -arg.imag());
+    }
+};
+
+
+template<pmtv::IsPmt P>
+struct formatter<P>
+{
+
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx) {
+        return ctx.begin();
+    }
+
+    template <typename FormatContext>
+    auto format(const P& value, FormatContext& ctx) {
+        return std::visit([&ctx](const auto arg) {
+            using namespace pmtv;
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (Scalar<T> || Complex<T>)
+                return fmt::format_to(ctx.out(), "{}", arg);
+            else if constexpr (std::same_as<T, std::string>)
+                return fmt::format_to(ctx.out(), "{}",  arg);
+            else if constexpr (UniformVector<T>)
+                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+            else if constexpr (std::same_as<T, std::vector<pmt>>)
+                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+            else if constexpr (PmtMap<T>)
+                return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
+            else if constexpr (std::same_as<std::monostate, T>)
+                return fmt::format_to(ctx.out(), "null");
+            //else
+            return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
+
+        }, value);
+    }
+};
+} // namespace fmt
+
+namespace pmtv {
+    template <IsPmt P>
+    std::ostream& operator<<(std::ostream& os, const P& value) {
+        os << fmt::format("{}", value);
+        return os;
+    }
+}
+
