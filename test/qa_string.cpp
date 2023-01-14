@@ -41,3 +41,10 @@ TEST(PmtString, Serialization)
     auto y = pmtv::deserialize(sb);
     EXPECT_EQ(x == y, true);
 }
+
+TEST(PmtString, fmt)
+{
+    std::string s1{ "hello world" };
+    pmt x(s1);
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("{}", s1));
+}
