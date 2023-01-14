@@ -384,28 +384,31 @@ struct formatter<P>
     }
 
     template <typename FormatContext>
-    auto format(const P& value, FormatContext& ctx) {
-        return std::visit([&ctx](const auto arg) {
-            using namespace pmtv;
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (Scalar<T> || Complex<T>)
-                return fmt::format_to(ctx.out(), "{}", arg);
-            else if constexpr (std::same_as<T, std::string>)
-                return fmt::format_to(ctx.out(), "{}",  arg);
-            else if constexpr (UniformVector<T>)
-                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-            else if constexpr (std::same_as<T, std::vector<pmt>>)
-                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-            else if constexpr (PmtMap<T>)
-                return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
-            else if constexpr (std::same_as<std::monostate, T>)
-                return fmt::format_to(ctx.out(), "null");
-            //else
-            return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
-
-        }, value);
-    }
+    auto format(const P& value, FormatContext& ctx);
 };
+    
+template<pmtv::IsPmt P>
+template <typename FormatContext>
+auto formatter<P>::format(const P& value, FormatContext& ctx) {
+    return std::visit([&ctx](const auto arg) {
+        using namespace pmtv;
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (Scalar<T> || Complex<T>)
+            return fmt::format_to(ctx.out(), "{}", arg);
+        else if constexpr (std::same_as<T, std::string>)
+            return fmt::format_to(ctx.out(), "{}",  arg);
+        else if constexpr (UniformVector<T>)
+            return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+        else if constexpr (std::same_as<T, std::vector<pmt>>)
+            return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+        else if constexpr (PmtMap<T>)
+            return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
+        else if constexpr (std::same_as<std::monostate, T>)
+            return fmt::format_to(ctx.out(), "null");
+        //else
+        return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
+    }, value);
+    }
 } // namespace fmt
 
 namespace pmtv {
