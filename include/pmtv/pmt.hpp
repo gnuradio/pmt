@@ -411,8 +411,8 @@ auto formatter<P>::format(const P& value, FormatContext& ctx) {
     }
 } // namespace fmt
 
-namespace pmtv {
-    template <IsPmt P>
+namespace std {
+    template <pmtv::IsPmt P>
     std::ostream& operator<<(std::ostream& os, const P& value) {
         os << fmt::format("{}", value);
         return os;

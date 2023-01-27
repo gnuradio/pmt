@@ -193,14 +193,14 @@ void bind_pmt(py::module& m)
         .def("__repr__",
              [](pmtv::pmt obj) {
                  std::ostringstream os;
-                 pmtv::operator<<(os, obj);
+                 std::operator<<(os, obj);
                  return os.str();
              })
 
         .def("__str__",
              [](pmtv::pmt obj) {
                  std::ostringstream os;
-                 pmtv::operator<<(os, obj);
+                 std::operator<<(os, obj);
                  return os.str();
              })
 
