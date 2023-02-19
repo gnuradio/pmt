@@ -39,7 +39,7 @@ TEST(PmtVectorPmt, Constructor)
     // Empty Constructor
     pmt empty_vec{ std::vector<pmt>() };
     EXPECT_EQ(std::get<std::vector<pmt>>(empty_vec).size(), 0);
-
+    pmt il_vec{ std::vector<pmt>{1.0, 2, "abc"}};
     std::vector<pmt> vec;
     vec.push_back(pmt(1));
     vec.push_back(pmt(std::vector<uint32_t>{ 1, 2, 3 }));

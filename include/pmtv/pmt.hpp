@@ -386,11 +386,27 @@ struct formatter<P>
     template <typename FormatContext>
     auto format(const P& value, FormatContext& ctx);
 };
-    
+
 template<pmtv::IsPmt P>
 template <typename FormatContext>
 auto formatter<P>::format(const P& value, FormatContext& ctx) {
-    return std::visit([&ctx](const auto arg) {
+    // Due to an issue with the c++ spec that has since been resolved, we have to do something
+    // funky here.  See 
+    // https://stackoverflow.com/questions/37526366/nested-constexpr-function-calls-before-definition-in-a-constant-expression-con
+    // This problem only appears to occur in gcc 11 in certain optimization modes. The problem
+    // occurs when we want to format a vector<pmt>.  Ideally, we can write something like:
+    //      return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+    // However, due to the above issue, it fails to compile.  So we have to do the equivalent
+    // ourselves.  We can't recursively call the formatter, but we can recursively call a lambda
+    // function that does the formatting.
+    // It gets more complicated, because we need to pass the function into the lambda.  We can't
+    // pass in the lamdba as it is defined, so we create a nested lambda.  Which accepts a function
+    // as a argument.
+    // Because we are calling std::visit, we can't pass non-variant arguments to the visitor, so we
+    // have to create a new nested lambda every time we format a vector to ensure that it works.
+    using namespace pmtv;
+    auto format_func = [&ctx](const auto arg) {
+        auto function = [&ctx](const auto arg, auto function) {
         using namespace pmtv;
         using T = std::decay_t<decltype(arg)>;
         if constexpr (Scalar<T> || Complex<T>)
@@ -399,15 +415,27 @@ auto formatter<P>::format(const P& value, FormatContext& ctx) {
             return fmt::format_to(ctx.out(), "{}",  arg);
         else if constexpr (UniformVector<T>)
             return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-        else if constexpr (std::same_as<T, std::vector<pmt>>)
-            return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-        else if constexpr (PmtMap<T>)
+        else if constexpr (std::same_as<T, std::vector<pmt>>) {
+            fmt::format_to(ctx.out(), "[");
+            auto new_func = [&function](const auto arg) { function(arg, function); };
+            for (auto& a: std::span(arg).first(arg.size()-1)) {
+                std::visit(new_func, a);
+                fmt::format_to(ctx.out(), ", ");
+            }
+            std::visit(new_func, arg[arg.size()-1]);
+            return fmt::format_to(ctx.out(), "]");
+            // When we drop support for gcc11, get rid of the nested lambda and replace
+            // the above with this line.
+            //return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
+        } else if constexpr (PmtMap<T>)
             return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
         else if constexpr (std::same_as<std::monostate, T>)
             return fmt::format_to(ctx.out(), "null");
-        //else
         return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
-    }, value);
+        };
+        return function(arg, function);
+    };
+    return std::visit(format_func, value);
     }
 } // namespace fmt
 
