@@ -11,7 +11,8 @@ qa_srcs = ['qa_scalar',
            'qa_uniform_vector',
            'qa_vector_of_pmts',
            'qa_map',
-           'qa_string'
+           'qa_string',
+           'qa_reflection'
           ]
 deps = [pmt_dep, 
             fmt_dep,

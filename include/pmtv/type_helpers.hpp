@@ -12,6 +12,52 @@
 
 namespace pmtv {
 
+/* Forward declaration of a struct_wrapper class.  This will allow us to store "any" structure in
+ a pmt.  The only extra requirement is that we use a refl-cpp macro after the structure definiton.
+ Also the data types of the structure must be mappable to pmt types.  (No custom datatypes, no
+ pointer and length, etc)
+ For example,
+ struct my_data {
+    float x;
+    int y;
+    std::complex<float> z;
+ };
+
+ REFL_AUTO(type(my_data), field(x), field(y), field(z))
+
+ There is a helper function `pmt_from_struct()` that will create the pmt for you.  The data is not
+ readily accessible inside of the pmt and must be cast back out. 
+*/
+
+// forward declaration
+class struct_wrapper_base;
+
+// This class exists because of an issue with deserializing a struct_wrapper.  When we serialize a
+// struct, we can only deserialize it if we know the type.  This isn't a guarantee on the recieving
+// end.  This class holds the serialized value as a string that can later be converted back to the
+// struct.
+// For example, We convert a struct to a pmt and then serialize it over the network.  The receiving
+// block may be on a different system and may not know the structure definition.  It still needs to
+// be able to handle it.  It creates a serialized_struct pmt and then we can later use the value.
+class serialized_struct {
+  private:
+    std::vector<char> _data;
+  public:
+    using value_type = std::vector<char>::value_type;
+    using size_type = std::vector<char>::size_type;
+    serialized_struct(const std::string_view& value) : _data(value.begin(), value.end()) {}
+    serialized_struct(std::vector<value_type>&& value) : _data(std::move(value)) {}
+    const value_type* data() const noexcept { return _data.data(); }
+    size_type size() const noexcept { return _data.size(); }
+};
+
+template <std::same_as<serialized_struct> T>
+bool operator==(const T& x, const T& y) {
+    if (x.size() == y.size())
+        return std::equal(x.data(), x.data() + x.size(), y.data());
+    return false;
+}
+
 namespace detail {
 
 // Convert a list of types to the full set used for the pmt.
@@ -22,7 +68,9 @@ struct as_pmt {
                              std::vector<Args>...,
                              std::string,
                              std::vector<rva::self_t>,
-                             std::map<std::string, rva::self_t>>;
+                             std::map<std::string, rva::self_t>,
+                             std::shared_ptr<struct_wrapper_base>,
+                             serialized_struct>;
 };
 
 template<template<typename... > class TemplateType, typename ...T>
@@ -61,6 +109,11 @@ template <typename T>
 concept UniformVector =
     std::ranges::contiguous_range<T> && Scalar<typename T::value_type>;
 
+// A vector of bool can be optimized to one bit per element, so it doesn't satisfy UniformVector
+template <typename T>
+concept UniformBoolVector = 
+    std::ranges::range<T> && std::same_as<typename T::value_type, bool>;
+
 template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
 
@@ -69,7 +122,7 @@ concept String = std::is_same_v<T, std::string>;
 
 template <typename T>
 concept PmtVector =
-    std::ranges::contiguous_range<T> && std::is_same_v<T::value_type, pmt_var_t>;
+    std::ranges::range<T> && std::is_same_v<typename T::value_type, pmt_var_t>;
 
 template <typename T>
 concept associative_array = requires
@@ -79,6 +132,12 @@ concept associative_array = requires
     typename T::begin;
     typename T::end;
 };
+
+template <typename T> struct is_shared_ptr : std::false_type {};
+template <typename T> struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
+
+template <typename T>
+concept SharedPtr = is_shared_ptr<T>::value;
 
 template <Scalar T>
 std::string type_string()

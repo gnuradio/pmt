@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <ranges>
 #include <span>
+#include <pmtv/refl.hpp>
 
 
 #include <fmt/format.h>
@@ -138,6 +139,97 @@ size_t bytes_per_element(const P& value)
         value.get_base());
 }
 
+
+template <typename T>
+constexpr auto readable_members = filter(refl::member_list<T>{}, [](auto member) { return is_readable(member); });
+
+
+/*********************Map Conversion Functions*****************************************/
+
+// Functions for converting between pmt stuctures and maps.
+template <class T>
+constexpr void map_from_struct(const T& value, map_t& result) {
+    // iterate over the members of T
+    for_each(refl::reflect(value).members, [&](auto member)
+    {
+        if constexpr (is_readable(member))
+        {
+            result[get_display_name(member)] = member(value);
+        }
+    });
+}
+
+template <class T>
+constexpr auto map_from_struct(const T& value) {
+    // iterate over the members of T
+    map_t result;
+    map_from_struct(value, result);
+    return result;
+}
+
+template <class T>
+void to_struct(const map_t& value, T& result) {
+    // iterate over the members of T
+    for_each(refl::reflect(result).members, [&](auto member)
+    {
+        if constexpr (is_readable(member))
+        {
+            using member_type = std::decay_t<decltype(member(result))>;
+            member(result) = std::get<member_type>(value.at(get_display_name(member)));
+        }
+    });
+}
+
+template <class T>
+T to_struct(const map_t& value) {
+    T result;
+    to_struct(value, result);
+    return result;
+}
+
+template <class T>
+bool validate_map(const map_t& value, bool exact=false) {
+    // Ensure that the map contains the members of the struct with the correct types.
+    // iterate over the members of T
+    T temp;
+    if (exact && value.size() != readable_members<T>.size) return false;
+    bool result = true;
+    for_each(refl::reflect(temp).members, [&](auto member)
+    {
+        if constexpr (is_readable(member))
+        {
+            using member_type = std::decay_t<decltype(member(temp))>;
+            // Does the map contain the key and hold the correct type?
+            if (! value.count(get_display_name(member)) || 
+                ! std::holds_alternative<member_type>(value.at(get_display_name(member))))
+                result = false;
+        }
+    });
+    return result;
+}
+
+class struct_wrapper_base {
+  public:
+    virtual void to_map(map_t& value) = 0;
+    virtual map_t to_map() = 0;
+    virtual size_t serialize(std::streambuf& sb) = 0;
+    //virtual std::type_info& type_info() = 0;
+    virtual ~struct_wrapper_base() {}
+};
+
+/*
+I'm in trouble.  I need a way to convert from struct_wrapper_base back to a struct.  I was going to use a virtual template function,
+but those aren't possible.  What are other options?
+
+I can have a free template function
+*/
+
+template <typename T>
+concept StructWrapperPtr =
+    // Either a pointer or a smart pointer
+    std::derived_from<std::remove_pointer_t<T>, struct_wrapper_base> || (SharedPtr<T> && std::derived_from<typename T::element_type, struct_wrapper_base>);
+
+
 template <class T>
 constexpr uint8_t pmtTypeIndex()
 {
@@ -165,6 +257,10 @@ constexpr uint8_t pmtTypeIndex()
     }
     else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
         return 8;
+    else if constexpr (StructWrapperPtr<T>)
+        return 9;
+    else if constexpr(std::same_as<T, serialized_struct>)
+        return 10;
 }
 
 template <class T>
@@ -186,49 +282,113 @@ constexpr uint16_t serialId()
         return pmtTypeIndex<T>() << 8;
 }
 
+// Forward decalaration so we can recursively serialize.
+template <IsPmt P>
+size_t serialize(std::streambuf& sb, const P& value);
+
 template <class T>
 struct serialInfo {
     using value_type = T;
     static constexpr uint16_t value = serialId<T>();
 };
 
+inline size_t _serialize_version(std::streambuf& sb) {
+    return sb.sputn(reinterpret_cast<const char*>(&pmt_version), 2);
+}
+
+template <class T>
+size_t _serialize_id(std::streambuf& sb) {
+    using Td = std::decay_t<T>;
+    auto id = serialInfo<Td>::value;
+    return sb.sputn(reinterpret_cast<const char*>(&id), 2);
+}
+
+template <PmtVector T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    uint64_t sz = arg.size();
+    length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+    for (auto& value: arg) {
+        length += serialize(sb, value);
+    }
+    return length;
+}
+
+template <UniformBoolVector T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    uint64_t sz = arg.size();
+    length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+    char one = 1;
+    char zero = 0;
+    for (auto value : arg) {
+        sb.sputn(value ? &one : &zero, sizeof(char));
+    }
+    length += arg.size() * sizeof(char);
+    return length;
+}
+template <UniformVector T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    uint64_t sz = arg.size();
+    length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+    length += sb.sputn(reinterpret_cast<const char*>(arg.data()),
+                       arg.size() * sizeof(arg[0]));
+    return length;
+}
+
+template <PmtNull T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    return _serialize_id<T>(sb);
+}
+
+template <Scalar T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    length += sb.sputn(reinterpret_cast<const char*>(&arg), sizeof(arg));
+    return length;
+}
+
+template <std::same_as<std::shared_ptr<struct_wrapper_base>> T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    length += arg->serialize(sb);
+    return length;
+}
+
+template <std::same_as<serialized_struct> T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    length += sb.sputn(arg.data(), arg.size());
+    return length;
+}
+
+template <PmtMap T>
+size_t _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    uint32_t nkeys = arg.size();
+    length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
+    uint32_t ksize;
+    for (const auto& [k, v] : arg) {
+        // For right now just prefix the size to the key and send it
+        ksize = k.size();
+        length +=
+            sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
+        length += sb.sputn(k.c_str(), ksize);
+        length += serialize(sb, v);
+    }
+    return length;
+}
+
 // FIXME - make this consistent endianness
 template <IsPmt P>
 size_t serialize(std::streambuf& sb, const P& value)
 {
-    size_t length = 0;
-    length += sb.sputn(reinterpret_cast<const char*>(&pmt_version), 2);
-
+    size_t length = _serialize_version(sb);
 
     std::visit(
         [&length, &sb](auto&& arg) {
-            using T = std::decay_t<decltype(arg)>;
-
-            auto id = serialInfo<T>::value;
-            length += sb.sputn(reinterpret_cast<const char*>(&id), 2);
-            if constexpr (Scalar<T>) {
-                auto v = arg;
-                length += sb.sputn(reinterpret_cast<const char*>(&v), sizeof(v));
-            }
-            else if constexpr (UniformVector<T> || String<T>) {
-                uint64_t sz = arg.size();
-                length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
-                length += sb.sputn(reinterpret_cast<const char*>(arg.data()),
-                                   arg.size() * sizeof(arg[0]));
-            }
-            else if constexpr (PmtMap<T>) {
-                uint32_t nkeys = arg.size();
-                length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
-                uint32_t ksize;
-                for (const auto& [k, v] : arg) {
-                    // For right now just prefix the size to the key and send it
-                    ksize = k.size();
-                    length +=
-                        sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
-                    length += sb.sputn(k.c_str(), ksize);
-                    length += serialize(sb, v);
-                }
-            }
+            length += _serialize(sb, arg);
         },
         value);
 
@@ -310,6 +470,8 @@ static pmt deserialize(std::streambuf& sb)
 
     case serialInfo<map_t>::value:
         return _deserialize_val<map_t>(sb);
+    case serialInfo<serialized_struct>::value:
+        return _deserialize_val<serialized_struct>(sb);
     default:
         throw std::runtime_error("pmt::deserialize: Invalid PMT type type");
     }
@@ -355,11 +517,82 @@ T _deserialize_val(std::streambuf& sb)
         }
         return val;
     }
+    else if constexpr(std::same_as<T, serialized_struct>) {
+        uint64_t sz;
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+        std::vector<char> val(sz, '0');
+        sb.sgetn(reinterpret_cast<char*>(val.data()), sz);
+        return serialized_struct(std::move(val));
+    }
     else {
         throw std::runtime_error(
             "pmt::_deserialize_value: attempted to deserialize invalid PMT type");
     }
 }
+
+template <class T>
+class struct_wrapper : public struct_wrapper_base {
+  private:
+    T _data;
+
+  public:
+    struct_wrapper(const T& data) : _data(data) {}
+    void to_map(map_t& value) {
+        map_from_struct(_data, value);
+    }
+    map_t to_map() {
+        return map_from_struct(_data);
+    }
+    /*std::type_info& type_info() { return typeid(T); }
+    template <class U>
+    U& get() {
+        static_assert(std::type_info<U> == std::type_info<T>);
+        return _data;
+    }*/
+    size_t serialize(std::streambuf& sb) {
+        // iterate over the members of T
+        size_t length = _serialize_version(sb);
+        length += _serialize_id<serialized_struct>(sb);
+        uint32_t nkeys = readable_members<T>.size;
+        length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
+        uint32_t ksize;
+        for_each(refl::reflect(_data).members, [&](auto member)
+        {
+            if constexpr (is_readable(member))
+            {
+                using member_type = std::decay_t<decltype(member(_data))>;
+                auto k = get_display_name(member);
+                length += sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
+                length += sb.sputn(k, ksize);
+                
+                auto id = serialInfo<member_type>::value;
+                length += sb.sputn(reinterpret_cast<const char*>(&id), 2);
+                length += _serialize(sb, member(_data));
+            }
+        });
+        return length;
+    }
+};
+
+template <class T>
+pmt pmt_from_struct(const T& value) {
+    return pmt(std::make_shared<struct_wrapper<T>>(value));
+}
+
+/*template <class T>
+void struct_from_pmt(const pmt& value, T& result) {
+    std::visit(
+        [](const auto& arg, T& result) -> void {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (StructWrapperPtr T>)
+                result = 
+            else if constexpr (std::same_as<T, serialized_struct)
+                return sizeof(typename T::value_type);
+            return sizeof(T);
+        },
+        value.get_base());
+}*/
+
 
 template <IsPmt P>
 std::string to_base64(const P& value)
