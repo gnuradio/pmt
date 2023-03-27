@@ -20,10 +20,10 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 22.04'
-            containerid: 'mormj/newsched-ci-docker:ubuntu-22.04'
+            containerid: 'ghcr.io/mormj/newsched-ci-docker:ubuntu-22.04'
             cxxflags: -Werror
           - name: 'Fedora 36'
-            containerid: 'mormj/newsched-ci-docker:fedora-36'
+            containerid: 'ghcr.io/mormj/newsched-ci-docker:fedora-36'
             cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
