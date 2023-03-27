@@ -104,4 +104,19 @@ TEST(PmtMap, base64)
 
     EXPECT_TRUE(x == y);
 }
+
+TEST(PmtMap, fmt)
+{
+    std::complex<float> val1(1.2, -3.4);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+
+    // Create the PMT map
+    std::map<std::string, pmt> input_map({
+        { "key1", val1 },
+        { "key2", val2 },
+    });
+    pmt x = input_map;
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("{{{}}}", fmt::join(input_map, ", ")));
+
+}
 // #endif
