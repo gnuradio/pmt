@@ -1,9 +1,7 @@
 name: build and run tests
 on:
   push:
-    branches: [main]
   pull_request:
-    branches: [main, variant_squash] 
 jobs:
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
