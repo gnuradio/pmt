@@ -27,13 +27,13 @@ struct as_pmt {
 
 template<template<typename... > class TemplateType, typename ...T>
 struct as_pmt<TemplateType, std::tuple<T...>> {
-    using type = as_pmt<TemplateType, T...>::type;
+    using type = typename as_pmt<TemplateType, T...>::type;
 };
 }
 
 
 template<template<typename... > class VariantType, class... Args>
-using as_pmt_t = detail::as_pmt<VariantType, Args...>::type;
+using as_pmt_t = typename detail::as_pmt<VariantType, Args...>::type;
 
 // Note that per the spec, std::complex is undefined for any type other than float, double, or long_double
 using default_supported_types = std::tuple<bool,
@@ -69,7 +69,7 @@ concept String = std::is_same_v<T, std::string>;
 
 template <typename T>
 concept PmtVector =
-    std::ranges::contiguous_range<T> && std::is_same_v<T::value_type, pmt_var_t>;
+    std::ranges::contiguous_range<T> && std::is_same_v<typename T::value_type, pmt_var_t>;
 
 template <typename T>
 concept associative_array = requires
