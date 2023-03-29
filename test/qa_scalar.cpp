@@ -122,8 +122,19 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint)
     std::stringstream ss;
     std::stringstream ss_check;
     ss << x;
-    ss_check << value;
-    EXPECT_TRUE(ss.str() == ss_check.str());
+    // Annoying special cases
+    if constexpr(Complex<TypeParam>) {
+        if (value.imag() >= 0)
+            ss_check << value.real() << "+j" << value.imag();
+        else
+            ss_check << value.real() << "-j" << -value.imag();
+    } else if constexpr(std::same_as<TypeParam, signed char>)
+        ss_check << int(value);
+    else if constexpr(std::same_as<TypeParam, unsigned char>)
+        ss_check << unsigned(value);
+    else
+        ss_check << value;
+    EXPECT_EQ(ss.str(), ss_check.str());
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
@@ -174,4 +185,9 @@ TYPED_TEST(PmtScalarFixture, element_size)
     pmt x = this->get_value();
     EXPECT_TRUE(elements(x) == 1);
     EXPECT_TRUE(bytes_per_element(x) == sizeof(TypeParam));
+}
+
+TYPED_TEST(PmtScalarFixture, fmt) {
+    pmt x = this->get_value();
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("{}", this->get_value()));
 }
