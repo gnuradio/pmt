@@ -32,31 +32,24 @@ class BB : public AA {};
 TEST(PmtRefl, Constructor)
 {
     qqq x{1, 2.0, 4.1};
-    auto xx = std::make_shared<struct_wrapper<qqq>>(x);
-    std::shared_ptr<struct_wrapper_base> b = xx;
-    //std::variant<std::shared_ptr<struct_wrapper_base>, int> aa = xx;
-    std::variant<std::string, bool> var5 {std::in_place_index<0>, "ABCDE", 3};
-    pmt q(std::in_place_type<uint32_t>, 4);
-    //pmt z(std::in_place_type<std::shared_ptr<struct_wrapper_base>>, xx);
+    auto xx = map_from_struct(x);
+    auto yy = to_struct<qqq>(xx);
+    EXPECT_EQ(x.x, yy.x);
+    EXPECT_EQ(x.y, yy.y);
+    EXPECT_EQ(x.z, yy.z);
 }
 
 TEST(PmtRefl, Serialize)
 {
     qqq x{1, 2.0, 4.1};
-    auto xx = pmt_from_struct(x);
+    auto xx = map_from_struct(x);
     std::stringbuf sb;
-    pmtv::serialize(sb, xx);
-    /*
-    TODO:
-      Write function that goes from serialized struct back to struct.
-      Create serialized struct datatype that is just a wrapper around a string.
-      Add above as pmt type
-      Serialize/Des really easy.
-      Write/Modify function to to work serialized struct or pre-serialized struct.
-    */
-    //auto y = pmtv::deserialize(sb);
-    //EXPECT_EQ(x == y, true);
-
+    pmtv::serialize(sb, pmt(xx));
+    auto y = pmtv::deserialize(sb);
+    auto yy = to_struct<qqq>(pmtv::get_map(y));
+    EXPECT_EQ(x.x, yy.x);
+    EXPECT_EQ(x.y, yy.y);
+    EXPECT_EQ(x.z, yy.z);
 }
 
 

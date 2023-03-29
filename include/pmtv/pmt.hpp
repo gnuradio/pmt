@@ -147,27 +147,6 @@ bool validate_map(const map_t& value, bool exact=false) {
     return result;
 }
 
-class struct_wrapper_base {
-  public:
-    virtual void to_map(map_t& value) = 0;
-    virtual map_t to_map() = 0;
-    virtual size_t serialize(std::streambuf& sb) = 0;
-    //virtual std::type_info& type_info() = 0;
-    virtual ~struct_wrapper_base() {}
-};
-
-/*
-I'm in trouble.  I need a way to convert from struct_wrapper_base back to a struct.  I was going to use a virtual template function,
-but those aren't possible.  What are other options?
-
-I can have a free template function
-*/
-
-template <typename T>
-concept StructWrapperPtr =
-    // Either a pointer or a smart pointer
-    std::derived_from<std::remove_pointer_t<T>, struct_wrapper_base> || (SharedPtr<T> && std::derived_from<typename T::element_type, struct_wrapper_base>);
-
 
 template <class T>
 constexpr uint8_t pmtTypeIndex()
@@ -196,10 +175,6 @@ constexpr uint8_t pmtTypeIndex()
     }
     else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
         return 8;
-    else if constexpr (StructWrapperPtr<T>)
-        return 9;
-    else if constexpr(std::same_as<T, serialized_struct>)
-        return 10;
 }
 
 template <class T>
@@ -285,20 +260,6 @@ template <Scalar T>
 size_t _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     length += sb.sputn(reinterpret_cast<const char*>(&arg), sizeof(arg));
-    return length;
-}
-
-template <std::same_as<std::shared_ptr<struct_wrapper_base>> T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
-    auto length = _serialize_id<T>(sb);
-    length += arg->serialize(sb);
-    return length;
-}
-
-template <std::same_as<serialized_struct> T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
-    auto length = _serialize_id<T>(sb);
-    length += sb.sputn(arg.data(), arg.size());
     return length;
 }
 
@@ -409,8 +370,6 @@ static pmt deserialize(std::streambuf& sb)
 
     case serialInfo<map_t>::value:
         return _deserialize_val<map_t>(sb);
-    case serialInfo<serialized_struct>::value:
-        return _deserialize_val<serialized_struct>(sb);
     default:
         throw std::runtime_error("pmt::deserialize: Invalid PMT type type");
     }
@@ -456,81 +415,11 @@ T _deserialize_val(std::streambuf& sb)
         }
         return val;
     }
-    else if constexpr(std::same_as<T, serialized_struct>) {
-        uint64_t sz;
-        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
-        std::vector<char> val(sz, '0');
-        sb.sgetn(reinterpret_cast<char*>(val.data()), sz);
-        return serialized_struct(std::move(val));
-    }
     else {
         throw std::runtime_error(
             "pmt::_deserialize_value: attempted to deserialize invalid PMT type");
     }
 }
-
-template <class T>
-class struct_wrapper : public struct_wrapper_base {
-  private:
-    T _data;
-
-  public:
-    struct_wrapper(const T& data) : _data(data) {}
-    void to_map(map_t& value) {
-        map_from_struct(_data, value);
-    }
-    map_t to_map() {
-        return map_from_struct(_data);
-    }
-    /*std::type_info& type_info() { return typeid(T); }
-    template <class U>
-    U& get() {
-        static_assert(std::type_info<U> == std::type_info<T>);
-        return _data;
-    }*/
-    size_t serialize(std::streambuf& sb) {
-        // iterate over the members of T
-        size_t length = _serialize_version(sb);
-        length += _serialize_id<serialized_struct>(sb);
-        uint32_t nkeys = readable_members<T>.size;
-        length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
-        uint32_t ksize;
-        for_each(refl::reflect(_data).members, [&](auto member)
-        {
-            if constexpr (is_readable(member))
-            {
-                using member_type = std::decay_t<decltype(member(_data))>;
-                auto k = get_display_name(member);
-                length += sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
-                length += sb.sputn(k, ksize);
-                
-                auto id = serialInfo<member_type>::value;
-                length += sb.sputn(reinterpret_cast<const char*>(&id), 2);
-                length += _serialize(sb, member(_data));
-            }
-        });
-        return length;
-    }
-};
-
-template <class T>
-pmt pmt_from_struct(const T& value) {
-    return pmt(std::make_shared<struct_wrapper<T>>(value));
-}
-
-/*template <class T>
-void struct_from_pmt(const pmt& value, T& result) {
-    std::visit(
-        [](const auto& arg, T& result) -> void {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (StructWrapperPtr T>)
-                result = 
-            else if constexpr (std::same_as<T, serialized_struct)
-                return sizeof(typename T::value_type);
-            return sizeof(T);
-        },
-        value.get_base());
-}*/
 
 
 template <IsPmt P>

@@ -29,35 +29,6 @@ namespace pmtv {
  readily accessible inside of the pmt and must be cast back out. 
 */
 
-// forward declaration
-class struct_wrapper_base;
-
-// This class exists because of an issue with deserializing a struct_wrapper.  When we serialize a
-// struct, we can only deserialize it if we know the type.  This isn't a guarantee on the recieving
-// end.  This class holds the serialized value as a string that can later be converted back to the
-// struct.
-// For example, We convert a struct to a pmt and then serialize it over the network.  The receiving
-// block may be on a different system and may not know the structure definition.  It still needs to
-// be able to handle it.  It creates a serialized_struct pmt and then we can later use the value.
-class serialized_struct {
-  private:
-    std::vector<char> _data;
-  public:
-    using value_type = std::vector<char>::value_type;
-    using size_type = std::vector<char>::size_type;
-    serialized_struct(const std::string_view& value) : _data(value.begin(), value.end()) {}
-    serialized_struct(std::vector<value_type>&& value) : _data(std::move(value)) {}
-    const value_type* data() const noexcept { return _data.data(); }
-    size_type size() const noexcept { return _data.size(); }
-};
-
-template <std::same_as<serialized_struct> T>
-bool operator==(const T& x, const T& y) {
-    if (x.size() == y.size())
-        return std::equal(x.data(), x.data() + x.size(), y.data());
-    return false;
-}
-
 namespace detail {
 
 // Convert a list of types to the full set used for the pmt.
@@ -68,9 +39,8 @@ struct as_pmt {
                              std::vector<Args>...,
                              std::string,
                              std::vector<rva::self_t>,
-                             std::map<std::string, rva::self_t>,
-                             std::shared_ptr<struct_wrapper_base>,
-                             serialized_struct>;
+                             std::map<std::string, rva::self_t>
+                             >;
 };
 
 template<template<typename... > class TemplateType, typename ...T>
