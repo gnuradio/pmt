@@ -120,7 +120,7 @@ constexpr void map_from_struct(const T& value, map_t& result) {
 }
 
 template <class T>
-constexpr auto map_from_struct(const T& value) {
+auto map_from_struct(const T& value) {
     // iterate over the members of T
     map_t result;
     map_from_struct(value, result);
