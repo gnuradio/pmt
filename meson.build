@@ -24,8 +24,16 @@ gtest_main_dep = dependency('gtest_main', version : '>=1.10', required : get_opt
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
 fmt_dep = dependency('fmt')
 
+cmake = import('cmake')
+
+# Configure the CMake project
+refl_cpp = cmake.subproject('refl-cpp')
+
+# Fetch the dependency object
+refl_cpp_dep = refl_cpp.dependency('refl-cpp')
+
 incdir = include_directories('include')
-pmt_dep = declare_dependency(include_directories : incdir)
+pmt_dep = declare_dependency(include_directories : incdir, dependencies : refl_cpp_dep)
 
 subdir('include/pmtv')
 if get_option('enable_testing')

@@ -1,0 +1,8 @@
+[wrap-file]
+directory = refl-cpp-0.12.4
+source_url = https://github.com/veselink1/refl-cpp/archive/refs/tags/v0.12.4.tar.gz
+source_filename = refl-cpp-0.12.4.tar.gz
+source_hash = 8f6e02535ac3d1e51c1d8288d755378b914bb72f817020d2dec261de33f78b5c
+
+[provide]
+refl_cpp = refl_cpp_dep

@@ -22,12 +22,6 @@ struct qqq {
 
 REFL_AUTO(type(qqq), field(x), field(y), field(z));
 
-class AA {
-
-};
-
-class BB : public AA {};
-
 
 TEST(PmtRefl, Constructor)
 {
