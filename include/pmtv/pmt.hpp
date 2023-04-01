@@ -79,6 +79,27 @@ size_t bytes_per_element(const P& value)
 }
 
 
+/*
+ Functions for converting between structures and pmts.  Each member of the structure must be
+ convertible to a pmt.  No data interpretation is done.  (For example a pointer and a length
+ won't work because we don't know that they are related fields.  A span or a vector would.)
+ An extra requirement is that we must use a macro to declare structures and fields that we
+ want to use this way.
+
+For example,
+ struct my_data {
+    float x;
+    int y;
+    std::complex<float> z;
+ };
+
+ REFL_AUTO(type(my_data), field(x), field(y), field(z))
+
+ Note that any members not declared in the `REFL_AUTO` call will not be transferred with the
+ data.
+
+*/
+
 template <typename T>
 constexpr auto readable_members = filter(refl::member_list<T>{}, [](auto member) { return is_readable(member); });
 
