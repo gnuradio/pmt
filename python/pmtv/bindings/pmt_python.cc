@@ -48,7 +48,7 @@ py::object create_numpy_scalar(T val)
     // usage requires initialized NumPy C-API (call _import_array() before use)
     py::object dt = py::dtype::of<T>();
     PyObject* scal =
-        PyArray_Scalar(&val, (PyArray_Descr*)dt.ptr(), py::int_(sizeof(T)).ptr());
+        PyArray_Scalar(&val, reinterpret_cast<PyArray_Descr*>(dt.ptr()), py::int_(sizeof(T)).ptr());
     return py::reinterpret_steal<py::object>(scal);
 }
 
@@ -266,7 +266,7 @@ void bind_pmt(py::module& m)
         std::stringbuf sb; // fake channel
         auto nbytes = pmtv::serialize(sb, obj);
         std::vector<uint8_t> pre_encoded_str(nbytes, 0);
-        sb.sgetn((char*)pre_encoded_str.data(), nbytes);
+        sb.sgetn(reinterpret_cast<char*>(pre_encoded_str.data()), nbytes);
         return pre_encoded_str;
     });
     m.def("to_base64", &pmtv::to_base64<pmtv::pmt>);

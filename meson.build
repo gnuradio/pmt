@@ -2,7 +2,7 @@ project('pmt', 'cpp',
   version : '0.0.2',
   meson_version: '>=0.63.0',
   license : 'GPLv3',
-  default_options : ['cpp_std=c++20'])
+  default_options : ['cpp_std=c++20', 'warning_level=3'])
 
 cc = meson.get_compiler('cpp')
 rt_dep = cc.find_library('rt', required : false)

@@ -273,7 +273,7 @@ size_t _serialize(std::streambuf& sb, const T& arg) {
 }
 
 template <PmtNull T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+size_t _serialize(std::streambuf& sb, [[maybe_unused]] const T& arg) {
     return _serialize_id<T>(sb);
 }
 
@@ -287,12 +287,12 @@ size_t _serialize(std::streambuf& sb, const T& arg) {
 template <PmtMap T>
 size_t _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
-    uint32_t nkeys = arg.size();
+    uint32_t nkeys = uint32_t(arg.size());
     length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
     uint32_t ksize;
     for (const auto& [k, v] : arg) {
         // For right now just prefix the size to the key and send it
-        ksize = k.size();
+        ksize = uint32_t(k.size());
         length +=
             sb.sputn(reinterpret_cast<const char*>(&ksize), sizeof(ksize));
         length += sb.sputn(k.c_str(), ksize);
