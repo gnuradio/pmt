@@ -495,7 +495,7 @@ struct formatter<pmtv::map_t::value_type> {
     }
 
     template <typename FormatContext>
-    auto format(const pmtv::map_t::value_type& kv, FormatContext& ctx) {
+    auto format(const pmtv::map_t::value_type& kv, FormatContext& ctx) const {
         return format_to(ctx.out(), "{}: {}", kv.first, kv.second);
     }
 };
@@ -508,7 +508,7 @@ struct formatter<C> {
     }
 
     template <typename FormatContext>
-    auto format(const C& arg, FormatContext& ctx) {
+    auto format(const C& arg, FormatContext& ctx) const {
         if (arg.imag() >= 0)
             return format_to(ctx.out(), "{0}+j{1}", arg.real(), arg.imag());
         else
@@ -527,7 +527,7 @@ struct formatter<P>
     }
 
     template <typename FormatContext>
-    auto format(const P& value, FormatContext& ctx) {
+    auto format(const P& value, FormatContext& ctx) const {
         // Due to an issue with the c++ spec that has since been resolved, we have to do something
         // funky here.  See 
         // https://stackoverflow.com/questions/37526366/nested-constexpr-function-calls-before-definition-in-a-constant-expression-con

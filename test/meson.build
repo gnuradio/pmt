@@ -29,5 +29,7 @@ foreach qa : qa_srcs
     test(qa, e)
 endforeach
 
+if (get_option('enable_python'))
 test('Python Bindings', py3, args : files('qa_pybind.py'), env: TEST_ENV)
+endif
 
