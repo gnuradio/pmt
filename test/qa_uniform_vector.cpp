@@ -33,9 +33,9 @@ template <typename T>
 class PmtVectorFixture : public ::testing::Test
 {
 public:
-    T get_value(int i) { return (T)i; }
-    T zero_value() { return (T)0; }
-    T nonzero_value() { return (T)17; }
+    T get_value(int i) { return T(i); }
+    T zero_value() { return T(0); }
+    T nonzero_value() { return T(17); }
     static const int num_values_ = 10;
 };
 

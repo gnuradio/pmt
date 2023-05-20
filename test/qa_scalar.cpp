@@ -162,7 +162,7 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     // Cast up to double if possible
     if constexpr (!Complex<TypeParam>) {
         auto z = pmtv::cast<double>(x);
-        EXPECT_TRUE(this->get_value() == z);
+        EXPECT_TRUE(double(this->get_value()) == z);
     }
 
     // Fail if we try to get a container type
