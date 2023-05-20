@@ -1,6 +1,6 @@
 name: build and run tests
 on:
-  push: 
+  push:
     branches:
       - main
   pull_request:
@@ -26,20 +26,9 @@ jobs:
           - name: 'Ubuntu 22.04'
             containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-22.04'
             cxxflags: -Werror
-          - name: 'Fedora 36'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-36'
-            cxxflags: ''
-          # - distro: 'CentOS 8.3'
-          #   containerid: 'gnuradio/ci:centos-8.3-3.9'
-          #   cxxflags: -Werror
-          # - distro: 'Debian 10'
-          #   containerid: 'gnuradio/ci-debian-10-3.9:1.0'
-          #   cxxflags: -Werror
         compiler:
-          - name: "gcc"
-            command: "g++"
-          - name: "clang"
-            command: "clang++"
+          - name: "emscripten"
+            command: "emcc"
     name: ${{ matrix.distro.name }} - ${{ matrix.compiler.name }}
     container:
       image: ${{ matrix.distro.containerid }}
@@ -49,17 +38,45 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       name: Checkout Project
-    - name: Meson Setup
-      env:
-        CXX: ${{ matrix.compiler.command }}
+    - name: Install emscripten
+      run: |
+        DEBIAN_FRONTEND=noninteractive apt-get install -qy bzip2
+        cd
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk
+        # Download and install the latest SDK tools.
+        ./emsdk install latest
+        # Make the "latest" SDK "active" for the current user. (writes .emscripten file)
+        ./emsdk activate latest
+    
+    # - name: Install emscripten
+    #   run: |
+    #     pwd
+    #     echo
+    #     ls ${{ github.workspace }}
+    #     echo
+    #     ls .
+    #     echo
+    #     ls emsdk
+    - name: Configure Meson
+      shell: bash
       working-directory: ${{ github.workspace }}
-      run: '$CXX --version && meson setup build --buildtype=debugoptimized -Denable_testing=true'
+      run: |
+        source ~/emsdk/emsdk_env.sh
+        tee emscripten-toolchain.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$HOME/emsdk/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
+        EOF
+        meson setup build --cross-file emscripten-toolchain.ini --cross-file emscripten-build.ini -Denable_python=false -Denable_testing=false
     - name: Make
       working-directory: ${{ github.workspace }}/build
       run: 'ninja'
-    - name: Make Test
+    - name: Run Test File
+      shell: bash
       working-directory: ${{ github.workspace }}/build
-      run: 'ninja test'
+      run: |
+        source ~/emsdk/emsdk_env.sh
+        ${EMSDK_NODE} bench/bm_pmt_dict_ref.js
     - uses: actions/upload-artifact@v3
       if: failure()
       with:
