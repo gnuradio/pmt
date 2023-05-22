@@ -9,11 +9,11 @@ rt_dep = cc.find_library('rt', required : false)
 c_available = add_languages('c', required : true)
 
 if (get_option('enable_python'))
-python3_dep = dependency('python3', required : true)
 # Import python3 meson module which is used to find the Python dependencies.
-py3_inst = import('python').find_installation('python3')
-py3 = py3_inst
+py3 = import('python').find_installation()
+python3_dep = py3.dependency(required : true)
 pybind11_dep = dependency('pybind11', required : true)
+
 # For pybind11, if version < 2.4.4 then we need to add -fsized-deallocation flag
 if pybind11_dep.found() and meson.get_compiler('cpp').get_id() == 'clang'
   if pybind11_dep.version().version_compare('<2.4.4')
