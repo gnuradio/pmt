@@ -10,7 +10,7 @@
 
 using namespace pmtv;
 
-bool run_test(const int times, pmt& d, int32_t index)
+bool run_test(const int32_t times, pmt& d, int32_t index)
 {
     std::stringbuf sb; // fake channel
 
@@ -19,7 +19,7 @@ bool run_test(const int times, pmt& d, int32_t index)
     auto themap = pmtv::get_map(d);
 
     bool valid = true;
-    for (int i = 0; i < times; i++) {
+    for (int32_t i = 0; i < times; i++) {
         auto ref = themap[key];
 
         // if (ref == nullptr)
@@ -34,9 +34,9 @@ bool run_test(const int times, pmt& d, int32_t index)
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples = 10000;
-    uint64_t items = 100;
-    uint64_t index = 0;
+    int32_t samples = 10000;
+    int32_t items = 100;
+    int32_t index = 0;
 
 
     CLI::App app{ "Benchmarking Script for Dictionary Packing and Unpacking" };
@@ -51,7 +51,7 @@ int main(int argc, char* argv[])
     {
         // Create the dictionary
         std::map<std::string, pmt> starting_map;
-        for (uint32_t k = 0; k < items; k++) {
+        for (int32_t k = 0; k < items; k++) {
             // auto key = std::string("key" + std::to_string(k));
             // auto value = scalar(k);
 
@@ -65,8 +65,7 @@ int main(int argc, char* argv[])
         auto valid = run_test(samples, d, index);
 
         auto t2 = std::chrono::steady_clock::now();
-        auto time =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e9;
+        auto time = 1e-9 * static_cast<long double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;

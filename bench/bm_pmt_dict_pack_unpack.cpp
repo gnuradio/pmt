@@ -10,16 +10,16 @@
 
 using namespace pmtv;
 
-bool run_test(const int times, uint64_t nitems)
+bool run_test(const int32_t times, int32_t nitems)
 {
 
     bool valid = true;
-    for (int i = 0; i < times; i++) {
+    for (int32_t i = 0; i < times; i++) {
         // Create the dictionary
         std::map<std::string, pmt> starting_map;
 
 #if 1
-        for (uint64_t k = 0; k < nitems; k++) {
+        for (int32_t k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = pmt(k);
 
@@ -28,7 +28,7 @@ bool run_test(const int times, uint64_t nitems)
         auto d_in = pmt(starting_map);
 #else
         auto d_in = map<std::string>::make(starting_map);
-        for (int k = 0; k < nitems; k++) {
+        for (int32_t k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = scalar<int32_t>::make(k);
 
@@ -39,7 +39,7 @@ bool run_test(const int times, uint64_t nitems)
 #if 0
         auto d_out = d_in->value();
 
-        for (int k = 0; k < nitems; k++) {
+        for (int32_t k = 0; k < nitems; k++) {
             auto key = std::string("key" + std::to_string(k));
             auto value = scalar<int32_t>::make(k);
 
@@ -54,8 +54,8 @@ bool run_test(const int times, uint64_t nitems)
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples = 10000;
-    uint64_t items = 100;
+    int32_t samples = 10000;
+    int32_t items = 100;
 
 
     CLI::App app{ "Benchmarking Script for Dictionary Packing and Unpacking" };
@@ -73,8 +73,7 @@ int main(int argc, char* argv[])
         auto valid = run_test(samples, items);
 
         auto t2 = std::chrono::steady_clock::now();
-        auto time =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e9;
+        auto time = 1e-9 * static_cast<long double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;

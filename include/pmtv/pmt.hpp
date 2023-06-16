@@ -219,7 +219,7 @@ constexpr uint16_t serialId()
 
 // Forward decalaration so we can recursively serialize.
 template <IsPmt P>
-size_t serialize(std::streambuf& sb, const P& value);
+std::streamsize serialize(std::streambuf& sb, const P& value);
 
 template <class T>
 struct serialInfo {
@@ -227,19 +227,19 @@ struct serialInfo {
     static constexpr uint16_t value = serialId<T>();
 };
 
-inline size_t _serialize_version(std::streambuf& sb) {
+inline std::streamsize _serialize_version(std::streambuf& sb) {
     return sb.sputn(reinterpret_cast<const char*>(&pmt_version), 2);
 }
 
 template <class T>
-size_t _serialize_id(std::streambuf& sb) {
+std::streamsize _serialize_id(std::streambuf& sb) {
     using Td = std::decay_t<T>;
     auto id = serialInfo<Td>::value;
     return sb.sputn(reinterpret_cast<const char*>(&id), 2);
 }
 
 template <PmtVector T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     uint64_t sz = arg.size();
     length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
@@ -250,7 +250,7 @@ size_t _serialize(std::streambuf& sb, const T& arg) {
 }
 
 template <UniformBoolVector T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     uint64_t sz = arg.size();
     length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
@@ -263,29 +263,28 @@ size_t _serialize(std::streambuf& sb, const T& arg) {
     return length;
 }
 template <UniformVector T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     uint64_t sz = arg.size();
     length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
-    length += sb.sputn(reinterpret_cast<const char*>(arg.data()),
-                       arg.size() * sizeof(arg[0]));
+    length += sb.sputn(reinterpret_cast<const char*>(arg.data()),static_cast<std::streamsize>(arg.size() * sizeof(arg[0])));
     return length;
 }
 
 template <PmtNull T>
-size_t _serialize(std::streambuf& sb, [[maybe_unused]] const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, [[maybe_unused]] const T& arg) {
     return _serialize_id<T>(sb);
 }
 
 template <Scalar T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     length += sb.sputn(reinterpret_cast<const char*>(&arg), sizeof(arg));
     return length;
 }
 
 template <PmtMap T>
-size_t _serialize(std::streambuf& sb, const T& arg) {
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
     uint32_t nkeys = uint32_t(arg.size());
     length += sb.sputn(reinterpret_cast<const char*>(&nkeys), sizeof(nkeys));
@@ -303,9 +302,9 @@ size_t _serialize(std::streambuf& sb, const T& arg) {
 
 // FIXME - make this consistent endianness
 template <IsPmt P>
-size_t serialize(std::streambuf& sb, const P& value)
+std::streamsize serialize(std::streambuf& sb, const P& value)
 {
-    size_t length = _serialize_version(sb);
+    auto length = _serialize_version(sb);
 
     std::visit(
         [&length, &sb](auto&& arg) {
@@ -410,14 +409,14 @@ T _deserialize_val(std::streambuf& sb)
         uint64_t sz;
         sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
         std::vector<typename T::value_type> val(sz);
-        sb.sgetn(reinterpret_cast<char*>(val.data()), sz * sizeof(val[0]));
+        sb.sgetn(reinterpret_cast<char*>(val.data()), static_cast<std::streamsize>(sz * sizeof(val[0])));
         return val;
     }
     else if constexpr (String<T>) {
         uint64_t sz;
         sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
         std::string val(sz, '0');
-        sb.sgetn(reinterpret_cast<char*>(val.data()), sz);
+        sb.sgetn(reinterpret_cast<char*>(val.data()), static_cast<std::streamsize>(sz));
         return val;
     }
     else if constexpr (PmtMap<T>) {
@@ -448,12 +447,12 @@ std::string to_base64(const P& value)
 {
     std::stringbuf sb;
     auto nbytes = serialize(sb, value);
-    std::string pre_encoded_str(nbytes, '0');
+    std::string pre_encoded_str(static_cast<std::size_t>(nbytes), '0');
     sb.sgetn(pre_encoded_str.data(), nbytes);
-    auto nencoded_bytes = Base64encode_len(nbytes);
-    std::string encoded_str(nencoded_bytes, '0');
-    auto nencoded = Base64encode(encoded_str.data(), pre_encoded_str.data(), nbytes);
-    encoded_str.resize(nencoded - 1); // because it null terminates
+    auto nencoded_bytes = Base64encode_len(static_cast<int>(nbytes));
+    std::string encoded_str(static_cast<std::size_t>(nencoded_bytes), '0');
+    auto nencoded = Base64encode(encoded_str.data(), pre_encoded_str.data(), static_cast<int>(nbytes));
+    encoded_str.resize(static_cast<std::size_t>(nencoded - 1)); // because it null terminates
     return encoded_str;
 }
 
@@ -472,8 +471,17 @@ T cast(const P& value)
     return std::visit(
         [](const auto& arg) -> T {
             using U = std::decay_t<decltype(arg)>;
-            if constexpr (std::constructible_from<T, U>)
-                return T(arg);
+            if constexpr (std::constructible_from<T, U>) {
+                if constexpr(Complex<T>) {
+                    if constexpr (std::integral<U> || std::floating_point<U>) {
+                        return std::complex<typename T::value_type>(static_cast<typename T::value_type>(arg));
+                    } else {
+                         return static_cast<T>(arg);
+                    }
+                } else {
+                    return static_cast<T>(arg);
+                }
+            }
             // else if constexpr (PmtMap<T> && PmtMap<U>) {
             //     return std::get<std::map<std::string, pmt_var_t>>(arg);
             // }
@@ -545,8 +553,8 @@ struct formatter<P>
         // have to create a new nested lambda every time we format a vector to ensure that it works.
         using namespace pmtv;
         using ret_type = decltype(fmt::format_to(ctx.out(), ""));
-        auto format_func = [&ctx](const auto arg) {
-            auto function = [&ctx](const auto arg, auto function) -> ret_type {
+        auto format_func = [&ctx](const auto format_arg) {
+            auto function_main = [&ctx](const auto arg, auto function) -> ret_type {
             using namespace pmtv;
             using T = std::decay_t<decltype(arg)>;
             if constexpr (Scalar<T> || Complex<T>)
@@ -557,7 +565,7 @@ struct formatter<P>
                 return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
             else if constexpr (std::same_as<T, std::vector<pmt>>) {
                 fmt::format_to(ctx.out(), "[");
-                auto new_func = [&function](const auto arg) -> ret_type { return function(arg, function); };
+                auto new_func = [&function](const auto new_arg) -> ret_type { return function(new_arg, function); };
                 for (auto& a: std::span(arg).first(arg.size()-1)) {
                     std::visit(new_func, a);
                     fmt::format_to(ctx.out(), ", ");
@@ -569,7 +577,7 @@ struct formatter<P>
                 //return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
             } else if constexpr (PmtMap<T>) {
                 fmt::format_to(ctx.out(), "{{");
-                auto new_func = [&function](const auto arg) -> ret_type { return function(arg, function); };
+                auto new_func = [&function](const auto new_arg) -> ret_type { return function(new_arg, function); };
                 size_t i = 0;
                 for (auto& [k, v]: arg) {
                     fmt::format_to(ctx.out(), "{}: ", k);
@@ -585,7 +593,7 @@ struct formatter<P>
                 return fmt::format_to(ctx.out(), "null");
             return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
             };
-            return function(arg, function);
+            return function_main(format_arg, function_main);
         };
         return std::visit(format_func, value);
 

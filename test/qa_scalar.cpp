@@ -38,7 +38,7 @@ public:
 template <>
 float PmtScalarFixture<float>::get_value()
 {
-    return 4.1;
+    return 4.1f;
 }
 template <>
 double PmtScalarFixture<double>::get_value()
@@ -49,7 +49,7 @@ double PmtScalarFixture<double>::get_value()
 template <>
 std::complex<float> PmtScalarFixture<std::complex<float>>::get_value()
 {
-    return std::complex<float>(4.1, -4.1);
+    return std::complex<float>(4.1f, -4.1f);
 }
 
 template <>
@@ -155,14 +155,24 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     auto y = pmtv::cast<TypeParam>(x);
     EXPECT_TRUE(x == y);
 
-    // Cast up to complex<double>
-    auto z = pmtv::cast<std::complex<double>>(x);
-    EXPECT_TRUE(std::complex<double>(this->get_value()) == z);
+    if constexpr (Complex<TypeParam>) {
+        auto z1 = pmtv::cast<std::complex<double>>(x);
+        EXPECT_TRUE(std::complex<double>(this->get_value()) == z1);
 
-    // Cast up to double if possible
+        auto z2 = pmtv::cast<std::complex<float>>(x);
+        EXPECT_TRUE(std::complex<float>(this->get_value()) == z2);
+    }
+
     if constexpr (!Complex<TypeParam>) {
-        auto z = pmtv::cast<double>(x);
-        EXPECT_TRUE(double(this->get_value()) == z);
+        // Cast up to complex<double>
+        auto z1 = pmtv::cast<std::complex<double>>(x);
+        EXPECT_TRUE(std::complex<double>(static_cast<double>(this->get_value())) == z1);
+
+        auto z2 = pmtv::cast<std::complex<float>>(x);
+        EXPECT_TRUE(std::complex<float>(static_cast<float>(this->get_value())) == z2);
+
+        auto z3 = pmtv::cast<double>(x);
+        EXPECT_TRUE(double(this->get_value()) == z3);
     }
 
     // Fail if we try to get a container type

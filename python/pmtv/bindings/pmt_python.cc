@@ -154,7 +154,7 @@ void bind_pmt(py::module& m)
             [](const py::array_t<std::complex<float>>& vec) { return _np_to_pmt(vec); }))
         .def(py::init(
             [](const py::array_t<std::complex<double>>& vec) { return _np_to_pmt(vec); }))
-        .def(py::init([](const py::array& vec) { return pmt(); }))
+        .def(py::init([](const py::array& /*vec*/) { return pmt(); }))
         .def(py::init([](const std::string& str) { return pmt(str); }))
         .def(py::init([](std::vector<pmt>& vec) {
             // DEBUG: passing in pmt([pmt(1),pmt(2)]) comes in here
@@ -220,7 +220,7 @@ void bind_pmt(py::module& m)
                                   !pmtv::String<T>) { // || pmtv::UniformVector<T> ||
                                                       // pmtv::String<T>) {
                         // return pmtv::pmt_nr_var_t(arg);
-                        return py::array_t<typename T::value_type>(arg.size(),
+                        return py::array_t<typename T::value_type>(static_cast<ssize_t>(arg.size()),
                                                                    arg.data());
                     }
                     if constexpr (pmtv::String<T>) { // || pmtv::UniformVector<T> ||
@@ -265,7 +265,7 @@ void bind_pmt(py::module& m)
     m.def("serialize", [](pmtv::pmt obj) {
         std::stringbuf sb; // fake channel
         auto nbytes = pmtv::serialize(sb, obj);
-        std::vector<uint8_t> pre_encoded_str(nbytes, 0);
+        std::vector<uint8_t> pre_encoded_str(static_cast<std::size_t>(nbytes), 0);
         sb.sgetn(reinterpret_cast<char*>(pre_encoded_str.data()), nbytes);
         return pre_encoded_str;
     });
