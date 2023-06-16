@@ -23,7 +23,7 @@ TEST(PmtMap, EmptyMap)
 
 TEST(PmtMap, PmtMapTests)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
@@ -50,7 +50,7 @@ TEST(PmtMap, PmtMapTests)
 
 TEST(PmtMap, MapSerialize)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
@@ -68,7 +68,7 @@ TEST(PmtMap, MapSerialize)
 
 TEST(PmtMap, get_as)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
@@ -88,7 +88,7 @@ TEST(PmtMap, get_as)
 
 TEST(PmtMap, base64)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
@@ -107,7 +107,7 @@ TEST(PmtMap, base64)
 
 TEST(PmtMap, fmt)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map

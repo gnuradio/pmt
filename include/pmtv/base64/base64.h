@@ -122,58 +122,44 @@ static const unsigned char pr2six[256] = {
 
 static inline int Base64decode_len(const char* bufcoded)
 {
-    int nbytesdecoded;
-    const unsigned char* bufin;
-    int nprbytes;
-
-    bufin = (const unsigned char*)bufcoded;
+    const auto* bufin {reinterpret_cast<const unsigned char*>(bufcoded)};
     while (pr2six[*(bufin++)] <= 63)
         ;
-
-    nprbytes = (bufin - (const unsigned char*)bufcoded) - 1;
-    nbytesdecoded = ((nprbytes + 3) / 4) * 3;
-
-    return nbytesdecoded + 1;
+    auto nprbytes {static_cast<int>(bufin - reinterpret_cast<const unsigned char*>(bufcoded)) - 1};
+    return ((nprbytes + 3) / 4) * 3 + 1;
 }
 
 static inline int Base64decode(char* bufplain, const char* bufcoded)
 {
-    int nbytesdecoded;
-    const unsigned char* bufin;
-    unsigned char* bufout;
-    int nprbytes;
-
-    bufin = (const unsigned char*)bufcoded;
+    const auto* bufin {reinterpret_cast<const unsigned char*>(bufcoded)};
     while (pr2six[*(bufin++)] <= 63)
         ;
-    nprbytes = (bufin - (const unsigned char*)bufcoded) - 1;
-    nbytesdecoded = ((nprbytes + 3) / 4) * 3;
+    auto nprbytes {static_cast<int>(bufin - reinterpret_cast<const unsigned char*>(bufcoded)) - 1};
 
-    bufout = (unsigned char*)bufplain;
-    bufin = (const unsigned char*)bufcoded;
+    auto* bufout {reinterpret_cast<unsigned char*>(bufplain)};
+    bufin = reinterpret_cast<const unsigned char*>(bufcoded);
 
     while (nprbytes > 4) {
-        *(bufout++) = (unsigned char)(pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
-        *(bufout++) = (unsigned char)(pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
-        *(bufout++) = (unsigned char)(pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        *(bufout++) = static_cast<unsigned char>(pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) = static_cast<unsigned char>(pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) = static_cast<unsigned char>(pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
         bufin += 4;
         nprbytes -= 4;
     }
 
     /* Note: (nprbytes == 1) would be an error, so just ingore that case */
     if (nprbytes > 1) {
-        *(bufout++) = (unsigned char)(pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
+        *(bufout++) = static_cast<unsigned char>(pr2six[*bufin] << 2 | pr2six[bufin[1]] >> 4);
     }
     if (nprbytes > 2) {
-        *(bufout++) = (unsigned char)(pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
+        *(bufout++) = static_cast<unsigned char>(pr2six[bufin[1]] << 4 | pr2six[bufin[2]] >> 2);
     }
     if (nprbytes > 3) {
-        *(bufout++) = (unsigned char)(pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
+        *(bufout++) = static_cast<unsigned char>(pr2six[bufin[2]] << 6 | pr2six[bufin[3]]);
     }
 
     *(bufout++) = '\0';
-    nbytesdecoded -= (4 - nprbytes) & 3;
-    return nbytesdecoded;
+    return ((nprbytes + 3) / 4) * 3 - ((4 - nprbytes) & 3);
 }
 
 static const char basis_64[] =
@@ -183,15 +169,12 @@ static inline int Base64encode_len(int len) { return ((len + 2) / 3 * 4) + 1; }
 
 static inline int Base64encode(char* encoded, const char* string, int len)
 {
-    int i;
-    char* p;
-
-    p = encoded;
+    int i {0};
+    char* p {encoded};
     for (i = 0; i < len - 2; i += 3) {
         *p++ = basis_64[(string[i] >> 2) & 0x3F];
-        *p++ = basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
-        *p++ =
-            basis_64[((string[i + 1] & 0xF) << 2) | ((int)(string[i + 2] & 0xC0) >> 6)];
+        *p++ = basis_64[((string[i] & 0x3) << 4) | (static_cast<int>(string[i + 1] & 0xF0) >> 4)];
+        *p++ = basis_64[((string[i + 1] & 0xF) << 2) | (static_cast<int>(string[i + 2] & 0xC0) >> 6)];
         *p++ = basis_64[string[i + 2] & 0x3F];
     }
     if (i < len) {
@@ -201,15 +184,14 @@ static inline int Base64encode(char* encoded, const char* string, int len)
             *p++ = '=';
         }
         else {
-            *p++ =
-                basis_64[((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
+            *p++ = basis_64[((string[i] & 0x3) << 4) | (static_cast<int>(string[i + 1] & 0xF0) >> 4)];
             *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
         }
         *p++ = '=';
     }
 
     *p++ = '\0';
-    return p - encoded;
+    return static_cast<int>(p - encoded);
 }
 
 #ifdef __cplusplus
