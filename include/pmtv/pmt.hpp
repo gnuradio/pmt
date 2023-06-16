@@ -496,7 +496,7 @@ struct formatter<pmtv::map_t::value_type> {
 
     template <typename FormatContext>
     auto format(const pmtv::map_t::value_type& kv, FormatContext& ctx) const {
-        return format_to(ctx.out(), "{}: {}", kv.first, kv.second);
+        return fmt::format_to(ctx.out(), "{}: {}", kv.first, kv.second);
     }
 };
 
@@ -510,9 +510,9 @@ struct formatter<C> {
     template <typename FormatContext>
     auto format(const C& arg, FormatContext& ctx) const {
         if (arg.imag() >= 0)
-            return format_to(ctx.out(), "{0}+j{1}", arg.real(), arg.imag());
+            return fmt::format_to(ctx.out(), "{0}+j{1}", arg.real(), arg.imag());
         else
-            return format_to(ctx.out(), "{0}-j{1}", arg.real(), -arg.imag());
+            return fmt::format_to(ctx.out(), "{0}-j{1}", arg.real(), -arg.imag());
     }
 };
 
