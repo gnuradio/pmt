@@ -28,7 +28,7 @@ ninja install
 The path to `emsdk` must be provided. It can be done in 2 different ways.
 
 ### Option 1
-Create file `emscripten-toolchain.ini` in the root directory with the following content:
+Create file `emscripten-toolchain.ini` in the project root directory with the following content:
 ```text
 [constants]
 toolchain = '/path/to/emsdk/upstream/emscripten/'
@@ -44,7 +44,7 @@ Set `toolchain` constant directly in `emscripten-build.ini` file in `[constants]
 ```text
 [constants]  
 ...
-toolchain = '/home/slebedev/_Soft/emsdk/upstream/emscripten/'
+toolchain = '/path/to/emsdk/upstream/emscripten/'
 ```
 And then execute the following command:
 ```bash
@@ -60,7 +60,7 @@ ninja test
 ```
 
 ### Potential problems
-If error `Dependency gtest found: NO` occurred, do the following command:
+If error `Dependency gtest found: NO` occurred, do the following commands:
 ```bash
 cd [pmt_project_root_dir]
 meson wrap install gtest
