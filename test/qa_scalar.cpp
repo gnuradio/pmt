@@ -22,6 +22,7 @@ using testing_types = ::testing::Types<uint8_t,
                                        int32_t,
                                        uint64_t,
                                        int64_t,
+                                       std::size_t,
                                        float,
                                        double,
                                        std::complex<float>,
@@ -145,7 +146,13 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
     std::stringbuf sb;
     pmtv::serialize(sb, x);
     auto y = pmtv::deserialize(sb);
-    EXPECT_TRUE(value == y);
+
+    if constexpr (support_size_t && std::is_same_v<std::size_t, TypeParam>) {
+        EXPECT_TRUE(static_cast<uint64_t>(value) == y);
+        EXPECT_FALSE(value == y);
+    } else {
+        EXPECT_TRUE(value == y);
+    }
 }
 
 TYPED_TEST(PmtScalarFixture, explicit_cast)
@@ -180,14 +187,35 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     // EXPECT_ANY_THROW(std::vector<int>(x));
 }
 
+TYPED_TEST(PmtScalarFixture, wrong_cast)
+{
+    if constexpr (Scalar<TypeParam> && !Complex<TypeParam> ) {
+        TypeParam p0 {54};
+        pmt p1 = p0;
+        EXPECT_TRUE(p0 == p1);
+
+        // cast to different type than TypeParam
+        if constexpr (!std::is_same_v<TypeParam, double>) {
+            EXPECT_FALSE(static_cast<double >(p0) == p1);
+        } else {
+            EXPECT_FALSE(static_cast<int>(p0) == p1);
+        }
+    }
+}
+
 TYPED_TEST(PmtScalarFixture, base64)
 {
-    pmt x = this->get_value();
+    auto value = this->get_value();
+    pmt x(value);
     // Make sure that we can get the value back out
     auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);
 
-    EXPECT_TRUE(x == y);
+    if constexpr (support_size_t && std::is_same_v<std::size_t, TypeParam>) {
+        EXPECT_TRUE(static_cast<uint64_t>(value) == y);
+    } else {
+        EXPECT_TRUE(x == y);
+    }
 }
 
 TYPED_TEST(PmtScalarFixture, element_size)

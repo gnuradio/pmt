@@ -206,7 +206,11 @@ constexpr uint16_t serialId()
     }
     else if constexpr (Scalar<T> || std::same_as<T, bool>) {
         static_assert(sizeof(T) < 32, "Can't serial data wider than 16 bytes");
-        return (pmtTypeIndex<T>() << 8) | sizeof(T);
+        if constexpr (support_size_t && std::is_same_v<T, std::size_t>){
+            return (pmtTypeIndex<uint64_t>() << 8) | sizeof(uint64_t);
+        } else {
+            return (pmtTypeIndex < T > () << 8) | sizeof(T);
+        }
     }
     else if constexpr (UniformVector<T>) {
         static_assert(sizeof(typename T::value_type) < 32,
@@ -223,7 +227,7 @@ std::streamsize serialize(std::streambuf& sb, const P& value);
 
 template <class T>
 struct serialInfo {
-    using value_type = T;
+    using value_type = std::conditional_t<support_size_t && std::is_same_v<T, std::size_t>, uint64_t, T>;
     static constexpr uint16_t value = serialId<T>();
 };
 
@@ -278,9 +282,12 @@ std::streamsize _serialize(std::streambuf& sb, [[maybe_unused]] const T& arg) {
 
 template <Scalar T>
 std::streamsize _serialize(std::streambuf& sb, const T& arg) {
-    auto length = _serialize_id<T>(sb);
-    length += sb.sputn(reinterpret_cast<const char*>(&arg), sizeof(arg));
-    return length;
+    if constexpr (support_size_t && std::is_same_v<T, std::size_t>) {
+        uint64_t arg64 {arg};
+        return _serialize_id<uint64_t>(sb) + sb.sputn(reinterpret_cast<const char*>(&arg64), sizeof(arg64));
+    } else {
+        return _serialize_id<T>(sb) +  sb.sputn(reinterpret_cast<const char*>(&arg), sizeof(arg));
+    }
 }
 
 template <PmtMap T>
