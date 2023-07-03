@@ -65,3 +65,13 @@ jobs:
       with:
         name: Linux_Meson_Testlog
         path: build/meson-logs/testlog.txt
+
+- name: Code Coverage - Generation
+  uses: danielealbano/lcov-action@v3
+
+- uses: codecov/codecov-action@v3
+  with:
+    files: ${{github.workspace}}/coverage.info
+    flags: unittests # optional
+    fail_ci_if_error: false
+    verbose: false
