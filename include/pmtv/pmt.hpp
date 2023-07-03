@@ -261,9 +261,8 @@ std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     char one = 1;
     char zero = 0;
     for (auto value : arg) {
-        sb.sputn(value ? &one : &zero, sizeof(char));
+        length += sb.sputn(value ? &one : &zero, sizeof(char));
     }
-    length += arg.size() * sizeof(char);
     return length;
 }
 template <UniformVector T>
