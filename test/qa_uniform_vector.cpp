@@ -102,7 +102,7 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 
     // Range Constructor
     pmt range_vec(vec_t<TypeParam>, vec.begin(), vec.end());
-    EXPECT_EQ(range_vec.size(), num_values);
+    EXPECT_EQ(range_vec.size(), size_t(num_values));
     const auto& range_vals = std::get<std::vector<TypeParam>>(range_vec);
     for (std::size_t i = 0; i < range_vec.size(); i++) {
         EXPECT_EQ(range_vals[i], vec[i]);

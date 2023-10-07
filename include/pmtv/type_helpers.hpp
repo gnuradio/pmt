@@ -21,6 +21,7 @@ struct as_pmt {
                              Args...,
                              std::vector<Args>...,
                              std::string,
+                             std::vector<std::string>,
                              std::vector<rva::self_t>,
                              std::map<std::string, rva::self_t>
                              >;
@@ -78,6 +79,10 @@ concept UniformVector =
 template <typename T>
 concept UniformBoolVector = 
     std::ranges::range<T> && std::same_as<typename T::value_type, bool>;
+
+template <typename T>
+concept UniformStringVector =
+    std::ranges::range<T> && std::same_as<typename T::value_type, std::string>;
 
 template <typename T>
 concept PmtMap = std::is_same_v<T, std::map<std::string, pmt_var_t>>;
