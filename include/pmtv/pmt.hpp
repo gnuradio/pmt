@@ -186,16 +186,18 @@ constexpr uint8_t pmtTypeIndex()
         return 5;
     else if constexpr (std::same_as<T, std::string>)
         return 6;
+    else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
+        return 7;
+    else if constexpr (std::same_as<T, std::vector<std::string>>)
+        return 8;
     else if constexpr (std::ranges::range<T>) {
         if constexpr (UniformVector<T>) {
             return pmtTypeIndex<typename T::value_type>() << 4;
         }
         else {
-            return 7; // for vector of PMTs
+            return 9; // for vector of PMTs
         }
     }
-    else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
-        return 8;
 }
 
 template <class T>
@@ -265,6 +267,21 @@ std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     }
     return length;
 }
+
+template <UniformStringVector T>
+std::streamsize _serialize(std::streambuf& sb, const T& arg) {
+    auto length = _serialize_id<T>(sb);
+    uint64_t sz = arg.size();
+    length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+    for (auto& value: arg) {
+        // Send length then value
+        sz = value.size();
+        length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+        length += sb.sputn(value.data(), value.size());
+    }
+    return length;
+}
+
 template <UniformVector T>
 std::streamsize _serialize(std::streambuf& sb, const T& arg) {
     auto length = _serialize_id<T>(sb);
@@ -393,7 +410,10 @@ static pmt deserialize(std::streambuf& sb)
 
     case serialInfo<std::string>::value:
         return _deserialize_val<std::string>(sb);
-
+    case serialInfo<std::vector<std::string>>::value:
+        return _deserialize_val<std::vector<std::string>>(sb);
+    case serialInfo<std::vector<pmtv::pmt>>::value:
+        return _deserialize_val<std::vector<pmtv::pmt>>(sb);
     case serialInfo<map_t>::value:
         return _deserialize_val<map_t>(sb);
     default:
@@ -411,6 +431,15 @@ T _deserialize_val(std::streambuf& sb)
         sb.sgetn(reinterpret_cast<char*>(&val), sizeof(val));
         return val;
     }
+    else if constexpr (PmtVector<T>) {
+        std::vector<pmt> val;
+        uint64_t nelems;
+        sb.sgetn(reinterpret_cast<char*>(&nelems), sizeof(nelems));
+        for (uint64_t n = 0; n < nelems; n++) {
+            val.push_back(deserialize(sb));
+        }
+        return val;
+    }
     else if constexpr (UniformVector<T> && !String<T>) {
         uint64_t sz;
         sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
@@ -423,6 +452,17 @@ T _deserialize_val(std::streambuf& sb)
         sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
         std::string val(sz, '0');
         sb.sgetn(reinterpret_cast<char*>(val.data()), static_cast<std::streamsize>(sz));
+        return val;
+    }
+    else if constexpr (UniformStringVector<T>) {
+        uint64_t sz;
+        sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+        std::vector<typename T::value_type> val(sz);
+        for (size_t i = 0; i < val.size(); i++) {
+            sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+            val[i].resize(sz);
+            sb.sgetn(val[i].data(), sz);
+        }
         return val;
     }
     else if constexpr (PmtMap<T>) {
@@ -567,7 +607,7 @@ struct formatter<P>
                 return fmt::format_to(ctx.out(), "{}", arg);
             else if constexpr (std::same_as<T, std::string>)
                 return fmt::format_to(ctx.out(), "{}",  arg);
-            else if constexpr (UniformVector<T>)
+            else if constexpr (UniformVector<T> || UniformStringVector<T>)
                 return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
             else if constexpr (std::same_as<T, std::vector<pmt>>) {
                 fmt::format_to(ctx.out(), "[");
