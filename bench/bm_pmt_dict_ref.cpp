@@ -14,7 +14,7 @@ bool run_test(const int32_t times, pmt& d, int32_t index)
 {
     std::stringbuf sb; // fake channel
 
-    auto key = std::string("key" + std::to_string(index));
+    auto key = fmt::format("key{}", index);
 
     auto themap = pmtv::get_map(d);
 

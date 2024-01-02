@@ -57,8 +57,17 @@ py::object create_numpy_scalar(T val)
 {
     // usage requires initialized NumPy C-API (call _import_array() before use)
     py::object dt = py::dtype::of<T>();
+#ifdef __GNUC__
+#pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
     PyObject* scal =
         PyArray_Scalar(&val, reinterpret_cast<PyArray_Descr*>(dt.ptr()), py::int_(sizeof(T)).ptr());
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
     return py::reinterpret_steal<py::object>(scal);
 }
 

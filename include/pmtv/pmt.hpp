@@ -171,7 +171,7 @@ bool validate_map(const map_t& value, bool exact=false) {
         {
             using member_type = std::decay_t<decltype(member(temp))>;
             // Does the map contain the key and hold the correct type?
-            if (! value.count(get_display_name(member)) || 
+            if (! value.count(get_display_name(member)) ||
                 ! std::holds_alternative<member_type>(value.at(get_display_name(member))))
                 result = false;
         }
@@ -288,7 +288,7 @@ std::streamsize _serialize(std::streambuf& sb, const T& arg) {
         // Send length then value
         sz = value.size();
         length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
-        length += sb.sputn(value.data(), value.size());
+        length += sb.sputn(value.data(), static_cast<std::streamsize>(value.size()));
     }
     return length;
 }
@@ -472,7 +472,7 @@ T _deserialize_val(std::streambuf& sb)
         for (size_t i = 0; i < val.size(); i++) {
             sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
             val[i].resize(sz);
-            sb.sgetn(val[i].data(), sz);
+            sb.sgetn(val[i].data(), static_cast<std::streamsize>(sz));
         }
         return val;
     }
@@ -480,10 +480,10 @@ T _deserialize_val(std::streambuf& sb)
         map_t val;
 
         uint32_t nkeys;
-        sb.sgetn(reinterpret_cast<char*>(&nkeys), sizeof(nkeys));
+        sb.sgetn(reinterpret_cast<char*>(&nkeys), static_cast<std::streamsize>(sizeof(nkeys)));
         for (uint32_t n = 0; n < nkeys; n++) {
             uint32_t ksize;
-            sb.sgetn(reinterpret_cast<char*>(&ksize), sizeof(ksize));
+            sb.sgetn(reinterpret_cast<char*>(&ksize), static_cast<std::streamsize>(sizeof(ksize)));
             std::vector<char> data;
             data.resize(ksize);
             sb.sgetn(data.data(), ksize);
@@ -594,7 +594,7 @@ struct formatter<P>
     template <typename FormatContext>
     auto format(const P& value, FormatContext& ctx) const {
         // Due to an issue with the c++ spec that has since been resolved, we have to do something
-        // funky here.  See 
+        // funky here.  See
         // https://stackoverflow.com/questions/37526366/nested-constexpr-function-calls-before-definition-in-a-constant-expression-con
         // This problem only appears to occur in gcc 11 in certain optimization modes. The problem
         // occurs when we want to format a vector<pmt>.  Ideally, we can write something like:
