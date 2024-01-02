@@ -8,7 +8,18 @@
 #include <cstddef>
 #include <ranges>
 #include <span>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include <refl.hpp>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 // Support for std::format is really spotty.
 // Gcc12 does not support it.
