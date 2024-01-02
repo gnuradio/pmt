@@ -8,7 +8,18 @@
 #include <cstddef>
 #include <ranges>
 #include <span>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
+#pragma GCC diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#endif
+
 #include <refl.hpp>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 // Support for std::format is really spotty.
 // Gcc12 does not support it.
@@ -18,7 +29,7 @@
 namespace pmtv {
 
 using pmt = pmt_var_t;
-using map_t = std::map<std::string, pmt>;
+using map_t = std::map<std::string, pmt, std::less<>>;
 
 template <class T>
 inline constexpr std::in_place_type_t<std::vector<T>> vec_t{};
@@ -160,7 +171,7 @@ bool validate_map(const map_t& value, bool exact=false) {
         {
             using member_type = std::decay_t<decltype(member(temp))>;
             // Does the map contain the key and hold the correct type?
-            if (! value.count(get_display_name(member)) || 
+            if (! value.count(get_display_name(member)) ||
                 ! std::holds_alternative<member_type>(value.at(get_display_name(member))))
                 result = false;
         }
@@ -186,7 +197,7 @@ constexpr uint8_t pmtTypeIndex()
         return 5;
     else if constexpr (std::same_as<T, std::string>)
         return 6;
-    else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
+    else if constexpr (std::same_as<T, std::map<std::string, pmt, std::less<>>>)
         return 7;
     else if constexpr (std::same_as<T, std::vector<std::string>>)
         return 8;
@@ -277,7 +288,7 @@ std::streamsize _serialize(std::streambuf& sb, const T& arg) {
         // Send length then value
         sz = value.size();
         length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
-        length += sb.sputn(value.data(), value.size());
+        length += sb.sputn(value.data(), static_cast<std::streamsize>(value.size()));
     }
     return length;
 }
@@ -461,7 +472,7 @@ T _deserialize_val(std::streambuf& sb)
         for (size_t i = 0; i < val.size(); i++) {
             sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
             val[i].resize(sz);
-            sb.sgetn(val[i].data(), sz);
+            sb.sgetn(val[i].data(), static_cast<std::streamsize>(sz));
         }
         return val;
     }
@@ -469,10 +480,10 @@ T _deserialize_val(std::streambuf& sb)
         map_t val;
 
         uint32_t nkeys;
-        sb.sgetn(reinterpret_cast<char*>(&nkeys), sizeof(nkeys));
+        sb.sgetn(reinterpret_cast<char*>(&nkeys), static_cast<std::streamsize>(sizeof(nkeys)));
         for (uint32_t n = 0; n < nkeys; n++) {
             uint32_t ksize;
-            sb.sgetn(reinterpret_cast<char*>(&ksize), sizeof(ksize));
+            sb.sgetn(reinterpret_cast<char*>(&ksize), static_cast<std::streamsize>(sizeof(ksize)));
             std::vector<char> data;
             data.resize(ksize);
             sb.sgetn(data.data(), ksize);
@@ -529,7 +540,7 @@ T cast(const P& value)
                 }
             }
             // else if constexpr (PmtMap<T> && PmtMap<U>) {
-            //     return std::get<std::map<std::string, pmt_var_t>>(arg);
+            //     return std::get<std::map<std::string, pmt_var_t, std::less<>>>(arg);
             // }
             else
                 throw std::runtime_error(fmt::format(
@@ -583,7 +594,7 @@ struct formatter<P>
     template <typename FormatContext>
     auto format(const P& value, FormatContext& ctx) const {
         // Due to an issue with the c++ spec that has since been resolved, we have to do something
-        // funky here.  See 
+        // funky here.  See
         // https://stackoverflow.com/questions/37526366/nested-constexpr-function-calls-before-definition-in-a-constant-expression-con
         // This problem only appears to occur in gcc 11 in certain optimization modes. The problem
         // occurs when we want to format a vector<pmt>.  Ideally, we can write something like:
