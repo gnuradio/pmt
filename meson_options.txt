@@ -1,2 +1,3 @@
 option('enable_testing', type : 'boolean', value : true, yield : false)
 option('enable_python', type : 'boolean', value : true, yield : false)
+option('warnings_as_errors', type : 'boolean', value : false, description : 'treat compiler warnings as errors')
