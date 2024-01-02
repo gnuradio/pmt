@@ -221,7 +221,7 @@ TYPED_TEST(PmtVectorFixture, get_as)
     // else
     //     EXPECT_THROW(std::vector<int>(x), ConversionError);
 
-    // using mtype = std::map<std::string, pmt>;
+    // using mtype = std::map<std::string, pmt, std::less<>>;
     // EXPECT_THROW(mtype(x), ConversionError);
 }
 

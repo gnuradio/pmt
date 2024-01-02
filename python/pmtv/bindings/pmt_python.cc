@@ -203,7 +203,7 @@ void bind_pmt(py::module& m)
         //     return pmtv::pmt(); }), py::arg{}.noconvert())
         // Map constructor
         .def(py::init(
-            [](const std::map<std::string, pmtv::pmt>& mm) { return pmtv::pmt(mm); }))
+            [](const pmtv::map_t& mm) { return pmtv::pmt(mm); }))
 
         // Fallback for types not directly mapped to pybind types
         // For supporting e.g. numpy.float32 scalar

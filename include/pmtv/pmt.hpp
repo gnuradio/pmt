@@ -29,7 +29,7 @@
 namespace pmtv {
 
 using pmt = pmt_var_t;
-using map_t = std::map<std::string, pmt>;
+using map_t = std::map<std::string, pmt, std::less<>>;
 
 template <class T>
 inline constexpr std::in_place_type_t<std::vector<T>> vec_t{};
@@ -197,7 +197,7 @@ constexpr uint8_t pmtTypeIndex()
         return 5;
     else if constexpr (std::same_as<T, std::string>)
         return 6;
-    else if constexpr (std::same_as<T, std::map<std::string, pmt>>)
+    else if constexpr (std::same_as<T, std::map<std::string, pmt, std::less<>>>)
         return 7;
     else if constexpr (std::same_as<T, std::vector<std::string>>)
         return 8;
@@ -540,7 +540,7 @@ T cast(const P& value)
                 }
             }
             // else if constexpr (PmtMap<T> && PmtMap<U>) {
-            //     return std::get<std::map<std::string, pmt_var_t>>(arg);
+            //     return std::get<std::map<std::string, pmt_var_t, std::less<>>>(arg);
             // }
             else
                 throw std::runtime_error(fmt::format(

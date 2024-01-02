@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
 
     {
         // Create the dictionary
-        std::map<std::string, pmt> starting_map;
+        pmtv::map_t starting_map;
         for (int32_t k = 0; k < items; k++) {
             // auto key = std::string("key" + std::to_string(k));
             // auto value = scalar(k);
