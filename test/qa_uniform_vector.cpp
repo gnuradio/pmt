@@ -33,23 +33,23 @@ template <typename T>
 class PmtVectorFixture : public ::testing::Test
 {
 public:
-    T get_value(int i) { return (T)i; }
-    T zero_value() { return (T)0; }
-    T nonzero_value() { return (T)17; }
-    static const int num_values_ = 10;
+    T get_value(int i) { return T(i); }
+    T zero_value() { return T(0); }
+    T nonzero_value() { return T(17); }
+    static const std::size_t num_values_ = 10;
 };
 
 
 template <>
 std::complex<float> PmtVectorFixture<std::complex<float>>::get_value(int i)
 {
-    return std::complex<float>(i, -i);
+    return std::complex<float>(static_cast<float>(i), static_cast<float>(-i));
 }
 
 template <>
 std::complex<double> PmtVectorFixture<std::complex<double>>::get_value(int i)
 {
-    return std::complex<double>(i, -i);
+    return std::complex<double>(static_cast<double>(i), static_cast<double>(-i));
 }
 
 template <>
@@ -96,15 +96,15 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 
     // Init from std::vector
     std::vector<TypeParam> vec(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
+    for (std::size_t i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(static_cast<int>(i));
     }
 
     // Range Constructor
     pmt range_vec(vec_t<TypeParam>, vec.begin(), vec.end());
-    EXPECT_EQ(range_vec.size(), num_values);
+    EXPECT_EQ(range_vec.size(), static_cast<size_t>(num_values));
     const auto& range_vals = std::get<std::vector<TypeParam>>(range_vec);
-    for (size_t i = 0; i < range_vec.size(); i++) {
+    for (std::size_t i = 0; i < range_vec.size(); i++) {
         EXPECT_EQ(range_vals[i], vec[i]);
     }
 
@@ -136,8 +136,8 @@ TYPED_TEST(PmtVectorFixture, RangeBasedLoop)
     std::vector<TypeParam> vec(this->num_values_);
     std::vector<TypeParam> vec_doubled(this->num_values_);
     std::vector<TypeParam> vec_squared(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
+    for (std::size_t i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(static_cast<int>(i));
         vec_doubled[i] = vec[i] + vec[i];
         vec_squared[i] = vec[i] * vec[i];
     }
@@ -161,8 +161,8 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize)
 {
     // Serialize/Deserialize and make sure that it works
     std::vector<TypeParam> vec(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
+    for (std::size_t i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(static_cast<int>(i));
     }
     pmt x(vec);
     std::stringbuf sb;
@@ -176,19 +176,19 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
     // Initialize a PMT Wrap from a std::vector object
     std::vector<TypeParam> vec(this->num_values_);
     std::vector<TypeParam> vec_modified(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
+    for (std::size_t i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(static_cast<int>(i));
         vec_modified[i] = vec[i];
         if (i % 7 == 2) {
-            vec_modified[i] = vec[i] + this->get_value(i);
+            vec_modified[i] = vec[i] + this->get_value(static_cast<int>(i));
         }
     }
 
     auto pmt_vec = pmt(vec);
     auto pmt_span = get_span<TypeParam>(pmt_vec);
-    for (auto i = 0; i < this->num_values_; i++) {
+    for (std::size_t i = 0; i < this->num_values_; i++) {
         if (i % 7 == 2) {
-            pmt_span[i] = pmt_span[i] + this->get_value(i);
+            pmt_span[i] = pmt_span[i] + this->get_value(static_cast<int>(i));
         }
     }
     EXPECT_EQ(pmt_vec == vec_modified, true);
@@ -198,8 +198,8 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
 TYPED_TEST(PmtVectorFixture, get_as)
 {
     std::vector<TypeParam> vec(this->num_values_);
-    for (auto i = 0; i < this->num_values_; i++) {
-        vec[i] = this->get_value(i);
+    for (std::size_t i = 0; i < this->num_values_; i++) {
+        vec[i] = this->get_value(static_cast<int>(i));
     }
     pmt x = vec;
     // Make sure that we can get the value back out
@@ -221,7 +221,7 @@ TYPED_TEST(PmtVectorFixture, get_as)
     // else
     //     EXPECT_THROW(std::vector<int>(x), ConversionError);
 
-    // using mtype = std::map<std::string, pmt>;
+    // using mtype = std::map<std::string, pmt, std::less<>>;
     // EXPECT_THROW(mtype(x), ConversionError);
 }
 
@@ -237,25 +237,8 @@ TYPED_TEST(PmtVectorFixture, base64)
     EXPECT_TRUE(x == y);
 }
 
-// #if 0
-// TYPED_TEST(PmtVectorFixture, vector_wrapper)
-// {
-//     std::vector<TypeParam> vec(this->num_values_);
-//     pmt x = vec;
-//     // This should not throw
-//     pmtf::vector_wrap z(x);
-
-//     EXPECT_EQ(z.size(), vec.size());
-//     EXPECT_EQ(z.bytes_per_element(), sizeof(TypeParam));
-//     EXPECT_EQ(z.bytes(), vec.size() * sizeof(TypeParam));
-//     EXPECT_EQ(z,x);
-//     EXPECT_EQ(x,z);
-
-//     pmtf::vector_wrap a(vec);
-//     std::cout << a << std::endl;
-
-//     // TODO: Define all of the functionality that we should have here.
-//     // Pointer to the beginning
-
-// }
-// #endif
+TYPED_TEST(PmtVectorFixture, fmt) {
+    std::vector<TypeParam> vec(this->num_values_);
+    pmt x = vec;
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("[{}]", fmt::join(vec, ", ")));
+}

@@ -7,6 +7,8 @@
  */
 #include <gtest/gtest.h>
 #include <complex>
+#include <string>
+#include <string_view>
 
 #include <pmtv/pmt.hpp>
 
@@ -18,16 +20,33 @@ TEST(PmtMap, EmptyMap)
     auto v = get_map(empty);
     v["abc"] = pmt(uint64_t(4));
     v["xyz"] = pmt(std::vector<double>{ 1, 2, 3, 4, 5 });
+
+    using namespace std::literals;
+    using namespace std::string_literals;
+    using namespace std::string_view_literals;
+    auto keyStringLiteral = "abc";
+    std::string keyString = keyStringLiteral;
+    std::string_view keyStringView = keyStringLiteral;
+    EXPECT_TRUE(std::get<uint64_t>(v.at(keyString)) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t >(v.find(keyString)->second) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t>(v.find(keyStringView)->second) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t>(v.find(keyStringLiteral)->second) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t>(v.at("abc"s)) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t>(v.at(keyStringLiteral)) == uint64_t(4));
+    // EXPECT_TRUE(v.at("abc"sv) == pmt(uint64_t(4))) -- not allowed by the ISO-C++ standard
+    // map::at(T key) checks for exact key and its type 'T'
+    // wrapping of std::string_view with std::string is required by ISO-C++ design of map::at(..)
+    EXPECT_TRUE(v.at(std::string(keyStringView)) == pmt(uint64_t(4))); // <- this is OK
 }
 
 
 TEST(PmtMap, PmtMapTests)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
-    std::map<std::string, pmt> input_map({
+    pmtv::map_t input_map({
         { "key1", val1 },
         { "key2", val2 },
     });
@@ -50,7 +69,7 @@ TEST(PmtMap, PmtMapTests)
 
 TEST(PmtMap, MapSerialize)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
@@ -68,17 +87,17 @@ TEST(PmtMap, MapSerialize)
 
 TEST(PmtMap, get_as)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
-    std::map<std::string, pmt> input_map({
+    pmtv::map_t input_map({
         { "key1", val1 },
         { "key2", val2 },
     });
     auto x = pmt(input_map);
     // Make sure that we can get the value back out
-    // auto y = std::map<std::string, pmt>(x);
+    // auto y = std::map<std::string, pmt, std::less<>>(x);
     auto y = get_map(x);
     EXPECT_EQ(x == y, true);
 
@@ -88,11 +107,11 @@ TEST(PmtMap, get_as)
 
 TEST(PmtMap, base64)
 {
-    std::complex<float> val1(1.2, -3.4);
+    std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
 
     // Create the PMT map
-    std::map<std::string, pmt> input_map({
+    pmtv::map_t input_map({
         { "key1", val1 },
         { "key2", val2 },
     });
@@ -103,5 +122,20 @@ TEST(PmtMap, base64)
     auto y = pmtv::from_base64(encoded_str);
 
     EXPECT_TRUE(x == y);
+}
+
+TEST(PmtMap, fmt)
+{
+    std::complex<float> val1(1.2f, -3.4f);
+    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+
+    // Create the PMT map
+    pmtv::map_t input_map({
+        { "key1", val1 },
+        { "key2", val2 },
+    });
+    pmt x = input_map;
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("{{{}}}", fmt::join(input_map, ", ")));
+
 }
 // #endif

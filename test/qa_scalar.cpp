@@ -22,6 +22,7 @@ using testing_types = ::testing::Types<uint8_t,
                                        int32_t,
                                        uint64_t,
                                        int64_t,
+                                       std::size_t,
                                        float,
                                        double,
                                        std::complex<float>,
@@ -38,7 +39,7 @@ public:
 template <>
 float PmtScalarFixture<float>::get_value()
 {
-    return 4.1;
+    return 4.1f;
 }
 template <>
 double PmtScalarFixture<double>::get_value()
@@ -49,7 +50,7 @@ double PmtScalarFixture<double>::get_value()
 template <>
 std::complex<float> PmtScalarFixture<std::complex<float>>::get_value()
 {
-    return std::complex<float>(4.1, -4.1);
+    return std::complex<float>(4.1f, -4.1f);
 }
 
 template <>
@@ -122,8 +123,19 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint)
     std::stringstream ss;
     std::stringstream ss_check;
     ss << x;
-    ss_check << value;
-    EXPECT_TRUE(ss.str() == ss_check.str());
+    // Annoying special cases
+    if constexpr(Complex<TypeParam>) {
+        if (value.imag() >= 0)
+            ss_check << value.real() << "+j" << value.imag();
+        else
+            ss_check << value.real() << "-j" << -value.imag();
+    } else if constexpr(std::same_as<TypeParam, signed char>)
+        ss_check << int(value);
+    else if constexpr(std::same_as<TypeParam, unsigned char>)
+        ss_check << unsigned(value);
+    else
+        ss_check << value;
+    EXPECT_EQ(ss.str(), ss_check.str());
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
@@ -134,7 +146,13 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
     std::stringbuf sb;
     pmtv::serialize(sb, x);
     auto y = pmtv::deserialize(sb);
-    EXPECT_TRUE(value == y);
+
+    if constexpr (support_size_t && std::is_same_v<std::size_t, TypeParam>) {
+        EXPECT_TRUE(static_cast<uint64_t>(value) == y);
+        EXPECT_FALSE(value == y);
+    } else {
+        EXPECT_TRUE(value == y);
+    }
 }
 
 TYPED_TEST(PmtScalarFixture, explicit_cast)
@@ -144,14 +162,24 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     auto y = pmtv::cast<TypeParam>(x);
     EXPECT_TRUE(x == y);
 
-    // Cast up to complex<double>
-    auto z = pmtv::cast<std::complex<double>>(x);
-    EXPECT_TRUE(std::complex<double>(this->get_value()) == z);
+    if constexpr (Complex<TypeParam>) {
+        auto z1 = pmtv::cast<std::complex<double>>(x);
+        EXPECT_TRUE(std::complex<double>(this->get_value()) == z1);
 
-    // Cast up to double if possible
+        auto z2 = pmtv::cast<std::complex<float>>(x);
+        EXPECT_TRUE(std::complex<float>(this->get_value()) == z2);
+    }
+
     if constexpr (!Complex<TypeParam>) {
-        auto z = pmtv::cast<double>(x);
-        EXPECT_TRUE(this->get_value() == z);
+        // Cast up to complex<double>
+        auto z1 = pmtv::cast<std::complex<double>>(x);
+        EXPECT_TRUE(std::complex<double>(static_cast<double>(this->get_value())) == z1);
+
+        auto z2 = pmtv::cast<std::complex<float>>(x);
+        EXPECT_TRUE(std::complex<float>(static_cast<float>(this->get_value())) == z2);
+
+        auto z3 = pmtv::cast<double>(x);
+        EXPECT_TRUE(double(this->get_value()) == z3);
     }
 
     // Fail if we try to get a container type
@@ -159,14 +187,35 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     // EXPECT_ANY_THROW(std::vector<int>(x));
 }
 
+TYPED_TEST(PmtScalarFixture, wrong_cast)
+{
+    if constexpr (Scalar<TypeParam> && !Complex<TypeParam> ) {
+        TypeParam p0 {54};
+        pmt p1 = p0;
+        EXPECT_TRUE(p0 == p1);
+
+        // cast to different type than TypeParam
+        if constexpr (!std::is_same_v<TypeParam, double>) {
+            EXPECT_FALSE(static_cast<double >(p0) == p1);
+        } else {
+            EXPECT_FALSE(static_cast<int>(p0) == p1);
+        }
+    }
+}
+
 TYPED_TEST(PmtScalarFixture, base64)
 {
-    pmt x = this->get_value();
+    auto value = this->get_value();
+    pmt x(value);
     // Make sure that we can get the value back out
     auto encoded_str = pmtv::to_base64(x);
     auto y = pmtv::from_base64(encoded_str);
 
-    EXPECT_TRUE(x == y);
+    if constexpr (support_size_t && std::is_same_v<std::size_t, TypeParam>) {
+        EXPECT_TRUE(static_cast<uint64_t>(value) == y);
+    } else {
+        EXPECT_TRUE(x == y);
+    }
 }
 
 TYPED_TEST(PmtScalarFixture, element_size)
@@ -174,4 +223,9 @@ TYPED_TEST(PmtScalarFixture, element_size)
     pmt x = this->get_value();
     EXPECT_TRUE(elements(x) == 1);
     EXPECT_TRUE(bytes_per_element(x) == sizeof(TypeParam));
+}
+
+TYPED_TEST(PmtScalarFixture, fmt) {
+    pmt x = this->get_value();
+    EXPECT_EQ(fmt::format("{}", x), fmt::format("{}", this->get_value()));
 }

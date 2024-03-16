@@ -9,7 +9,7 @@
 
 using namespace pmtv;
 
-bool run_test(const int times, const std::vector<int32_t>& data)
+bool run_test(const int32_t times, const std::vector<int32_t>& data)
 {
     bool valid = true;
 
@@ -29,8 +29,8 @@ bool run_test(const int times, const std::vector<int32_t>& data)
 
 int main(int argc, char* argv[])
 {
-    uint64_t samples = 1000000;
-    size_t veclen = 1024;
+    int32_t samples = 1000000;
+    std::size_t veclen = 1024;
 
     CLI::App app{ "Benchmarking Script for Uniform Vector Serialization" };
 
@@ -41,18 +41,15 @@ int main(int argc, char* argv[])
     CLI11_PARSE(app, argc, argv);
 
     {
-
         std::vector<int32_t> data(veclen);
-        for (size_t i = 0; i < veclen; i++) {
-            data[i] = i;
-        }
+        std::iota(data.begin(), data.end(), 0);
+
         auto t1 = std::chrono::steady_clock::now();
 
         auto valid = run_test(samples, data);
 
         auto t2 = std::chrono::steady_clock::now();
-        auto time =
-            std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count() / 1e9;
+        auto time = 1e-9 * static_cast<long double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;

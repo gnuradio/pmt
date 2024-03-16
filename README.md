@@ -22,3 +22,48 @@ cd build
 ninja
 ninja install
 ```
+
+
+## Build with emscripten
+The path to `emsdk` must be provided. It can be done in 2 different ways.
+
+### Option 1
+Create file `emscripten-toolchain.ini` in the project root directory with the following content:
+```text
+[constants]
+toolchain = '/path/to/emsdk/upstream/emscripten/'
+```
+
+And then execute the following command:
+```bash
+meson setup build_wasm --cross-file emscripten-toolchain.ini --cross-file emscripten-build.ini -Denable_python=false -Denable_testing=true
+```
+
+### Option 2
+Set `toolchain` constant directly in `emscripten-build.ini` file in `[constants]` section:
+```text
+[constants]  
+...
+toolchain = '/path/to/emsdk/upstream/emscripten/'
+```
+And then execute the following command:
+```bash
+meson setup build_wasm --cross-file emscripten-build.ini -Denable_python=false -Denable_testing=true
+```
+
+
+The next steps are:
+```bash
+cd build_wasm
+ninja
+ninja test
+```
+
+### Potential problems
+If error `Dependency gtest found: NO` occurred, do the following commands:
+```bash
+cd [pmt_project_root_dir]
+meson wrap install gtest
+```
+
+It creates `subprojects/gtest.wrap` wrap file for `gtest`.
