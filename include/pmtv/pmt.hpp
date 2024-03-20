@@ -21,10 +21,6 @@
 #pragma GCC diagnostic pop
 #endif
 
-// Support for std::format is really spotty.
-// Gcc12 does not support it.
-// Eventually replace with std::format when that is widely available.
-#include <fmt/format.h>
 
 namespace pmtv {
 
@@ -528,7 +524,7 @@ T cast(const P& value)
     return std::visit(
         [](const auto& arg) -> T {
             using U = std::decay_t<decltype(arg)>;
-            if constexpr (std::convertible_to<U, T>) {
+            if constexpr (std::convertible_to<U, T> || (Complex<T> && Complex<U>)) {
                 if constexpr(Complex<T>) {
                     if constexpr (std::integral<U> || std::floating_point<U>) {
                         return std::complex<typename T::value_type>(static_cast<typename T::value_type>(arg));
@@ -543,84 +539,10 @@ T cast(const P& value)
             //     return std::get<std::map<std::string, pmt_var_t, std::less<>>>(arg);
             // }
             else
-                throw std::runtime_error(fmt::format(
-                    "Invalid PMT Cast {} {}", typeid(T).name(), typeid(U).name()));
+                throw std::runtime_error("Invalid PMT Cast " + std::string(typeid(T).name()) + " " + std::string(typeid(U).name()));
         },
         value);
 }
 
 } // namespace pmtv
-
-namespace fmt {
-template <>
-struct formatter<pmtv::map_t::value_type> {
-    template <typename ParseContext>
-    constexpr auto parse(ParseContext& ctx) {
-        return ctx.begin();
-    }
-
-    template <typename FormatContext>
-    auto format(const pmtv::map_t::value_type& kv, FormatContext& ctx) const {
-        return fmt::format_to(ctx.out(), "{}: {}", kv.first, kv.second);
-    }
-};
-
-template <pmtv::Complex C>
-struct formatter<C> {
-    template <typename ParseContext>
-    constexpr auto parse(ParseContext& ctx) {
-        return ctx.begin();
-    }
-
-    template <typename FormatContext>
-    auto format(const C& arg, FormatContext& ctx) const {
-        if (arg.imag() >= 0)
-            return fmt::format_to(ctx.out(), "{0}+j{1}", arg.real(), arg.imag());
-        else
-            return fmt::format_to(ctx.out(), "{0}-j{1}", arg.real(), -arg.imag());
-    }
-};
-
-
-template<pmtv::IsPmt P>
-struct formatter<P>
-{
-
-    template <typename ParseContext>
-    constexpr auto parse(ParseContext& ctx) {
-        return ctx.begin();
-    }
-
-    template <typename FormatContext>
-    auto format(const P& value, FormatContext& ctx) const {
-        using namespace pmtv;
-        using ret_type = decltype(fmt::format_to(ctx.out(), ""));
-        return std::visit([&ctx](const auto arg) -> ret_type {
-            using namespace pmtv;
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr(std::ranges::range<T> && !std::same_as<std::string, T>) {
-                if constexpr(PmtMap<T>) {
-                    return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
-                }
-                else {
-                    return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-                }
-            } else if constexpr(std::same_as<std::monostate, T>) {
-                return fmt::format_to(ctx.out(), "null");
-            } else {
-                return fmt::format_to(ctx.out(), "{}", arg);
-            }
-        }, value);
-    }
-};
-
-} // namespace fmt
-
-namespace pmtv {
-    template <IsPmt P>
-    std::ostream& operator<<(std::ostream& os, const P& value) {
-        os << fmt::format("{}", value);
-        return os;
-    }
-}
 
