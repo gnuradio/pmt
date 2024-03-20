@@ -7,6 +7,7 @@
 #include "CLI/Formatter.hpp"
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/format.hpp>
 
 using namespace pmtv;
 

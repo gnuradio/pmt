@@ -10,6 +10,7 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/format.hpp>
 #include <sstream>
 
 using namespace pmtv;
