@@ -1,13 +1,8 @@
 files = [
     'pmt.hpp',
     'rva_variant.hpp',
-<<<<<<< HEAD
-    'version.hpp',
-    'type_helpers.hpp'
-=======
     'type_helpers.hpp',
     'version.hpp'
->>>>>>> base/main
 ]
 
 install_headers(files, subdir : 'pmtv')
