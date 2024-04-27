@@ -1,4 +1,5 @@
 files = [
+    'format.hpp',
     'pmt.hpp',
     'rva_variant.hpp',
     'type_helpers.hpp',

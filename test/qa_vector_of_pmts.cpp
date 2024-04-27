@@ -12,6 +12,7 @@
 #include <map>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/format.hpp>
 
 #include <fmt/core.h>
 
