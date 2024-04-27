@@ -10,6 +10,7 @@
 #include <pmtv/pmt.hpp>
 
 #include <fmt/core.h>
+#include <pmtv/format.hpp>
 #include <string>
 
 using namespace pmtv;

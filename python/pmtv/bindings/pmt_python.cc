@@ -30,6 +30,7 @@
 namespace py = pybind11;
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/format.hpp>
 
 // pydoc.h is automatically generated in the build directory
 // #include <pmt_pydoc.h>
