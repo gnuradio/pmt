@@ -45,66 +45,42 @@ struct formatter<P>
 
     template <typename FormatContext>
     auto format(const P& value, FormatContext& ctx) const {
-        // Due to an issue with the c++ spec that has since been resolved, we have to do something
-        // funky here.  See
-        // https://stackoverflow.com/questions/37526366/nested-constexpr-function-calls-before-definition-in-a-constant-expression-con
-        // This problem only appears to occur in gcc 11 in certain optimization modes. The problem
-        // occurs when we want to format a vector<pmt>.  Ideally, we can write something like:
-        //      return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-        // It looks like the issue effects clang 14/15 as well.
-        // However, due to the above issue, it fails to compile.  So we have to do the equivalent
-        // ourselves.  We can't recursively call the formatter, but we can recursively call a lambda
-        // function that does the formatting.
-        // It gets more complicated, because we need to pass the function into the lambda.  We can't
-        // pass in the lamdba as it is defined, so we create a nested lambda.  Which accepts a function
-        // as a argument.
-        // Because we are calling std::visit, we can't pass non-variant arguments to the visitor, so we
-        // have to create a new nested lambda every time we format a vector to ensure that it works.
+        // Using visit here is fairly slow.  It is probably because of the recursive nature of it.
+        // It is really simple to enumerate the possibilities here.
         using namespace pmtv;
-        using ret_type = decltype(fmt::format_to(ctx.out(), ""));
-        auto format_func = [&ctx](const auto format_arg) {
-            auto function_main = [&ctx](const auto arg, auto function) -> ret_type {
-            using namespace pmtv;
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (Scalar<T> || Complex<T>)
-                return fmt::format_to(ctx.out(), "{}", arg);
-            else if constexpr (std::same_as<T, std::string>)
-                return fmt::format_to(ctx.out(), "{}",  arg);
-            else if constexpr (UniformVector<T> || UniformStringVector<T>)
-                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-            else if constexpr (std::same_as<T, std::vector<pmt>>) {
-                fmt::format_to(ctx.out(), "[");
-                auto new_func = [&function](const auto new_arg) -> ret_type { return function(new_arg, function); };
-                for (auto& a: std::span(arg).first(arg.size()-1)) {
-                    std::visit(new_func, a);
-                    fmt::format_to(ctx.out(), ", ");
-                }
-                std::visit(new_func, arg[arg.size()-1]);
-                return fmt::format_to(ctx.out(), "]");
-                // When we drop support for gcc11/clang15, get rid of the nested lambda and replace
-                // the above with this line.
-                //return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
-            } else if constexpr (PmtMap<T>) {
-                fmt::format_to(ctx.out(), "{{");
-                auto new_func = [&function](const auto new_arg) -> ret_type { return function(new_arg, function); };
-                size_t i = 0;
-                for (auto& [k, v]: arg) {
-                    fmt::format_to(ctx.out(), "{}: ", k);
-                    std::visit(new_func, v);
-                    if (i++ < arg.size() - 1)
-                        fmt::format_to(ctx.out(), ", ");
-                }
-                return fmt::format_to(ctx.out(), "}}");
-                // When we drop support for gcc11/clang15, get rid of the nested lambda and replace
-                // the above with this line.
-                //return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(arg, ", "));
-            } else if constexpr (std::same_as<std::monostate, T>)
-                return fmt::format_to(ctx.out(), "null");
-            return fmt::format_to(ctx.out(), "unknown type {}", typeid(T).name());
-            };
-            return function_main(format_arg, function_main);
-        };
-        return std::visit(format_func, value);
+        if (std::holds_alternative<std::monostate>(value)) return fmt::format_to(ctx.out(), "null");
+        else if (std::holds_alternative<bool>(value)) return fmt::format_to(ctx.out(), "{}", std::get<bool>(value));
+        else if (std::holds_alternative<uint8_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<uint8_t>(value));
+        else if (std::holds_alternative<uint16_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<uint16_t>(value));
+        else if (std::holds_alternative<uint32_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<uint32_t>(value));
+        else if (std::holds_alternative<uint64_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<uint64_t>(value));
+        else if (std::holds_alternative<int8_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<int8_t>(value));
+        else if (std::holds_alternative<int16_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<int16_t>(value));
+        else if (std::holds_alternative<int32_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<int32_t>(value));
+        else if (std::holds_alternative<int64_t>(value)) return fmt::format_to(ctx.out(), "{}", std::get<int64_t>(value));
+        else if (std::holds_alternative<float>(value)) return fmt::format_to(ctx.out(), "{}", std::get<float>(value));
+        else if (std::holds_alternative<double>(value)) return fmt::format_to(ctx.out(), "{}", std::get<double>(value));
+        else if (std::holds_alternative<std::complex<float>>(value)) return fmt::format_to(ctx.out(), "{}", std::get<std::complex<float>>(value));
+        else if (std::holds_alternative<std::complex<double>>(value)) return fmt::format_to(ctx.out(), "{}", std::get<std::complex<double>>(value));
+        else if (std::holds_alternative<std::vector<bool>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<bool>>(value), ", "));
+        else if (std::holds_alternative<std::vector<uint8_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<uint8_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<uint16_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<uint16_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<uint32_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<uint32_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<uint64_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<uint64_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<int8_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<int8_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<int16_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<int16_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<int32_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<int32_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<int64_t>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<int64_t>>(value), ", "));
+        else if (std::holds_alternative<std::vector<float>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<float>>(value), ", "));
+        else if (std::holds_alternative<std::vector<double>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<double>>(value), ", "));
+        else if (std::holds_alternative<std::vector<std::complex<float>>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<std::complex<float>>>(value), ", "));
+        else if (std::holds_alternative<std::vector<std::complex<double>>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<std::complex<double>>>(value), ", "));
+        else if (std::holds_alternative<std::string>(value)) return fmt::format_to(ctx.out(), "{}", std::get<std::string>(value));
+        else if (std::holds_alternative<std::vector<std::string>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<std::string>>(value), ", "));
+        else if (std::holds_alternative<std::vector<P>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<P>>(value), ", "));
+        else if (std::holds_alternative<map_t>(value)) return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(std::get<map_t>(value), ", "));
+        //static_assert(false);
+        return fmt::format_to(ctx.out(), "error");
 
     }
 };
