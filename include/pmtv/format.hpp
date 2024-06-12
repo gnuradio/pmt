@@ -77,7 +77,7 @@ struct formatter<P>
         else if (std::holds_alternative<std::vector<std::complex<double>>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<std::complex<double>>>(value), ", "));
         else if (std::holds_alternative<std::string>(value)) return fmt::format_to(ctx.out(), "{}", std::get<std::string>(value));
         else if (std::holds_alternative<std::vector<std::string>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<std::string>>(value), ", "));
-        else if (std::holds_alternative<std::vector<pmt>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<P>>(value), ", "));
+        else if (std::holds_alternative<std::vector<pmt>>(value)) return fmt::format_to(ctx.out(), "[{}]", fmt::join(std::get<std::vector<pmt>>(value), ", "));
         else if (std::holds_alternative<map_t>(value)) return fmt::format_to(ctx.out(), "{{{}}}", fmt::join(std::get<map_t>(value), ", "));
         //static_assert(false);
         return fmt::format_to(ctx.out(), "error");
