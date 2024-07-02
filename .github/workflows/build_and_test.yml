@@ -50,7 +50,7 @@ jobs:
     - uses: actions/checkout@v3
       name: Checkout Project
     - name: install deps
-      run: sudo apt-get update && sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build
+      run: sudo apt-get update && sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build && pip3 install meson --break-system-packages
     - name: Meson Setup
       env:
         CXX: ${{ matrix.compiler.command }}
