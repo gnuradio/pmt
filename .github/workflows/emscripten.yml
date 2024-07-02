@@ -23,8 +23,8 @@ jobs:
         # descriptive name, and one key 'containerid' with the name of the
         # container (i.e., what you want to docker-pull)
         distro:
-          - name: 'Ubuntu 22.04'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-22.04'
+          - name: 'Ubuntu 24.04'
+            containerid: 'ghcr.io/fair-acc/gr4-build-container:latest'
             cxxflags: -Werror
         compiler:
           - name: "emscripten"
