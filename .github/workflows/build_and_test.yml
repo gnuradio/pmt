@@ -9,7 +9,7 @@ on:
 jobs:
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # The GH default is 360 minutes (it's also the max as of Feb-2021). However,
     # we should fail sooner. The only reason to exceed this time is if a test
     # hangs.
@@ -23,12 +23,12 @@ jobs:
         # descriptive name, and one key 'containerid' with the name of the
         # container (i.e., what you want to docker-pull)
         distro:
-          - name: 'Ubuntu 22.04'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-22.04'
+          - name: 'Ubuntu 24.04'
+            containerid: 'ghcr.io/fair-acc/gr4-build-container:latest'
             cxxflags: -Werror
-          - name: 'Fedora 36'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-36'
-            cxxflags: ''
+          #- name: 'Fedora 36'
+          #  containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-36'
+          #  cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
           #   cxxflags: -Werror
