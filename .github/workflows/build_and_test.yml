@@ -24,11 +24,11 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/fair-acc/gr4-build-container:latest'
+            containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-24.04'
             cxxflags: -Werror
-          #- name: 'Fedora 36'
-          #  containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-36'
-          #  cxxflags: ''
+          - name: 'Fedora 40'
+            containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-40'
+            cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
           #   cxxflags: -Werror
@@ -49,8 +49,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       name: Checkout Project
-    - name: install deps
-      run: sudo apt-get update && sudo apt-get install python3 python3-pip python3-setuptools python3-wheel ninja-build && sudo pip3 install meson --break-system-packages
     - name: Meson Setup
       env:
         CXX: ${{ matrix.compiler.command }}
