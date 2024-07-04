@@ -9,7 +9,7 @@ on:
 jobs:
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # The GH default is 360 minutes (it's also the max as of Feb-2021). However,
     # we should fail sooner. The only reason to exceed this time is if a test
     # hangs.
