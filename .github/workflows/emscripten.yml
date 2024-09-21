@@ -40,7 +40,7 @@ jobs:
       name: Checkout Project
     - name: Install emscripten
       run: |
-        DEBIAN_FRONTEND=noninteractive apt-get install -qy bzip2
+        DEBIAN_FRONTEND=noninteractive apt-get install -qy bzip2 clang
         cd
         git clone https://github.com/emscripten-core/emsdk.git
         cd emsdk
