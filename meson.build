@@ -98,7 +98,7 @@ endif
 gtest_dep = dependency('gtest', main : true, version : '>=1.10', required : get_option('enable_testing'))
 gtest_main_dep = dependency('gtest_main', version : '>=1.10', required : get_option('enable_testing'))
 CLI11_dep = dependency('CLI11', fallback : [ 'cli11' , 'CLI11_dep' ])
-fmt_dep = dependency('fmt', version:'>=8.1.1')
+fmt_dep = dependency('fmt', version:'>=10.0.0')
 
 cmake = import('cmake')
 

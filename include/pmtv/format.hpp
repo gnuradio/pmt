@@ -2,6 +2,7 @@
 // Gcc12 does not support it.
 // Eventually replace with std::format when that is widely available.
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 namespace fmt {
 template <>
