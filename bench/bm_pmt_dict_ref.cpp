@@ -2,9 +2,23 @@
 #include <iostream>
 #include <string>
 
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
+#pragma GCC diagnostic ignored "-Wall"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
+#ifndef __clang__ // only for GCC, not Clang
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#endif
+#endif
+
 #include "CLI/App.hpp"
 #include "CLI/Config.hpp"
 #include "CLI/Formatter.hpp"
+
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
 #include <pmtv/pmt.hpp>
 #include <pmtv/format.hpp>
@@ -66,7 +80,7 @@ int main(int argc, char* argv[])
         auto valid = run_test(samples, d, index);
 
         auto t2 = std::chrono::steady_clock::now();
-        auto time = 1e-9 * static_cast<long double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
+        auto time = static_cast<long double>(1e-9) * static_cast<long double>(std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count());
 
         std::cout << "[PROFILE_TIME]" << time << "[PROFILE_TIME]" << std::endl;
         std::cout << "[PROFILE_VALID]" << valid << "[PROFILE_VALID]" << std::endl;

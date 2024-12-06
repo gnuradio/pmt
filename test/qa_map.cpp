@@ -11,16 +11,16 @@
 #include <string_view>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/serialiser.hpp>
 #include <pmtv/format.hpp>
 
 using namespace pmtv;
 
-TEST(PmtMap, EmptyMap)
-{
+TEST(PmtMap, EmptyMap) {
     auto empty = pmt(map_t{});
     auto v = get_map(empty);
     v["abc"] = pmt(uint64_t(4));
-    v["xyz"] = pmt(std::vector<double>{ 1, 2, 3, 4, 5 });
+    v["xyz"] = pmt(std::vector<double>{1, 2, 3, 4, 5});
 
     using namespace std::literals;
     using namespace std::string_literals;
@@ -29,7 +29,7 @@ TEST(PmtMap, EmptyMap)
     std::string keyString = keyStringLiteral;
     std::string_view keyStringView = keyStringLiteral;
     EXPECT_TRUE(std::get<uint64_t>(v.at(keyString)) == uint64_t(4));
-    EXPECT_TRUE(std::get<uint64_t >(v.find(keyString)->second) == uint64_t(4));
+    EXPECT_TRUE(std::get<uint64_t>(v.find(keyString)->second) == uint64_t(4));
     EXPECT_TRUE(std::get<uint64_t>(v.find(keyStringView)->second) == uint64_t(4));
     EXPECT_TRUE(std::get<uint64_t>(v.find(keyStringLiteral)->second) == uint64_t(4));
     EXPECT_TRUE(std::get<uint64_t>(v.at("abc"s)) == uint64_t(4));
@@ -41,16 +41,15 @@ TEST(PmtMap, EmptyMap)
 }
 
 
-TEST(PmtMap, PmtMapTests)
-{
+TEST(PmtMap, PmtMapTests) {
     std::complex<float> val1(1.2f, -3.4f);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+    std::vector<int32_t> val2{44, 34563, -255729, 4402};
 
     // Create the PMT map
     pmtv::map_t input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
+                                  {"key1", val1},
+                                  {"key2", val2},
+                          });
 
     pmt map_pmt = input_map;
     std::cout << map_pmt << std::endl;
@@ -68,16 +67,15 @@ TEST(PmtMap, PmtMapTests)
     std::cout << map_pmt << std::endl;
 }
 
-TEST(PmtMap, MapSerialize)
-{
+TEST(PmtMap, MapSerialize) {
     std::complex<float> val1(1.2f, -3.4f);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+    std::vector<int32_t> val2{44, 34563, -255729, 4402};
 
     // Create the PMT map
     map_t input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
+                            {"key1", val1},
+                            {"key2", val2},
+                    });
     pmt map_pmt(input_map);
     std::stringbuf sb;
     serialize(sb, map_pmt);
@@ -86,16 +84,15 @@ TEST(PmtMap, MapSerialize)
     EXPECT_TRUE(map_pmt == y);
 }
 
-TEST(PmtMap, get_as)
-{
+TEST(PmtMap, get_as) {
     std::complex<float> val1(1.2f, -3.4f);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+    std::vector<int32_t> val2{44, 34563, -255729, 4402};
 
     // Create the PMT map
     pmtv::map_t input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
+                                  {"key1", val1},
+                                  {"key2", val2},
+                          });
     auto x = pmt(input_map);
     // Make sure that we can get the value back out
     // auto y = std::map<std::string, pmt, std::less<>>(x);
@@ -106,16 +103,15 @@ TEST(PmtMap, get_as)
     // EXPECT_ANY_THROW(float(x));
 }
 
-TEST(PmtMap, base64)
-{
+TEST(PmtMap, base64) {
     std::complex<float> val1(1.2f, -3.4f);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+    std::vector<int32_t> val2{44, 34563, -255729, 4402};
 
     // Create the PMT map
     pmtv::map_t input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
+                                  {"key1", val1},
+                                  {"key2", val2},
+                          });
     pmt x = input_map;
 
     // Make sure that we can get the value back out
@@ -125,16 +121,15 @@ TEST(PmtMap, base64)
     EXPECT_TRUE(x == y);
 }
 
-TEST(PmtMap, fmt)
-{
+TEST(PmtMap, fmt) {
     std::complex<float> val1(1.2f, -3.4f);
-    std::vector<int32_t> val2{ 44, 34563, -255729, 4402 };
+    std::vector<int32_t> val2{44, 34563, -255729, 4402};
 
     // Create the PMT map
     pmtv::map_t input_map({
-        { "key1", val1 },
-        { "key2", val2 },
-    });
+                                  {"key1", val1},
+                                  {"key2", val2},
+                          });
     pmt x = input_map;
     EXPECT_EQ(fmt::format("{}", x), fmt::format("{{{}}}", fmt::join(input_map, ", ")));
 
