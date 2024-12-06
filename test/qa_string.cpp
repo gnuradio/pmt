@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/serialiser.hpp>
 
 #include <fmt/core.h>
 #include <pmtv/format.hpp>

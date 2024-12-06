@@ -10,67 +10,63 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/serialiser.hpp>
 #include <pmtv/format.hpp>
 #include <sstream>
 
 using namespace pmtv;
 
 using testing_types = ::testing::Types<uint8_t,
-                                       int8_t,
-                                       uint16_t,
-                                       int16_t,
-                                       uint32_t,
-                                       int32_t,
-                                       uint64_t,
-                                       int64_t,
-                                       std::size_t,
-                                       float,
-                                       double,
-                                       std::complex<float>,
-                                       std::complex<double>>;
+        int8_t,
+        uint16_t,
+        int16_t,
+        uint32_t,
+        int32_t,
+        uint64_t,
+        int64_t,
+        std::size_t,
+        float,
+        double,
+        std::complex<float>,
+        std::complex<double>>;
 
-template <typename T>
-class PmtScalarFixture : public ::testing::Test
-{
+template<typename T>
+class PmtScalarFixture : public ::testing::Test {
 public:
     T get_value() { return T(4); }
+
     T zero_value() { return T(0); }
 };
 
-template <>
-float PmtScalarFixture<float>::get_value()
-{
+template<>
+float PmtScalarFixture<float>::get_value() {
     return 4.1f;
 }
-template <>
-double PmtScalarFixture<double>::get_value()
-{
+
+template<>
+double PmtScalarFixture<double>::get_value() {
     return 4.1;
 }
 
-template <>
-std::complex<float> PmtScalarFixture<std::complex<float>>::get_value()
-{
+template<>
+std::complex<float> PmtScalarFixture<std::complex<float>>::get_value() {
     return std::complex<float>(4.1f, -4.1f);
 }
 
-template <>
-std::complex<double> PmtScalarFixture<std::complex<double>>::get_value()
-{
+template<>
+std::complex<double> PmtScalarFixture<std::complex<double>>::get_value() {
     return std::complex<double>(4.1, -4.1);
 }
 
 TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
 
-TYPED_TEST(PmtScalarFixture, PmtScalarNull)
-{
+TYPED_TEST(PmtScalarFixture, PmtScalarNull) {
     // Should initialize to nullptr
     pmt x; //{this->get_value()};
     EXPECT_TRUE(x == pmt_null());
 }
 
-TYPED_TEST(PmtScalarFixture, PmtScalarConstruction)
-{
+TYPED_TEST(PmtScalarFixture, PmtScalarConstruction) {
     // We should be able to do:
     // a = 4;
     // a(4);
@@ -103,8 +99,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarConstruction)
     EXPECT_TRUE(e == b);
 }
 
-TYPED_TEST(PmtScalarFixture, PmtScalarValue)
-{
+TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
     // Get the value, change the value
     auto value = this->get_value();
     pmt x(value);
@@ -113,11 +108,10 @@ TYPED_TEST(PmtScalarFixture, PmtScalarValue)
     x = value;
     EXPECT_TRUE(x == value);
     // pmt e({{"abc", 123}, {"you and me", "baby"}});
-    pmt e(std::vector({ 4, 5, 6 }));
+    pmt e(std::vector({4, 5, 6}));
 }
 
-TYPED_TEST(PmtScalarFixture, PmtScalarPrint)
-{
+TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
     // Send to string stream and make sure it works.
     auto value = this->get_value();
     pmt x(value);
@@ -125,22 +119,21 @@ TYPED_TEST(PmtScalarFixture, PmtScalarPrint)
     std::stringstream ss_check;
     ss << x;
     // Annoying special cases
-    if constexpr(Complex<TypeParam>) {
+    if constexpr (Complex<TypeParam>) {
         if (value.imag() >= 0)
             ss_check << value.real() << "+j" << value.imag();
         else
             ss_check << value.real() << "-j" << -value.imag();
-    } else if constexpr(std::same_as<TypeParam, signed char>)
+    } else if constexpr (std::same_as<TypeParam, signed char>)
         ss_check << int(value);
-    else if constexpr(std::same_as<TypeParam, unsigned char>)
+    else if constexpr (std::same_as<TypeParam, unsigned char>)
         ss_check << unsigned(value);
     else
         ss_check << value;
     EXPECT_EQ(ss.str(), ss_check.str());
 }
 
-TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
-{
+TYPED_TEST(PmtScalarFixture, PmtScalarSerialize) {
     // Serialize/Deserialize and make sure that it works
     auto value = this->get_value();
     pmt x(value);
@@ -156,8 +149,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarSerialize)
     }
 }
 
-TYPED_TEST(PmtScalarFixture, explicit_cast)
-{
+TYPED_TEST(PmtScalarFixture, explicit_cast) {
     pmt x = this->get_value();
     // Make sure that we can get the value back out
     auto y = pmtv::cast<TypeParam>(x);
@@ -188,10 +180,9 @@ TYPED_TEST(PmtScalarFixture, explicit_cast)
     // EXPECT_ANY_THROW(std::vector<int>(x));
 }
 
-TYPED_TEST(PmtScalarFixture, wrong_cast)
-{
-    if constexpr (Scalar<TypeParam> && !Complex<TypeParam> ) {
-        TypeParam p0 {54};
+TYPED_TEST(PmtScalarFixture, wrong_cast) {
+    if constexpr (Scalar<TypeParam> && !Complex<TypeParam>) {
+        TypeParam p0{54};
         pmt p1 = p0;
         EXPECT_TRUE(p0 == p1);
 
@@ -204,8 +195,7 @@ TYPED_TEST(PmtScalarFixture, wrong_cast)
     }
 }
 
-TYPED_TEST(PmtScalarFixture, base64)
-{
+TYPED_TEST(PmtScalarFixture, base64) {
     auto value = this->get_value();
     pmt x(value);
     // Make sure that we can get the value back out
@@ -219,8 +209,7 @@ TYPED_TEST(PmtScalarFixture, base64)
     }
 }
 
-TYPED_TEST(PmtScalarFixture, element_size)
-{
+TYPED_TEST(PmtScalarFixture, element_size) {
     pmt x = this->get_value();
     EXPECT_TRUE(elements(x) == 1);
     EXPECT_TRUE(bytes_per_element(x) == sizeof(TypeParam));

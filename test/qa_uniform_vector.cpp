@@ -9,6 +9,7 @@
 #include <complex>
 
 #include <pmtv/pmt.hpp>
+#include <pmtv/serialiser.hpp>
 #include <pmtv/format.hpp>
 
 #include <list>

@@ -3,6 +3,7 @@ files = [
     'pmt.hpp',
     'rva_variant.hpp',
     'type_helpers.hpp',
+    'serialiser.hpp',
     'version.hpp'
 ]
 
