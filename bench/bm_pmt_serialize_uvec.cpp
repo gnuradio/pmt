@@ -12,12 +12,13 @@ using namespace pmtv;
 bool run_test(const int times, const std::vector<int32_t>& data)
 {
     bool valid = true;
+    Tensor<int32_t> tdata(Tensor1d(), data);
 
     std::stringbuf sb; // fake channel
     for (int i = 0; i < times; i++) {
         sb.str(""); // reset channel to empty
         // auto p1 = vector<int32_t>(data);
-        pmt p1 = data;
+        pmt p1 = tdata;
         pmtv::serialize(sb, p1);
         auto p2 = pmtv::deserialize(sb);
         if (p1 != p2)
