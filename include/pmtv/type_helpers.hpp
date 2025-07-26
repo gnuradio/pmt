@@ -79,6 +79,7 @@ class Tensor {
         return _data[calculate_index(indices)];
     }
 
+    auto operator<=>(Tensor<T> const&) const = default;
     constexpr bool operator==(const Tensor<T>& other ) const noexcept {
         return _extents == other._extents && _data == other._data;
     }
