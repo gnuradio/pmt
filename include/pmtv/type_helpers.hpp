@@ -79,11 +79,11 @@ class Tensor {
         return _data[calculate_index(indices)];
     }
 
-    constexpr bool operator==(const Tensor<T>(other)) const noexcept {
+    constexpr bool operator==(const Tensor<T>& other ) const noexcept {
         return _extents == other._extents && _data == other._data;
     }
 
-    constexpr bool operator!=(const Tensor<T>(other)) const noexcept { return ! operator==(other); }
+    constexpr bool operator!=(const Tensor<T>& other) const noexcept { return ! operator==(other); }
 
     //operator std::mdspan<T, std::dynamic_extent>() const {
     //    return std::mdspan<T, std::dynamic_extent>(_data.data(), _data.size());
