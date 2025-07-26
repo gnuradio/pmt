@@ -121,12 +121,10 @@ For example,
             return 7;
         else if constexpr (std::same_as<T, std::vector<std::string>>)
             return 8;
-        else if constexpr (std::ranges::range<T>) {
-            if constexpr (UniformVector<T>) {
-                return pmtTypeIndex<typename T::value_type>() << 4;
-            } else {
-                return 9; // for vector of PMTs
-            }
+        else if constexpr (PmtTensor<T>) {
+            return pmtTypeIndex<typename T::value_type>() << 4;
+        } else if constexpr (std::ranges::range<T>) {
+            return 9; // for vector of PMTs
         }
     }
 
@@ -141,7 +139,7 @@ For example,
             } else {
                 return (pmtTypeIndex<T>() << 8) | sizeof(T);
             }
-        } else if constexpr (UniformVector<T>) {
+        } else if constexpr (PmtTensor<T>) {
             static_assert(sizeof(typename T::value_type) < 32,
                           "Can't serial data wider than 16 bytes");
             return (pmtTypeIndex<T>() << 8) | sizeof(typename T::value_type);
@@ -170,6 +168,15 @@ For example,
         return sb.sputn(reinterpret_cast<const char *>(&id), 2);
     }
 
+    template <std::same_as<std::string> T>
+    std::streamsize _serialize(std::streambuf& sb, const T& arg) {
+        auto length = _serialize_id<T>(sb);
+        uint64_t sz = arg.size();
+        length += sb.sputn(reinterpret_cast<const char *>(&sz), sizeof(uint64_t));
+        length += sb.sputn(arg.data(), static_cast<std::streamsize>(arg.size()));
+        return length;
+    }
+
     template<PmtVector T>
     std::streamsize _serialize(std::streambuf &sb, const T &arg) {
         auto length = _serialize_id<T>(sb);
@@ -177,19 +184,6 @@ For example,
         length += sb.sputn(reinterpret_cast<const char *>(&sz), sizeof(uint64_t));
         for (auto &value: arg) {
             length += serialize(sb, value);
-        }
-        return length;
-    }
-
-    template<UniformBoolVector T>
-    std::streamsize _serialize(std::streambuf &sb, const T &arg) {
-        auto length = _serialize_id<T>(sb);
-        uint64_t sz = arg.size();
-        length += sb.sputn(reinterpret_cast<const char *>(&sz), sizeof(uint64_t));
-        char one = 1;
-        char zero = 0;
-        for (auto value: arg) {
-            length += sb.sputn(value ? &one : &zero, sizeof(char));
         }
         return length;
     }
@@ -208,13 +202,28 @@ For example,
         return length;
     }
 
-    template<UniformVector T>
+    template<PmtTensor T>
     std::streamsize _serialize(std::streambuf &sb, const T &arg) {
         auto length = _serialize_id<T>(sb);
-        uint64_t sz = arg.size();
-        length += sb.sputn(reinterpret_cast<const char *>(&sz), sizeof(uint64_t));
-        length += sb.sputn(reinterpret_cast<const char *>(arg.data()),
-                           static_cast<std::streamsize>(arg.size() * sizeof(arg[0])));
+        auto extents = arg.extents();
+        uint64_t sz = extents.size();
+        length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+        length += sb.sputn(reinterpret_cast<const char*>(extents.data()),
+                            static_cast<std::streamsize>(extents.size() * sizeof(extents[0])));
+        auto data = std::span(arg.data(), arg.size());
+        sz = arg.size();
+        length += sb.sputn(reinterpret_cast<const char*>(&sz), sizeof(uint64_t));
+        if constexpr(std::same_as<typename T::value_type, bool>) {
+            uint8_t one = 1;
+            uint8_t zero = 0;
+            for (const auto& d: data) {
+                if (d) length += sb.sputn(reinterpret_cast<const char*>(&one), 1);
+                else length += sb.sputn(reinterpret_cast<const char*>(&zero), 1);
+            }
+        } else {
+            length += sb.sputn(reinterpret_cast<const char*>(data.data()),
+                            static_cast<std::streamsize>(data.size() * sizeof(data[0])));
+        }
         return length;
     }
 
@@ -306,32 +315,30 @@ For example,
             case serialInfo<std::complex<double>>::value:
                 return _deserialize_val<std::complex<double>>(sb);
 
-                // case serialInfo<std::vector<bool>>::value: return
-                // _deserialize_val<std::vector<bool>>(sb);
-            case serialInfo<std::vector<uint8_t>>::value:
-                return _deserialize_val<std::vector<uint8_t>>(sb);
-            case serialInfo<std::vector<uint16_t>>::value:
-                return _deserialize_val<std::vector<uint16_t>>(sb);
-            case serialInfo<std::vector<uint32_t>>::value:
-                return _deserialize_val<std::vector<uint32_t>>(sb);
-            case serialInfo<std::vector<uint64_t>>::value:
-                return _deserialize_val<std::vector<uint64_t>>(sb);
-            case serialInfo<std::vector<int8_t>>::value:
-                return _deserialize_val<std::vector<int8_t>>(sb);
-            case serialInfo<std::vector<int16_t>>::value:
-                return _deserialize_val<std::vector<int16_t>>(sb);
-            case serialInfo<std::vector<int32_t>>::value:
-                return _deserialize_val<std::vector<int32_t>>(sb);
-            case serialInfo<std::vector<int64_t>>::value:
-                return _deserialize_val<std::vector<int64_t>>(sb);
-            case serialInfo<std::vector<float>>::value:
-                return _deserialize_val<std::vector<float>>(sb);
-            case serialInfo<std::vector<double>>::value:
-                return _deserialize_val<std::vector<double>>(sb);
-            case serialInfo<std::vector<std::complex<float>>>::value:
-                return _deserialize_val<std::vector<std::complex<float>>>(sb);
-            case serialInfo<std::vector<std::complex<double>>>::value:
-                return _deserialize_val<std::vector<std::complex<double>>>(sb);
+            case serialInfo<Tensor<uint8_t>>::value:
+                return _deserialize_val<Tensor<uint8_t>>(sb);
+            case serialInfo<Tensor<uint16_t>>::value:
+                return _deserialize_val<Tensor<uint16_t>>(sb);
+            case serialInfo<Tensor<uint32_t>>::value:
+                return _deserialize_val<Tensor<uint32_t>>(sb);
+            case serialInfo<Tensor<uint64_t>>::value:
+                return _deserialize_val<Tensor<uint64_t>>(sb);
+            case serialInfo<Tensor<int8_t>>::value:
+                return _deserialize_val<Tensor<int8_t>>(sb);
+            case serialInfo<Tensor<int16_t>>::value:
+                return _deserialize_val<Tensor<int16_t>>(sb);
+            case serialInfo<Tensor<int32_t>>::value:
+                return _deserialize_val<Tensor<int32_t>>(sb);
+            case serialInfo<Tensor<int64_t>>::value:
+                return _deserialize_val<Tensor<int64_t>>(sb);
+            case serialInfo<Tensor<float>>::value:
+                return _deserialize_val<Tensor<float>>(sb);
+            case serialInfo<Tensor<double>>::value:
+                return _deserialize_val<Tensor<double>>(sb);
+            case serialInfo<Tensor<std::complex<float>>>::value:
+                return _deserialize_val<Tensor<std::complex<float>>>(sb);
+            case serialInfo<Tensor<std::complex<double>>>::value:
+                return _deserialize_val<Tensor<std::complex<double>>>(sb);
 
             case serialInfo<std::string>::value:
                 return _deserialize_val<std::string>(sb);
@@ -362,12 +369,25 @@ For example,
                 val.push_back(deserialize(sb));
             }
             return val;
-        } else if constexpr (UniformVector<T> && !String<T>) {
+        } else if constexpr (PmtTensor<T>) {
+            // Vector of size_t extents followed by vector of data
             uint64_t sz;
-            sb.sgetn(reinterpret_cast<char *>(&sz), sizeof(uint64_t));
+            sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
+            std::vector<size_t> ext(sz);
+            sb.sgetn(reinterpret_cast<char*>(ext.data()), static_cast<int64_t>(sz * sizeof(ext[0])));
+            sb.sgetn(reinterpret_cast<char*>(&sz), sizeof(uint64_t));
             std::vector<typename T::value_type> val(sz);
-            sb.sgetn(reinterpret_cast<char *>(val.data()), static_cast<std::streamsize>(sz * sizeof(val[0])));
-            return val;
+            if constexpr(std::same_as<typename T::value_type, bool>) {
+                // Need to deserialize one element at a time for bools
+                uint8_t temp;
+                for (auto&& v: val) {
+                    sb.sgetn(reinterpret_cast<char*>(&temp), 1);
+                    v = temp == 0 ? false : true;
+                }
+            } else {
+                sb.sgetn(reinterpret_cast<char*>(val.data()), static_cast<int64_t>(sz * sizeof(val[0])));
+            }
+            return T(ext, val);
         } else if constexpr (String<T>) {
             uint64_t sz;
             sb.sgetn(reinterpret_cast<char *>(&sz), sizeof(uint64_t));

@@ -77,7 +77,7 @@ jobs:
       run: |
         source ~/emsdk/emsdk_env.sh
         ${EMSDK_NODE} bench/bm_pmt_dict_ref.js
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: Linux_Meson_Testlog

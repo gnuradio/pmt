@@ -6,7 +6,6 @@
 #pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
 #ifndef __clang__ // only for GCC, not Clang
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif

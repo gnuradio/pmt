@@ -108,7 +108,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
     x = value;
     EXPECT_TRUE(x == value);
     // pmt e({{"abc", 123}, {"you and me", "baby"}});
-    pmt e(std::vector({4, 5, 6}));
+    pmt e(Tensor<int32_t>(Tensor1d(), { 4, 5, 6 }));
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {
