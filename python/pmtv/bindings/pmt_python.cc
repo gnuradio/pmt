@@ -48,7 +48,7 @@ static pmtv::pmt _np_to_pmt(py::array_t<T> np_vec)
 }
 
 template <typename T>
-static py::array_t<T> get_pmt_vector(const pmtv::Tensor<T>& vec)
+static py::array_t<T> _tensor_to_np(const pmtv::Tensor<T>& vec)
 {
     // Produce strides vector
     py::ssize_t E = vec.extents().size();
@@ -255,7 +255,7 @@ void bind_pmt(py::module& m)
                         return create_numpy_scalar(arg);
                     }
                     if constexpr (pmtv::PmtTensor<T>) {
-                        return _pmt_to_np<typename T::value_type>(arg);
+                        return _tensor_to_np<typename T::value_type>(arg);
                     }
                     if constexpr (pmtv::String<T>) { // || pmtv::UniformVector<T> ||
                                                      // pmtv::String<T>) {

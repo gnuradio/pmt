@@ -23,6 +23,12 @@ namespace pmtv {
 // auto get_vector(V value) -> decltype(std::get<std::vector<T>>(value) {
 //     return std::get<std::vector<T>>(value);
 // }
+
+    template <IsPmt V>
+    std::vector<pmt>& get_pmt_vector(V& value ) {
+        return std::get<std::vector<pmtv::pmt>>(value);
+    }
+
     template<class T, class V>
     std::vector<T> &get_tensor(V& value) {
         return std::get<pmtv::Tensor<T>>(value);
