@@ -5,6 +5,10 @@
 #include <fmt/ranges.h>
 
 namespace fmt {
+
+// Forward declaration
+template<pmtv::IsPmt P> struct formatter<P>;
+
 template <>
 struct formatter<pmtv::map_t::value_type> {
     template <typename ParseContext>
