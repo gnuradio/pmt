@@ -60,7 +60,7 @@ jobs:
     - name: Make Test
       working-directory: ${{ github.workspace }}/build
       run: 'ninja test'
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: Linux_Meson_Testlog
