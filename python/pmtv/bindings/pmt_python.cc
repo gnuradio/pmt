@@ -43,12 +43,12 @@ static pmtv::pmt _np_to_pmt(py::array_t<T> np_vec)
     py::buffer_info info = np_vec.request();
     std::vector<size_t> shape(info.shape.begin(), info.shape.end());
     const T* data_ptr = reinterpret_cast<T*>(info.ptr);
-    auto data = std::span(data_ptr, info.size);
+    auto data = std::span(data_ptr, static_cast<size_t>(info.size));
     return pmtv::pmt(pmtv::Tensor<T>(shape, data));    
 }
 
 template <typename T>
-static py::array_t<T> _pmt_to_np(const pmtv::Tensor<T>& vec)
+static py::array_t<T> get_pmt_vector(const pmtv::Tensor<T>& vec)
 {
     // Produce strides vector
     py::ssize_t E = vec.extents().size();
@@ -254,7 +254,7 @@ void bind_pmt(py::module& m)
                         // return pmtv::pmt_nr_var_t(arg);
                         return create_numpy_scalar(arg);
                     }
-                    if constexpr (pmtv::Tensor<T>) {
+                    if constexpr (pmtv::PmtTensor<T>) {
                         return _pmt_to_np<typename T::value_type>(arg);
                     }
                     if constexpr (pmtv::String<T>) { // || pmtv::UniformVector<T> ||
