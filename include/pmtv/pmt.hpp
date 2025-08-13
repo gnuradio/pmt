@@ -24,7 +24,7 @@ namespace pmtv {
 //     return std::get<std::vector<T>>(value);
 // }
     template<class T, class V>
-    std::vector<T> &get_vector(V value) {
+    std::vector<T> &get_vector(V &value) {
         return std::get<std::vector<T>>(value);
     }
 
