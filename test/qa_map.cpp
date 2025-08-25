@@ -20,7 +20,7 @@ TEST(PmtMap, EmptyMap) {
     auto empty = pmt(map_t{});
     auto v = get_map(empty);
     v["abc"] = pmt(uint64_t(4));
-    v["xyz"] = pmt(Tensor<double>(Tensor1d(), { 1, 2, 3, 4, 5 }));
+    v["xyz"] = pmt(Tensor<double>(pmtv::data_from, std::array<double, 5UZ>{ 1, 2, 3, 4, 5 }));
 
     using namespace std::literals;
     using namespace std::string_literals;
@@ -43,7 +43,7 @@ TEST(PmtMap, EmptyMap) {
 
 TEST(PmtMap, PmtMapTests) {
     std::complex<float> val1(1.2f, -3.4f);
-    Tensor<int32_t> val2(Tensor1d(), { 44, 34563, -255729, 4402 });
+    Tensor<int32_t> val2(pmtv::data_from, std::array{ 44, 34563, -255729, 4402 });
 
     // Create the PMT map
     pmtv::map_t input_map({
@@ -70,7 +70,7 @@ TEST(PmtMap, PmtMapTests) {
 TEST(PmtMap, MapSerialize) {
     std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> vec{44, 34563, -255729, 4402};
-    Tensor<int32_t> val2(Tensor1d(), vec);
+    Tensor<int32_t> val2(pmtv::data_from, vec);
 
     // Create the PMT map
     map_t input_map({
@@ -88,7 +88,7 @@ TEST(PmtMap, MapSerialize) {
 TEST(PmtMap, get_as) {
     std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> vec{44, 34563, -255729, 4402};
-    Tensor<int32_t> val2(Tensor1d(), vec);
+    Tensor<int32_t> val2(pmtv::data_from, vec);
 
     // Create the PMT map
     pmtv::map_t input_map({
@@ -108,7 +108,7 @@ TEST(PmtMap, get_as) {
 TEST(PmtMap, base64) {
     std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> vec{44, 34563, -255729, 4402};
-    Tensor<int32_t> val2(Tensor1d(), vec);
+    Tensor<int32_t> val2(pmtv::data_from, vec);
 
     // Create the PMT map
     pmtv::map_t input_map({
@@ -127,7 +127,7 @@ TEST(PmtMap, base64) {
 TEST(PmtMap, fmt) {
     std::complex<float> val1(1.2f, -3.4f);
     std::vector<int32_t> vec{44, 34563, -255729, 4402};
-    Tensor<int32_t> val2(Tensor1d(), vec);
+    Tensor<int32_t> val2(pmtv::data_from, vec);
 
     // Create the PMT map
     pmtv::map_t input_map({

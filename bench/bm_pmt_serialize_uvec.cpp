@@ -26,7 +26,7 @@ using namespace pmtv;
 bool run_test(const int32_t times, const std::vector<int32_t>& data)
 {
     bool valid = true;
-    Tensor<int32_t> tdata(Tensor1d(), data);
+    Tensor<int32_t> tdata(pmtv::data_from, data);
 
     std::stringbuf sb; // fake channel
     for (int i = 0; i < times; i++) {
