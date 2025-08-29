@@ -30,8 +30,13 @@ namespace pmtv {
     }
 
     template<class T, class V>
+<<<<<<< HEAD
     std::vector<T> &get_tensor(V& value) {
         return std::get<pmtv::Tensor<T>>(value);
+=======
+    std::vector<T> &get_vector(V &value) {
+        return std::get<std::vector<T>>(value);
+>>>>>>> base/main
     }
 
     template<class T, class V>
