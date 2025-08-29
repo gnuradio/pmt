@@ -12,6 +12,7 @@ qa_srcs = ['qa_scalar',
            'qa_vector_of_pmts',
            'qa_map',
            'qa_string',
+           'qa_tensor',
            'qa_reflection'
           ]
 deps = [pmt_dep, 

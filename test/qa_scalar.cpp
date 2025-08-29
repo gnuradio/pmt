@@ -50,12 +50,12 @@ double PmtScalarFixture<double>::get_value() {
 
 template<>
 std::complex<float> PmtScalarFixture<std::complex<float>>::get_value() {
-    return std::complex<float>(4.1f, -4.1f);
+    return { 4.1f, -4.1f };
 }
 
 template<>
 std::complex<double> PmtScalarFixture<std::complex<double>>::get_value() {
-    return std::complex<double>(4.1, -4.1);
+    return { 4.1, -4.1 };
 }
 
 TYPED_TEST_SUITE(PmtScalarFixture, testing_types);
@@ -108,7 +108,7 @@ TYPED_TEST(PmtScalarFixture, PmtScalarValue) {
     x = value;
     EXPECT_TRUE(x == value);
     // pmt e({{"abc", 123}, {"you and me", "baby"}});
-    pmt e(Tensor<int32_t>(Tensor1d(), { 4, 5, 6 }));
+    pmt e(Tensor<int32_t>(pmtv::data_from, std::array{ 4, 5, 6 }));
 }
 
 TYPED_TEST(PmtScalarFixture, PmtScalarPrint) {

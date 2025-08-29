@@ -38,42 +38,42 @@ public:
     T get_value(int i) { return T(i); }
     T zero_value() { return T(0); }
     T nonzero_value() { return T(17); }
-    static const std::size_t num_values_ = 10;
+    static constexpr std::size_t num_values_ = 10UZ;
 };
 
 
 template <>
 std::complex<float> PmtVectorFixture<std::complex<float>>::get_value(int i)
 {
-    return std::complex<float>(static_cast<float>(i), static_cast<float>(-i));
+    return { static_cast<float>(i), static_cast<float>(-i) };
 }
 
 template <>
 std::complex<double> PmtVectorFixture<std::complex<double>>::get_value(int i)
 {
-    return std::complex<double>(static_cast<double>(i), static_cast<double>(-i));
+    return { static_cast<double>(i), static_cast<double>(-i) };
 }
 
 template <>
 std::complex<float> PmtVectorFixture<std::complex<float>>::zero_value()
 {
-    return std::complex<float>(0, 0);
+    return { 0, 0};
 }
 template <>
 std::complex<double> PmtVectorFixture<std::complex<double>>::zero_value()
 {
-    return std::complex<double>(0, 0);
+    return {0, 0};
 }
 
 template <>
 std::complex<float> PmtVectorFixture<std::complex<float>>::nonzero_value()
 {
-    return std::complex<float>(17, -19);
+    return { 17, -19};
 }
 template <>
 std::complex<double> PmtVectorFixture<std::complex<double>>::nonzero_value()
 {
-    return std::complex<double>(17, -19);
+    return {17, -19 };
 }
 
 TYPED_TEST_SUITE(PmtVectorFixture, testing_types);
@@ -92,12 +92,12 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
     pmt empty_vec{ pmtv::Tensor<TypeParam>() };
     EXPECT_EQ(std::get<pmtv::Tensor<TypeParam>>(empty_vec).size(), 0);    
 
-    std::vector<size_t> v(1, this->num_values_);
+    std::vector<size_t> v(1UZ, this->num_values_);
     std::cout << v[0] << std::endl;
-    pmt sized_vec(pmtv::tensor_t<TypeParam>, v);
+    pmt sized_vec(pmtv::tensor_t<TypeParam>, pmtv::extents_from, v);
     EXPECT_EQ(std::get<Tensor<TypeParam>>(sized_vec).size(), v[0]);
 
-    pmtv::Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
+    pmtv::Tensor<TypeParam> vec({this->num_values_});
     for (std::size_t i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(static_cast<int>(i));
     }
@@ -127,7 +127,7 @@ TYPED_TEST(PmtVectorFixture, VectorConstructors)
 TYPED_TEST(PmtVectorFixture, PmtVectorSerialize)
 {
     // Serialize/Deserialize and make sure that it works
-    pmtv::Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
+    pmtv::Tensor<TypeParam> vec({this->num_values_});
     for (std::size_t i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(static_cast<int>(i));
     }
@@ -141,8 +141,8 @@ TYPED_TEST(PmtVectorFixture, PmtVectorSerialize)
 TYPED_TEST(PmtVectorFixture, VectorWrites)
 {
     // Initialize a PMT Wrap from a std::vector object
-    pmtv::Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
-    pmtv::Tensor<TypeParam> vec_modified(Tensor1d(), this->num_values_);
+    pmtv::Tensor<TypeParam> vec({this->num_values_});
+    pmtv::Tensor<TypeParam> vec_modified({this->num_values_});
     for (std::size_t i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(static_cast<int>(i));
         vec_modified[i] = vec[i];
@@ -164,7 +164,7 @@ TYPED_TEST(PmtVectorFixture, VectorWrites)
 
 TYPED_TEST(PmtVectorFixture, get_as)
 {
-    pmtv::Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
+    pmtv::Tensor<TypeParam> vec({this->num_values_});
     for (std::size_t i = 0; i < this->num_values_; i++) {
         vec[i] = this->get_value(static_cast<int>(i));
     }
@@ -180,7 +180,7 @@ TYPED_TEST(PmtVectorFixture, get_as)
 
 TYPED_TEST(PmtVectorFixture, base64)
 {
-    Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
+    Tensor<TypeParam> vec({ this->num_values_ });
     pmt x = vec;
 
     // Make sure that we can get the value back out
@@ -191,7 +191,7 @@ TYPED_TEST(PmtVectorFixture, base64)
 }
 
 TYPED_TEST(PmtVectorFixture, fmt) {
-    Tensor<TypeParam> vec(Tensor1d(), this->num_values_);
+    Tensor<TypeParam> vec({ this->num_values_ });
     pmt x = vec;
     EXPECT_EQ(fmt::format("{}", x), fmt::format("[{}]", fmt::join(vec.data_span(), ", ")));
 }

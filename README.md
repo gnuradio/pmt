@@ -8,7 +8,7 @@ PMT Objects represent a serializable container of data that can be passed across
 
 - meson
 - ninja
-- C++20
+- C++23
 
 ## Installation
 
