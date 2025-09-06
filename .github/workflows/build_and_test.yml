@@ -24,7 +24,7 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-24.04'
+            containerid: 'ghcr.io/fair-acc/gr4-build-container:latest'
             cxxflags: -Werror
           - name: 'Fedora 40'
             containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-40'
