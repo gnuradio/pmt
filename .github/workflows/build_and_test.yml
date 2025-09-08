@@ -58,6 +58,7 @@ jobs:
           context: "{{defaultContext}}:docker"
           push: true
           tags: ghcr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
+          file: ${{ matrix.path }}
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
     runs-on: ubuntu-24.04
