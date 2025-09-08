@@ -13,9 +13,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - path: docker/Dockerfile.ubuntu
+          - path: Dockerfile.ubuntu
             tag: ubuntu-24.04
-          - path: docker/Dockerfile.fedora
+          - path: Dockerfile.fedora
             tag: fedora-42
     name: "Update ${{ matrix.tag }}"
     environment: github-action-autobuild
