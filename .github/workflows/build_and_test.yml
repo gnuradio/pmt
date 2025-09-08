@@ -37,7 +37,7 @@ jobs:
         with:
           filters: |
             docker:
-              - ${{ matrix.path }}
+              - docker/${{ matrix.path }}
 
       - name: Set up Docker Buildx
         if: steps.changes.outputs.docker == 'true'
