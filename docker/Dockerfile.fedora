@@ -1,0 +1,12 @@
+FROM fedora:42
+
+RUN sudo dnf upgrade -y && \
+  sudo dnf install -y \
+  gcc-c++ \
+  meson \
+  ninja-build \
+  python3-devel \
+  gtest-devel \
+  cli11-devel \
+  git \
+  fmt-devel

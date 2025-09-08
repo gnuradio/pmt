@@ -7,9 +7,62 @@ on:
     branches:
       - main
 jobs:
+  buildAndPublishDocker:
+    name: "Update the docker container if it is modified"
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - path: docker/Dockerfile.ubuntu
+            tag: ubuntu-24.04
+          - path: docker/Dockerfile.fedora
+            tag: fedora-42
+    name: $ {{ matrix.tag }}
+    environment: github-action-autobuild
+
+    outputs:
+      container: ${{ steps.docker-label.outputs.label }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        if: github.event_name == 'push'
+        with:
+          fetch-depth: 0
+
+      - name: Check if dockerfile was modified
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docker:
+              - ${{ matrix.path }}
+
+      - name: Set up Docker Buildx
+        if: steps.changes.outputs.docker == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: steps.changes.outputs.docker == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        if: steps.changes.outputs.docker == 'true'
+        with:
+          context: "{{defaultContext}}:docker"
+          push: true
+          tags: gchr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
     runs-on: ubuntu-24.04
+    needs: [buildAndPublishUbuntuDocker, buildAndPublishFedoraDocker]
     # The GH default is 360 minutes (it's also the max as of Feb-2021). However,
     # we should fail sooner. The only reason to exceed this time is if a test
     # hangs.
@@ -24,10 +77,10 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/fair-acc/gr4-build-container:latest'
+            containerid: 'ghcr.io/gnuradio/pmt-build-container:ubuntu-24.04'
             cxxflags: -Werror
-          - name: 'Fedora 40'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-40'
+          - name: 'Fedora 42'
+            containerid: 'ghcr.io/gnuradio/pmt-build-container:fedora-42'
             cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
@@ -37,7 +90,7 @@ jobs:
           #   cxxflags: -Werror
         compiler:
           - name: "gcc"
-            command: "g++"
+            command: "g++-14"
           - name: "clang"
             command: "clang++"
     name: ${{ matrix.distro.name }} - ${{ matrix.compiler.name }}
