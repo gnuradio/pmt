@@ -30,9 +30,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        if: github.event_name == 'push'
-        with:
-          fetch-depth: 0
 
       - name: Check if dockerfile was modified
         id: changes
