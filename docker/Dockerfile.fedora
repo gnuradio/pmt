@@ -3,6 +3,7 @@ FROM fedora:42
 RUN sudo dnf upgrade -y && \
   sudo dnf install -y \
   gcc-c++ \
+  clang \
   meson \
   ninja-build \
   python3-devel \
