@@ -21,7 +21,7 @@ jobs:
     environment: github-action-autobuild
 
     outputs:
-      container: ghcr.io/gnuradio-pmt/pmt-build-container:${{ matrix.tag }}
+      container: ghcr.io/gnuradio/pmt:${{ matrix.tag }}
 
     permissions:
       contents: read
@@ -55,7 +55,7 @@ jobs:
         with:
           context: "{{defaultContext}}:docker"
           push: true
-          tags: ghcr.io/gnuradio-pmt/pmt-build-container:${{ matrix.tag }}
+          tags: ghcr.io/gnuradio/pmt:${{ matrix.tag }}
           file: ${{ matrix.path }}
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
@@ -75,10 +75,10 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/gnuradio-pmt/pmt-build-container:ubuntu-24.04'
+            containerid: 'ghcr.io/gnuradio/pmt:ubuntu-24.04'
             cxxflags: -Werror
           - name: 'Fedora 42'
-            containerid: 'ghcr.io/gnuradio-pmt/pmt-build-container:fedora-42'
+            containerid: 'ghcr.io/gnuradio/pmt:fedora-42'
             cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
@@ -134,7 +134,7 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/gnuradio-pmt/pmt-build-container:ubuntu-24.04'
+            containerid: 'ghcr.io/gnuradio/pmt:ubuntu-24.04'
             cxxflags: -Werror
         compiler:
           - name: "emscripten"
