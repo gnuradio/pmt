@@ -8,7 +8,6 @@ on:
       - main
 jobs:
   buildAndPublishDocker:
-    name: "Update the docker container if it is modified"
     runs-on: "ubuntu-latest"
     strategy:
       fail-fast: false
@@ -18,11 +17,11 @@ jobs:
             tag: ubuntu-24.04
           - path: docker/Dockerfile.fedora
             tag: fedora-42
-    name: $ {{ matrix.tag }}
+    name: "Update ${{ matrix.tag }}"
     environment: github-action-autobuild
 
     outputs:
-      container: ${{ steps.docker-label.outputs.label }}
+      container: ghcr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
 
     permissions:
       contents: read
@@ -58,7 +57,7 @@ jobs:
         with:
           context: "{{defaultContext}}:docker"
           push: true
-          tags: gchr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
+          tags: ghcr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
     runs-on: ubuntu-24.04
