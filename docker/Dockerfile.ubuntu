@@ -2,4 +2,4 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update && apt install -y g++-14 clang-18 meson ninja-build python3-dev libgtest-dev libcli11-dev software-properties-common git
+RUN apt update && apt install -y g++-14 clang-18 meson ninja-build python3-dev libgtest-dev libcli11-dev software-properties-common git python3-pybind11 pybind11-dev
