@@ -6,6 +6,8 @@ RUN sudo dnf upgrade -y && \
   clang \
   meson \
   ninja-build \
+  cmake \
+  make \
   python3-devel \
   gtest-devel \
   cli11-devel \
