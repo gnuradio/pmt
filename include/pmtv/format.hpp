@@ -5,6 +5,10 @@
 #include <fmt/ranges.h>
 
 namespace fmt {
+
+// Forward declaration
+template<pmtv::IsPmt P> struct formatter<P>;
+
 template <>
 struct formatter<pmtv::map_t::value_type> {
     template <typename ParseContext>
@@ -34,7 +38,6 @@ struct formatter<C> {
     }
 };
 
-
 template<pmtv::IsPmt P>
 struct formatter<P>
 {
@@ -53,7 +56,10 @@ struct formatter<P>
                 return fmt::format_to(ctx.out(), "{}", arg);
             else if constexpr (std::same_as<T, std::string>)
                 return fmt::format_to(ctx.out(), "{}",  arg);
-            else if constexpr (UniformVector<T> || UniformStringVector<T>)
+            else if constexpr (PmtTensor<T>) {
+                // Difficult to format an N-dim Tensor.  Figure out something eventually.
+                return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg.data_span(), ", "));
+            } else if constexpr (UniformStringVector<T>)
                 return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));
             else if constexpr (std::same_as<T, std::vector<pmt>>) {
                 return fmt::format_to(ctx.out(), "[{}]", fmt::join(arg, ", "));

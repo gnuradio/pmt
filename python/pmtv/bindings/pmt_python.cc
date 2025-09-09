@@ -40,16 +40,35 @@ namespace py = pybind11;
 template <typename T>
 static pmtv::pmt _np_to_pmt(py::array_t<T> np_vec)
 {
-    return pmtv::pmt(
-        std::vector<T>(static_cast<const T*>(np_vec.data()),
-                       static_cast<const T*>(np_vec.data()) + np_vec.size()));
+    py::buffer_info info = np_vec.request();
+    std::vector<size_t> shape(info.shape.begin(), info.shape.end());
+    const T* data_ptr = reinterpret_cast<T*>(info.ptr);
+    auto data = std::span(data_ptr, static_cast<size_t>(info.size));
+    return pmtv::pmt(pmtv::Tensor<T>(shape, data));    
 }
 
 template <typename T>
-static py::array_t<T> _pmt_to_np(pmtv::pmt p)
+static py::array_t<T> _tensor_to_np(const pmtv::Tensor<T>& vec)
 {
-    auto vec = get_vector<T>(p);
-    return py::array_t<T>(vec.size(), vec.data());
+    // Produce strides vector
+    py::ssize_t E = vec.extents().size();
+    std::vector<py::ssize_t> strides(E);
+    py::ssize_t stride = sizeof(T);
+    for (py::ssize_t i = 0; i < E; i++) {
+        strides[E-i-1] = stride;
+        stride *= vec.extents()[E-i-1];
+    }
+    std::vector<py::ssize_t> shape(vec.extents().begin(), vec.extents().end());
+    // Extra copy but needs to not be a const pointer
+    std::vector<T> data(vec.data(), vec.data() + vec.size());
+    return py::array(
+        py::buffer_info(data.data(), 
+                    sizeof(T), 
+                    py::format_descriptor<T>::format(),
+                    E,
+                    shape,
+                    strides
+                ));
 }
 
 
@@ -235,12 +254,8 @@ void bind_pmt(py::module& m)
                         // return pmtv::pmt_nr_var_t(arg);
                         return create_numpy_scalar(arg);
                     }
-                    if constexpr (pmtv::UniformVector<T> &&
-                                  !pmtv::String<T>) { // || pmtv::UniformVector<T> ||
-                                                      // pmtv::String<T>) {
-                        // return pmtv::pmt_nr_var_t(arg);
-                        return py::array_t<typename T::value_type>(static_cast<ssize_t>(arg.size()),
-                                                                   arg.data());
+                    if constexpr (pmtv::PmtTensor<T>) {
+                        return _tensor_to_np<typename T::value_type>(arg);
                     }
                     if constexpr (pmtv::String<T>) { // || pmtv::UniformVector<T> ||
                                                      // pmtv::String<T>) {
@@ -279,7 +294,7 @@ void bind_pmt(py::module& m)
         });
 
     m.def("get_map", &pmtv::get_map<pmt>, "Get a map from a pmt");
-    m.def("get_vector", &pmtv::get_vector<pmt, pmt>, "Get a vector from a pmt");
+    m.def("get_vector", &pmtv::get_pmt_vector<pmt>, "Get a vector from a pmt");
 
     m.def("serialize", [](pmtv::pmt obj) {
         std::stringbuf sb; // fake channel

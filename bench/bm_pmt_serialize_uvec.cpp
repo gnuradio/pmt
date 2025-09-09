@@ -5,7 +5,6 @@
 #pragma GCC diagnostic push // ignore warning of external libraries that from this lib-context we do not have any control over
 #pragma GCC diagnostic ignored "-Wall"
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-#pragma GCC diagnostic ignored "-Wimplicit-int-float-conversion"
 #ifndef __clang__ // only for GCC, not Clang
 #pragma GCC diagnostic ignored "-Wuseless-cast"
 #endif
@@ -27,12 +26,13 @@ using namespace pmtv;
 bool run_test(const int32_t times, const std::vector<int32_t>& data)
 {
     bool valid = true;
+    Tensor<int32_t> tdata(pmtv::data_from, data);
 
     std::stringbuf sb; // fake channel
     for (int i = 0; i < times; i++) {
         sb.str(""); // reset channel to empty
         // auto p1 = vector<int32_t>(data);
-        pmt p1 = data;
+        pmt p1 = tdata;
         pmtv::serialize(sb, p1);
         auto p2 = pmtv::deserialize(sb);
         if (p1 != p2)

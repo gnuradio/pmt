@@ -103,7 +103,24 @@ public:
     constexpr base_type* get_pointer_to_base() noexcept { return this; }
     constexpr base_type const* get_pointer_to_base() const noexcept { return this; }
 
-    auto operator<=>(variant const&) const = default;
+    auto operator<=>(variant const& other) const {
+        return std::visit(
+            [](const auto& lhs, const auto& rhs) -> std::strong_ordering {
+                using LHS = std::decay_t<decltype(lhs)>;
+                using RHS = std::decay_t<decltype(rhs)>;
+                if ((std::integral<LHS> || std::floating_point<LHS>) && (std::integral<RHS> || std::floating_point<RHS>)) {
+                    return lhs <=> rhs;
+                } else if constexpr (std::same_as<LHS, RHS>) {
+                    if constexpr (std::same_as<std::monostate, LHS>)
+                        return std::strong_ordering::equal;
+                    else
+                        return lhs <=> rhs;
+                } else {
+                    return std::strong_ordering::less; // Different types, so less than
+                }
+            },
+            get_base(), other.get_base());
+    }
     bool operator==(variant const&) const = default;
 
     size_t size()

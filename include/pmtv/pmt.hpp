@@ -14,7 +14,7 @@ namespace pmtv {
     using map_t = std::map<std::string, pmt, std::less<>>;
 
     template<class T>
-    inline constexpr std::in_place_type_t<std::vector<T>> vec_t{};
+    inline constexpr std::in_place_type_t<Tensor<T>> tensor_t{};
 
     template<typename T>
     concept IsPmt = std::is_same_v<T, pmt>;
@@ -23,14 +23,20 @@ namespace pmtv {
 // auto get_vector(V value) -> decltype(std::get<std::vector<T>>(value) {
 //     return std::get<std::vector<T>>(value);
 // }
+
+    template <IsPmt V>
+    std::vector<pmt>& get_pmt_vector(V& value ) {
+        return std::get<std::vector<pmtv::pmt>>(value);
+    }
+
     template<class T, class V>
-    std::vector<T> &get_vector(V &value) {
-        return std::get<std::vector<T>>(value);
+    std::vector<T> &get_tensor(V& value) {
+        return std::get<pmtv::Tensor<T>>(value);
     }
 
     template<class T, class V>
     std::span<T> get_span(V &value) {
-        return std::span(std::get<std::vector<T>>(value));
+        return std::get<pmtv::Tensor<T>>(value).data_span();
     }
 
     template<class V>

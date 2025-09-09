@@ -7,9 +7,60 @@ on:
     branches:
       - main
 jobs:
+  buildAndPublishDocker:
+    runs-on: "ubuntu-latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - path: Dockerfile.ubuntu
+            tag: ubuntu-24.04
+          - path: Dockerfile.fedora
+            tag: fedora-42
+    name: "Update ${{ matrix.tag }}"
+    environment: github-action-autobuild
+
+    outputs:
+      container: ghcr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if dockerfile was modified
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docker:
+              - docker/${{ matrix.path }}
+
+      - name: Set up Docker Buildx
+        if: steps.changes.outputs.docker == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: steps.changes.outputs.docker == 'true'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v5
+        if: steps.changes.outputs.docker == 'true'
+        with:
+          context: "{{defaultContext}}:docker"
+          push: true
+          tags: ghcr.io/gnuradio/pmt-build-container:${{ matrix.tag }}
+          file: ${{ matrix.path }}
   linux-docker:
   # All of these shall depend on the formatting check (needs: check-formatting)
     runs-on: ubuntu-24.04
+    needs: buildAndPublishDocker
     # The GH default is 360 minutes (it's also the max as of Feb-2021). However,
     # we should fail sooner. The only reason to exceed this time is if a test
     # hangs.
@@ -24,10 +75,10 @@ jobs:
         # container (i.e., what you want to docker-pull)
         distro:
           - name: 'Ubuntu 24.04'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:ubuntu-24.04'
+            containerid: 'ghcr.io/gnuradio/pmt-build-container:ubuntu-24.04'
             cxxflags: -Werror
-          - name: 'Fedora 40'
-            containerid: 'ghcr.io/gnuradio/gnuradio-docker:fedora-40'
+          - name: 'Fedora 42'
+            containerid: 'ghcr.io/gnuradio/pmt-build-container:fedora-42'
             cxxflags: ''
           # - distro: 'CentOS 8.3'
           #   containerid: 'gnuradio/ci:centos-8.3-3.9'
@@ -37,7 +88,7 @@ jobs:
           #   cxxflags: -Werror
         compiler:
           - name: "gcc"
-            command: "g++"
+            command: "g++-14"
           - name: "clang"
             command: "clang++"
     name: ${{ matrix.distro.name }} - ${{ matrix.compiler.name }}
@@ -60,6 +111,85 @@ jobs:
     - name: Make Test
       working-directory: ${{ github.workspace }}/build
       run: 'ninja test'
+    - uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: Linux_Meson_Testlog
+        path: build/meson-logs/testlog.txt
+  emscripten-docker:
+  # All of these shall depend on the formatting check (needs: check-formatting)
+    runs-on: ubuntu-24.04
+    needs: buildAndPublishDocker
+    # The GH default is 360 minutes (it's also the max as of Feb-2021). However,
+    # we should fail sooner. The only reason to exceed this time is if a test
+    # hangs.
+    timeout-minutes: 120
+    strategy:
+      # Enabling fail-fast would kill all Dockers if one of them fails. We want
+      # maximum output.
+      fail-fast: false
+      matrix:
+        # For every distro we want to test here, add one key 'distro' with a
+        # descriptive name, and one key 'containerid' with the name of the
+        # container (i.e., what you want to docker-pull)
+        distro:
+          - name: 'Ubuntu 24.04'
+            containerid: 'ghcr.io/gnuradio/pmt-build-container:ubuntu-24.04'
+            cxxflags: -Werror
+        compiler:
+          - name: "emscripten"
+            command: "emcc"
+            base: "g++-14"
+    name: ${{ matrix.distro.name }} - ${{ matrix.compiler.name }}
+    container:
+      image: ${{ matrix.distro.containerid }}
+      volumes:
+        - build_data:/build
+      options: --cpus 2
+    steps:
+    - uses: actions/checkout@v4
+      name: Checkout Project
+    - name: Install emscripten
+      run: |
+        DEBIAN_FRONTEND=noninteractive apt-get install -qy bzip2 clang
+        cd
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk
+        # Download and install the latest SDK tools.
+        ./emsdk install latest
+        # Make the "latest" SDK "active" for the current user. (writes .emscripten file)
+        ./emsdk activate latest
+    
+    # - name: Install emscripten
+    #   run: |
+    #     pwd
+    #     echo
+    #     ls ${{ github.workspace }}
+    #     echo
+    #     ls .
+    #     echo
+    #     ls emsdk
+    - name: Configure Meson
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        CXX: ${{ matrix.compiler.base }}
+      run: |
+        source ~/emsdk/emsdk_env.sh
+        tee emscripten-toolchain.ini <<EOF >/dev/null
+        [constants]
+        toolchain = '$HOME/emsdk/${{ env.EM_CACHE_FOLDER }}/upstream/emscripten/'
+        EOF
+        meson setup build --cross-file emscripten-toolchain.ini --cross-file emscripten-build.ini -Denable_python=false -Denable_testing=false
+    - name: Make
+      working-directory: ${{ github.workspace }}/build
+      run: 'ninja'
+    - name: Run Test File
+      shell: bash
+      working-directory: ${{ github.workspace }}/build
+      run: |
+        source ~/emsdk/emsdk_env.sh
+        ${EMSDK_NODE} bench/bm_pmt_dict_ref.js
     - uses: actions/upload-artifact@v4
       if: failure()
       with:
