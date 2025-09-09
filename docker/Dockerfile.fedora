@@ -10,4 +10,5 @@ RUN sudo dnf upgrade -y && \
   gtest-devel \
   cli11-devel \
   git \
-  fmt-devel
+  fmt-devel \
+  pybind11-devel
