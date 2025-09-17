@@ -30,7 +30,7 @@ namespace pmtv {
     }
 
     template<class T, class V>
-    std::vector<T> &get_tensor(V& value) {
+    pmtv::Tensor<T> &get_tensor(V& value) {
         return std::get<pmtv::Tensor<T>>(value);
     }
 
